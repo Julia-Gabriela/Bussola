@@ -10,6 +10,4 @@ class BussolaApplicationTests {
 	void contextLoads() {
 	}
 
-
-
 }
