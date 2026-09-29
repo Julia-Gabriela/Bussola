@@ -1,3 +1,6 @@
 # Contexto local do Codex
 /AGENTS.md
 /docs/MEMORIA_PROJETO.md
+
+# Credenciais locais
+.env
