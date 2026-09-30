@@ -5,6 +5,7 @@ import br.com.bussola.dto.response.UsuarioResponse;
 import br.com.bussola.model.entity.Usuario;
 import br.com.bussola.service.UsuarioService;
 import jakarta.validation.Valid;
+import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +24,7 @@ public class UsuarioController {
     }
 
     @PostMapping("/cadastro")
+    @Operation(summary = "Cadastrar usuário", description = "Exige idade mínima de 16 anos e aceite dos termos.")
     public ResponseEntity<UsuarioResponse> cadastrar(@Valid @RequestBody CadastroUsuarioRequest request) {
         Usuario usuario = usuarioService.cadastrar(request.nomeCompleto(), request.dataNascimento(),
                 request.email(), request.senha(), request.aceitouTermos());
