@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Criar conta — Bússola</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style/landing-page.css">
+    <link rel="stylesheet" href="../style/cadastro.css">
+</head>
+<body>
+    <div class="page">
+        <div class="scene" aria-hidden="true">
+            <img class="map" src="../assets/images/fundo-cadastro.png" alt="">
+            <div class="ring ring-lg"></div>
+            <div class="ring ring-md"></div>
+            <div class="ring ring-sm"></div>
+        </div>
+
+        <main class="auth">
+            <section class="card" aria-labelledby="cadastro-titulo">
+                <a class="brand-mark" href="index.html">
+                    <img src="../assets/images/icone-bussola.png" alt="" width="72" height="54">
+                    <h1 id="cadastro-titulo">Bússola</h1>
+                </a>
+                <p class="tagline">Sua ferramenta de decisão inteligente</p>
+
+                <div class="tabs" role="group" aria-label="Acesso">
+                    <span class="tab">Entrar</span>
+                    <span class="tab is-selected">Criar conta</span>
+                </div>
+
+                <form id="cadastro-form" class="form" novalidate>
+                    <div class="field">
+                        <label for="nomeCompleto">Nome completo</label>
+                        <input id="nomeCompleto" name="nomeCompleto" type="text" autocomplete="name" maxlength="150" placeholder="Seu nome" aria-describedby="nome-erro">
+                        <p class="field-error" id="nome-erro"></p>
+                    </div>
+
+                    <div class="field">
+                        <label for="dataNascimento">Data de nascimento</label>
+                        <input id="dataNascimento" name="dataNascimento" type="date" autocomplete="bday" aria-describedby="data-erro">
+                        <p class="field-error" id="data-erro"></p>
+                    </div>
+
+                    <div class="field">
+                        <label for="email">E-mail</label>
+                        <input id="email" name="email" type="email" autocomplete="email" maxlength="150" placeholder="seuemail@email.com" spellcheck="false" aria-describedby="email-erro">
+                        <p class="field-error" id="email-erro"></p>
+                    </div>
+
+                    <div class="field">
+                        <label for="senha">Senha</label>
+                        <div class="password-field">
+                            <input id="senha" name="senha" type="password" autocomplete="new-password" aria-describedby="senha-erro">
+                            <button class="password-toggle" type="button" aria-label="Mostrar senha" aria-pressed="false" aria-controls="senha">
+                                <img src="../assets/images/olho-senha.svg" alt="" width="16" height="16">
+                            </button>
+                        </div>
+                        <p class="field-error" id="senha-erro"></p>
+                    </div>
+
+                    <div class="field field-terms">
+                        <div class="terms">
+                            <input id="aceitouTermos" name="aceitouTermos" type="checkbox" aria-describedby="termos-erro">
+                            <label for="aceitouTermos">Li e aceito os <button class="legal" type="button" data-documento="termos">Termos de Uso</button> e a <button class="legal" type="button" data-documento="politica">Política de Privacidade</button>.</label>
+                        </div>
+                        <p class="field-error" id="termos-erro"></p>
+                    </div>
+
+                    <p class="form-message" id="form-message" aria-live="polite"></p>
+
+                    <button class="submit" type="submit">Criar conta gratuita →</button>
+                </form>
+
+                <div class="success" id="sucesso" hidden>
+                    <h2>Conta criada</h2>
+                    <p id="sucesso-texto"></p>
+                    <p class="success-note">Quando a tela de login estiver disponível, você poderá entrar com este e-mail.</p>
+                    <a class="back-link" href="index.html">Voltar ao início</a>
+                </div>
+            </section>
+        </main>
+    </div>
+    <div class="legal-overlay" id="legal-overlay" hidden>
+        <div class="legal-dialog" id="legal-dialog" role="dialog" aria-modal="true" aria-labelledby="legal-titulo" tabindex="-1">
+            <button class="legal-close" id="legal-fechar" type="button" aria-label="Fechar">×</button>
+            <img class="legal-icon" src="../assets/images/icone-bussola.png" alt="" width="56" height="42">
+            <p class="legal-brand" id="legal-marca">Bússola</p>
+            <h2 class="legal-titulo" id="legal-titulo"></h2>
+            <p class="legal-versao" id="legal-versao"></p>
+            <div class="legal-body" id="legal-body" tabindex="0"></div>
+            <div class="legal-actions">
+                <button class="legal-accept" id="legal-aceitar" type="button">Aceitar</button>
+                <button class="legal-deny" id="legal-negar" type="button">Negar</button>
+            </div>
+        </div>
+    </div>
+    <script src="../js/pages/documentos-legais.js"></script>
+    <script src="../js/pages/cadastro.js"></script>
+</body>
+</html>

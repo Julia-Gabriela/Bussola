@@ -169,6 +169,7 @@ a:focus-visible {
     color: var(--beige);
     font-size: 14px;
     font-weight: 500;
+    text-decoration: none;
     background: var(--auth-bg);
     border-color: var(--auth-line);
 }
@@ -245,6 +246,7 @@ a:focus-visible {
 }
 
 .cta {
+    display: inline-block;
     width: 252px;
     max-width: 100%;
     height: auto;
@@ -253,6 +255,8 @@ a:focus-visible {
     padding: 13px;
     border: 0;
     border-radius: 10px;
+    text-align: center;
+    text-decoration: none;
     color: var(--ink);
     font-size: 15px;
     font-weight: 700;
@@ -311,10 +315,13 @@ a:focus-visible {
     height: auto;
 }
 
-.art-compass {
+.hero-visual .art-compass {
+    --compass-inset: clamp(24px, 2.6%, 40px);
     top: 0;
-    left: 65.4%;
+    left: auto;
+    right: calc(var(--compass-inset) + 4.6%);
     width: 34.5603%;
+    max-width: max(0px, calc(100% - 42.6% - 172px - 16px - var(--compass-inset)));
     height: auto;
     opacity: 0.8;
 }
