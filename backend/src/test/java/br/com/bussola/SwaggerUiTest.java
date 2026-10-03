@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import br.com.bussola.controller.UsuarioController;
 import br.com.bussola.security.SecurityConfig;
 import br.com.bussola.service.UsuarioService;
+import br.com.bussola.service.AutenticacaoService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -33,6 +34,9 @@ class SwaggerUiTest {
 
     @MockitoBean
     private UsuarioService usuarioService;
+
+    @MockitoBean
+    private AutenticacaoService autenticacaoService;
 
     @Test
     void disponibilizaInterfaceSemAutenticacao() throws Exception {

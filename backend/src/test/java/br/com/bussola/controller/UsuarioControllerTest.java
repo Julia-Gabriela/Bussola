@@ -14,6 +14,7 @@ import br.com.bussola.exception.EmailJaCadastradoException;
 import br.com.bussola.model.entity.Usuario;
 import br.com.bussola.security.SecurityConfig;
 import br.com.bussola.service.UsuarioService;
+import br.com.bussola.service.AutenticacaoService;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,9 @@ class UsuarioControllerTest {
 
     @MockitoBean
     private UsuarioService usuarioService;
+
+    @MockitoBean
+    private AutenticacaoService autenticacaoService;
 
     @Test
     void cadastraSemAutenticacaoERetornaApenasDadosPublicos() throws Exception {

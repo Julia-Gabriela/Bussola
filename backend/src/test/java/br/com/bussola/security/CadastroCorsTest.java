@@ -13,6 +13,7 @@ import br.com.bussola.controller.UsuarioController;
 import br.com.bussola.exception.CadastroExceptionHandler;
 import br.com.bussola.model.entity.Usuario;
 import br.com.bussola.service.UsuarioService;
+import br.com.bussola.service.AutenticacaoService;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,9 @@ class CadastroCorsTest {
 
     @MockitoBean
     private UsuarioService usuarioService;
+
+    @MockitoBean
+    private AutenticacaoService autenticacaoService;
 
     @Test
     void preflightDoCadastroAceitaOrigemDoFrontend() throws Exception {
