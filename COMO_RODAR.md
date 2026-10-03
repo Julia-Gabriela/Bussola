@@ -2,6 +2,57 @@
 
 Este guia é para quem vai executar o projeto pela primeira vez.
 
+## Configuração adicional para o login
+
+O backend agora precisa de `JWT_SECRET`, além das variáveis do MySQL. É uma chave aleatória para assinar os tokens; não é a senha do usuário nem a senha do banco.
+
+**Onde:** em um PowerShell normal. Na primeira configuração deste computador, execute o bloco abaixo. Ele cria uma chave e a guarda nas variáveis do seu usuário do Windows, sem exibir o valor e sem criar arquivo no projeto.
+
+```powershell
+$env:JWT_SECRET = [Environment]::GetEnvironmentVariable("JWT_SECRET", "User")
+if (-not $env:JWT_SECRET) {
+    $bytesJwt = New-Object byte[] 32
+    $geradorJwt = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    $geradorJwt.GetBytes($bytesJwt)
+    $geradorJwt.Dispose()
+    $env:JWT_SECRET = [Convert]::ToBase64String($bytesJwt)
+    [Environment]::SetEnvironmentVariable("JWT_SECRET", $env:JWT_SECRET, "User")
+}
+"JWT_SECRET configurada"
+```
+
+Depois, feche completamente e abra novamente o IntelliJ para ele herdar a variável. Na configuração `BussolaApplication`, mantenha `Include system environment variables` habilitado e a sua `DB_PASSWORD` configurada. Se rodar pelo PowerShell acima, a chave já está disponível nessa janela.
+
+Não copie o valor da chave para o Git, prints ou mensagens. Cada integrante pode gerar sua própria chave local. Trocar a chave invalida os tokens anteriores. Uma chave fornecida por outro ambiente deve estar em Base64 e representar pelo menos 32 bytes aleatórios.
+
+Na próxima inicialização, o Flyway aplica `V2__Sessoes_autenticacao.sql` automaticamente, criando `sessoes_autenticacao` sem recriar as tabelas anteriores.
+
+## Testar o login no Swagger
+
+**Pré-requisitos:** MySQL e backend ligados. O frontend não é necessário para este teste.
+
+1. Sincronize o Maven no IntelliJ após atualizar o projeto e reinicie `BussolaApplication`.
+2. Aguarde `Started BussolaApplication` e abra http://localhost:8080/swagger-ui/index.html.
+3. Se ainda não tiver usuário, execute `POST /auth/cadastro` com dados de teste e guarde a senha usada.
+4. Abra `POST /auth/login` → **Try it out**. Informe o e-mail e a senha do cadastro, não as credenciais do MySQL.
+5. Clique em **Execute**. O resultado esperado é **200**, com `accessToken`, `tokenType: Bearer`, `inatividadeMaximaSegundos: 3600` e os dados públicos do usuário.
+6. Copie somente o valor de `accessToken`. Clique em **Authorize**, cole o token sem escrever `Bearer` antes e confirme.
+7. Execute `GET /auth/me`. O resultado esperado é **200** com os dados do usuário autenticado. Sem token, com token alterado ou sessão expirada, a resposta é **401**.
+
+E-mail inexistente e senha incorreta retornam o mesmo **401**, com a mensagem “E-mail ou senha inválidos.” Campos ausentes ou e-mail malformado retornam **400**.
+
+A sessão expira após 60 minutos sem requisições autenticadas. Cada requisição autenticada válida atualiza a última atividade no banco (UTC). Abrir uma página estática ou apenas mover o mouse não renova a sessão. O JWT identifica a sessão; sua assinatura sozinha não autoriza acesso. Ele não contém prazo fixo `exp`: o backend sempre consulta a sessão persistida e aplica o limite por inatividade. Uma sessão expirada exige novo login. Os dados das decisões permanecem salvos.
+
+O login está disponível pela API/Swagger. As telas existentes ainda não enviam o login nem guardam/utilizam esse token; a Home continua provisória. Fechar **Authorize** ou sair da Home não revoga a sessão no servidor; logout ainda não foi implementado.
+
+Para executar apenas os testes que não exigem banco, no PowerShell dentro de `backend`:
+
+```powershell
+.\mvnw.cmd "-Dtest=UsuarioServiceTest,UsuarioControllerTest,CadastroCorsTest,SwaggerUiTest,AutenticacaoServiceTest,LoginFluxoTest" test
+```
+
+Espere `BUILD SUCCESS`. Os testes usam chaves exclusivas de teste e simulam os repositories; não criam usuários no MySQL. O comando `.\mvnw.cmd test` também executa o teste de contexto completo e exige MySQL, `DB_PASSWORD` e `JWT_SECRET` configurados.
+
 Se esta é a primeira vez neste computador, siga [Primeira configuração](#primeira-configuração) do começo ao fim.
 
 Se a máquina já foi preparada e você só quer ligar o projeto de novo, vá para [Rodar o Bússola normalmente](#rodar-o-bússola-normalmente).
@@ -415,7 +466,7 @@ Não digite mais comandos nessa janela. Não feche essa janela.
 
 Para parar o backend mais tarde, clique nessa janela e pressione `Ctrl + C`. Só faça isso quando quiser desligar o backend.
 
-Com o backend no ar, a página opcional do Swagger fica em `http://localhost:8080/swagger-ui/index.html`. Ela mostra o endpoint que existe hoje, `POST /auth/cadastro`. Você não precisa abri-la para usar o site.
+Com o backend no ar, a página do Swagger fica em `http://localhost:8080/swagger-ui/index.html`. Ela permite testar `POST /auth/cadastro`, `POST /auth/login` e `GET /auth/me`. O passo a passo do login está no início deste guia.
 
 **O que faço depois:** abra um segundo PowerShell para o frontend. Deixe este primeiro aberto.
 
@@ -535,9 +586,9 @@ Essa é a entrada normal atual do Bússola. A página é a Landing, o arquivo `f
 
 **Deixo as janelas do PowerShell abertas?** Sim. As duas.
 
-A entrada normal é a Landing, `http://127.0.0.1:8765/pages/index.html`. No estado atual do protótipo, os dois chamados da Landing levam para `cadastro.html`: **Entre ou cadastre-se** e **Começar uma decisão**. Ainda não existe login. **Começar uma decisão** ainda não inicia uma decisão. Os dois só abrem o cadastro.
+A entrada normal é a Landing, `http://127.0.0.1:8765/pages/index.html`. No estado atual do protótipo, os dois chamados da Landing levam para `cadastro.html`: **Entre ou cadastre-se** e **Começar uma decisão**. O login existe na API, mas ainda não há tela integrada. **Começar uma decisão** ainda não inicia uma decisão. Os dois só abrem o cadastro.
 
-O cadastro, quando a pessoa já está em `cadastro.html`, foi testado no navegador e funcionou: o formulário envia `POST /auth/cadastro`, o backend grava no MySQL e a resposta `201` abre a Home provisória. O botão **Sair** dessa Home volta para `index.html`. Ele não faz logout, porque não há autenticação. Quando login e o fluxo de decisão existirem, esses cliques precisam ser revistos.
+O cadastro, quando a pessoa já está em `cadastro.html`, foi testado no navegador e funcionou: o formulário envia `POST /auth/cadastro`, o backend grava no MySQL e a resposta `201` abre a Home provisória. O botão **Sair** dessa Home volta para `index.html`. Ele não faz logout nem revoga tokens. A integração das telas com a autenticação e o fluxo de decisão ainda está pendente.
 
 Para abrir o formulário sem passar pela Landing, use o endereço direto de teste, explicado em [Exemplo: quero testar somente a tela de cadastro](#exemplo-quero-testar-somente-a-tela-de-cadastro).
 
@@ -579,7 +630,7 @@ Sair
 index.html
 ```
 
-`home.html` ainda não é a Home definitiva. Ela existe para validar esse caminho. O botão **Sair** não faz logout no backend, porque ainda não existe login de usuário. Ele só volta para `index.html`. Quando uma autenticação real existir, esse botão precisa ser revisto.
+`home.html` ainda não é a Home definitiva. Ela existe para validar esse caminho. O botão **Sair** não faz logout no backend; só volta para `index.html`. Sua integração com a autenticação ainda precisa ser implementada.
 
 O que a tela faz com a resposta:
 
@@ -975,7 +1026,7 @@ USE bussola;
 SHOW TABLES;
 ```
 
-Depois que a migration V1 tiver sido aplicada, devem existir estas 12 tabelas da aplicação:
+Depois que as migrations V1 e V2 tiverem sido aplicadas, devem existir estas 13 tabelas da aplicação:
 
 - `usuarios`
 - `decisoes`
@@ -989,8 +1040,9 @@ Depois que a migration V1 tiver sido aplicada, devem existir estas 12 tabelas da
 - `inversoes`
 - `resultados`
 - `tokens_recuperacao_senha`
+- `sessoes_autenticacao`
 
-Além delas, o Flyway cria `flyway_schema_history`. No total, são 13 tabelas depois da migration inicial.
+Além delas, o Flyway cria `flyway_schema_history`. No total, são 14 tabelas após V2.
 
 ## Migrations futuras
 
@@ -1009,9 +1061,9 @@ O frontend local e o backend usam origens diferentes. A página fica em `http://
 - `http://127.0.0.1:8765`
 - `http://localhost:8765`
 
-Os métodos permitidos nesse caminho são `POST` e `OPTIONS`. Os cabeçalhos permitidos são `Content-Type` e `Accept`. Não há permissão para qualquer origem.
+Nos caminhos `/auth/**`, os métodos permitidos são `GET`, `POST` e `OPTIONS`. Os cabeçalhos permitidos são `Content-Type`, `Accept` e `Authorization`. Não há permissão para qualquer origem.
 
-O mesmo arquivo continua liberando `POST /auth/cadastro` e a consulta do Swagger sem login, e ignora o CSRF só nesse cadastro. O cadastro pela tela, com o frontend na porta `8765` e o backend na porta `8080`, foi testado no navegador e funcionou.
+O mesmo arquivo libera `POST /auth/cadastro`, `POST /auth/login` e a consulta do Swagger sem login. As demais rotas exigem token Bearer. A API não autentica por cookie nem usa sessão HTTP; o CSRF está desabilitado e a sessão de autenticação é validada no banco a partir do JWT. O cadastro pela tela, com o frontend na porta `8765` e o backend na porta `8080`, foi testado anteriormente no navegador.
 
 Se a porta ou o endereço do frontend mudar, essa lista no `SecurityConfig` precisa ser atualizada. Sem isso, o DevTools pode mostrar de novo que a resposta CORS foi bloqueada.
 
