@@ -45,6 +45,7 @@ Write-Host "Páginas úteis para desenvolvimento:"
 Write-Host ""
 
 $uteis = @(
+    @{ Arquivo = "login.html"; Rotulo = "Login:" },
     @{ Arquivo = "cadastro.html"; Rotulo = "Cadastro:" },
     @{ Arquivo = "sobre.html"; Rotulo = "Sobre:" },
     @{ Arquivo = "home.html"; Rotulo = "Home provisória:" }

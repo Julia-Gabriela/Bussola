@@ -11,14 +11,13 @@
     <link rel="stylesheet" href="../style/cadastro.css">
 </head>
 <body>
+    <div class="scene" aria-hidden="true">
+        <img class="map" src="../assets/images/fundo-cadastro.png" alt="">
+        <div class="ring ring-lg"></div>
+        <div class="ring ring-md"></div>
+        <div class="ring ring-sm"></div>
+    </div>
     <div class="page">
-        <div class="scene" aria-hidden="true">
-            <img class="map" src="../assets/images/fundo-cadastro.png" alt="">
-            <div class="ring ring-lg"></div>
-            <div class="ring ring-md"></div>
-            <div class="ring ring-sm"></div>
-        </div>
-
         <main class="auth">
             <section class="card" aria-labelledby="cadastro-titulo">
                 <a class="brand-mark" href="index.html">
@@ -28,8 +27,8 @@
                 <p class="tagline">Sua ferramenta de decisão inteligente</p>
 
                 <div class="tabs" role="group" aria-label="Acesso">
-                    <span class="tab">Entrar</span>
-                    <span class="tab is-selected">Criar conta</span>
+                    <a class="tab" href="login.html">Entrar</a>
+                    <span class="tab is-selected" aria-current="page">Criar conta</span>
                 </div>
 
                 <form id="cadastro-form" class="form" novalidate>
@@ -78,7 +77,8 @@
                 <div class="success" id="sucesso" hidden>
                     <h2>Conta criada</h2>
                     <p id="sucesso-texto"></p>
-                    <p class="success-note">Quando a tela de login estiver disponível, você poderá entrar com este e-mail.</p>
+                    <p class="success-note">Você já pode entrar com este e-mail.</p>
+                    <a class="back-link" href="login.html">Ir para o login</a>
                     <a class="back-link" href="index.html">Voltar ao início</a>
                 </div>
             </section>
