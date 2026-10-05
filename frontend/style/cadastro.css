@@ -1,11 +1,14 @@
 .page {
+    position: relative;
+    z-index: 1;
     min-height: 100vh;
     min-height: 100svh;
 }
 
 .scene {
-    position: absolute;
+    position: fixed;
     inset: 0;
+    z-index: 0;
     overflow: hidden;
     pointer-events: none;
 }
@@ -26,11 +29,12 @@
 
 .map {
     position: absolute;
-    top: -166px;
-    left: calc(50% - 815px);
-    width: 2048px;
-    height: auto;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     max-width: none;
+    object-fit: cover;
+    object-position: 42% 40%;
     opacity: 0.05;
 }
 
@@ -122,6 +126,36 @@
     color: #130f0a;
     font-weight: 700;
     background: linear-gradient(167deg, #8a5a18 0%, #c9983d 100%);
+}
+
+a.tab,
+a.tab:visited {
+    color: #6a5840;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform 180ms ease;
+}
+
+a.tab:hover {
+    color: #c4b090;
+    transform: scale(1.04);
+}
+
+.forgot {
+    align-self: flex-end;
+    margin-top: -4px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #c4933f;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 19.5px;
+    letter-spacing: 0.16px;
+}
+
+.forgot:hover {
+    color: #e0b860;
 }
 
 .form {
@@ -322,6 +356,8 @@ input:focus-visible,
 .submit:focus-visible,
 .password-toggle:focus-visible,
 .back-link:focus-visible,
+a.tab:focus-visible,
+.forgot:focus-visible,
 .brand-mark:focus-visible,
 .legal:focus-visible,
 .legal-close:focus-visible,
@@ -539,7 +575,8 @@ input:focus-visible,
     .password-toggle,
     .legal,
     .legal-accept,
-    .legal-deny {
+    .legal-deny,
+    a.tab {
         transition: none;
     }
 
@@ -548,7 +585,8 @@ input:focus-visible,
     .brand-mark:hover,
     .password-toggle:hover,
     .legal-accept:hover,
-    .legal-deny:hover {
+    .legal-deny:hover,
+    a.tab:hover {
         transform: none;
     }
 }
