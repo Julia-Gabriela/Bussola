@@ -13,6 +13,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -37,5 +38,14 @@ public class AutenticacaoController {
     @SecurityRequirement(name = "bearerAuth")
     public UsuarioResponse usuarioAtual(@AuthenticationPrincipal UsuarioResponse usuario) {
         return usuario;
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "Encerrar a sessão atual")
+    @SecurityRequirement(name = "bearerAuth")
+    public ResponseEntity<Void> sair(@AuthenticationPrincipal UsuarioResponse usuario,
+            @RequestHeader("Authorization") String authorization) {
+        autenticacao.encerrarSessao(authorization.substring(7), usuario.id());
+        return ResponseEntity.noContent().cacheControl(CacheControl.noStore()).build();
     }
 }

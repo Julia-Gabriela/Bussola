@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doAnswer;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
@@ -18,6 +19,12 @@ import br.com.bussola.config.OpenApiConfig;
 import br.com.bussola.config.PasswordConfig;
 import br.com.bussola.config.RelogioConfig;
 import br.com.bussola.controller.AutenticacaoController;
+import br.com.bussola.controller.HomeController;
+import br.com.bussola.service.HomeService;
+import br.com.bussola.repository.DecisaoRepository;
+import br.com.bussola.model.entity.Decisao;
+import br.com.bussola.model.enums.StatusDecisao;
+import java.util.List;
 import br.com.bussola.exception.CadastroExceptionHandler;
 import br.com.bussola.model.entity.SessaoAutenticacao;
 import br.com.bussola.model.entity.Usuario;
@@ -50,7 +57,7 @@ import tools.jackson.databind.json.JsonMapper;
 class LoginFluxoTest {
     @Configuration
     @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
-    @Import({AutenticacaoController.class, AutenticacaoService.class, JwtTokenProvider.class,
+    @Import({AutenticacaoController.class, HomeController.class, HomeService.class, AutenticacaoService.class, JwtTokenProvider.class,
             SecurityConfig.class, PasswordConfig.class, RelogioConfig.class,
             CadastroExceptionHandler.class, OpenApiConfig.class})
     static class AplicacaoTeste {
@@ -60,6 +67,7 @@ class LoginFluxoTest {
     @Autowired private PasswordEncoder encoder;
     @MockitoBean private UsuarioRepository usuarios;
     @MockitoBean private SessaoAutenticacaoRepository sessoes;
+    @MockitoBean private DecisaoRepository decisoes;
     private final Map<String, SessaoAutenticacao> registros = new HashMap<>();
 
     @BeforeEach
@@ -78,6 +86,11 @@ class LoginFluxoTest {
         });
         when(sessoes.buscarParaAutenticar(anyString()))
                 .thenAnswer(inv -> Optional.ofNullable(registros.get(inv.getArgument(0))));
+        doAnswer(inv -> {
+            SessaoAutenticacao sessao = inv.getArgument(0);
+            registros.remove(sessao.getId());
+            return null;
+        }).when(sessoes).delete(any(SessaoAutenticacao.class));
     }
 
     private String entrar() throws Exception {
@@ -175,5 +188,69 @@ class LoginFluxoTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"email\":\"teste@example.com\",\"senha\":\"SenhaDeTeste123!\"}"))
                 .andExpect(status().isOk());
+    }
+
+    @Test
+    void homeExigeTokenENaoConfiaEmUsuarioIdDaRequisicao() throws Exception {
+        mvc.perform(get("/home")).andExpect(status().isUnauthorized());
+        var decisao = new Decisao();
+        decisao.setId(15L);
+        decisao.setTitulo("Escolha pessoal");
+        decisao.setEtapaAtual(3);
+        decisao.setDataAtualizacao(LocalDateTime.of(2026, 10, 7, 12, 0));
+        when(decisoes.findTop4ByUsuarioIdOrderByDataAtualizacaoDescIdDesc(1L)).thenReturn(List.of(decisao));
+        when(decisoes.countByUsuarioIdAndStatus(1L, StatusDecisao.EM_ANDAMENTO)).thenReturn(1L);
+        mvc.perform(get("/home?usuarioId=999").header("Authorization", "Bearer " + entrar()))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Cache-Control", containsString("no-store")))
+                .andExpect(jsonPath("$.usuario.id").value(1))
+                .andExpect(jsonPath("$.decisoesEmAndamento").value(1))
+                .andExpect(jsonPath("$.decisoesRecentes[0].id").value(15))
+                .andExpect(jsonPath("$.decisoesRecentes[0].progressoPercentual").value(50))
+                .andExpect(jsonPath("$.decisoesRecentes[0].usuario").doesNotExist())
+                .andExpect(jsonPath("$.usuario.senhaHash").doesNotExist());
+        verify(decisoes, never()).findTop4ByUsuarioIdOrderByDataAtualizacaoDescIdDesc(999L);
+    }
+
+    @Test
+    void homePermiteCorsLocalERecusaOutraOrigem() throws Exception {
+        for (String origem : List.of("http://localhost:8765", "http://127.0.0.1:8765")) {
+            mvc.perform(options("/home").header("Origin", origem)
+                            .header("Access-Control-Request-Method", "GET")
+                            .header("Access-Control-Request-Headers", "authorization"))
+                    .andExpect(status().isOk()).andExpect(header().string("Access-Control-Allow-Origin", origem));
+        }
+        mvc.perform(options("/home").header("Origin", "https://outro.example")
+                        .header("Access-Control-Request-Method", "GET"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void logoutRevogaSomenteOSessaoApresentada() throws Exception {
+        String primeira = entrar();
+        String segunda = entrar();
+        mvc.perform(post("/auth/logout").header("Authorization", "Bearer " + primeira))
+                .andExpect(status().isNoContent());
+        mvc.perform(get("/home").header("Authorization", "Bearer " + primeira))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(get("/home").header("Authorization", "Bearer " + segunda))
+                .andExpect(status().isOk());
+        assertEquals(1, registros.size());
+    }
+
+    @Test
+    void homeRecusaSessaoExpirada() throws Exception {
+        String token = entrar();
+        registros.values().iterator().next().setUltimaAtividade(LocalDateTime.now(ZoneOffset.UTC).minusMinutes(60));
+        mvc.perform(get("/home").header("Authorization", "Bearer " + token))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void logoutSemTokenNaoRevogaSessoes() throws Exception {
+        entrar();
+        mvc.perform(post("/auth/logout")).andExpect(status().isUnauthorized());
+        verify(sessoes, never()).delete(any(SessaoAutenticacao.class));
+        assertEquals(1, registros.size());
     }
 }

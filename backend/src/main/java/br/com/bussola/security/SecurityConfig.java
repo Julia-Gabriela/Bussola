@@ -45,6 +45,7 @@ public class SecurityConfig {
         cadastro.setAllowedHeaders(List.of("Content-Type", "Accept", "Authorization"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/auth/**", cadastro);
+        source.registerCorsConfiguration("/home", cadastro);
         return source;
     }
 }

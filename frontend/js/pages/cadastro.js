@@ -242,13 +242,12 @@ function tratarErroHttp(formulario, status, corpo) {
 }
 
 /**
- * Abre a Home provisória depois que a API confirma o cadastro.
- * home.html fica na mesma pasta que cadastro.html.
+ * O cadastro não devolve token; o usuário entra antes de acessar a Home protegida.
  *
  * @returns {void}
  */
-function irParaHome() {
-    window.location.href = "home.html";
+function irParaLogin() {
+    window.location.href = "login.html?cadastro=sucesso";
 }
 
 /**
@@ -280,7 +279,7 @@ async function enviarCadastro(evento) {
         });
         const corpo = await lerCorpo(resposta);
         if (resposta.status === 201) {
-            irParaHome();
+            irParaLogin();
             return;
         }
         tratarErroHttp(formulario, resposta.status, corpo);
