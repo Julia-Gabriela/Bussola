@@ -200,7 +200,7 @@ function tratarErroHttp(formulario, status, corpo) {
 }
 
 /**
- * Abre a Home provisória depois que a API confirma o login.
+ * Abre a Home autenticada depois que a API confirma o login.
  * home.html fica na mesma pasta que login.html.
  *
  * @returns {void}
@@ -291,6 +291,12 @@ function avisarRecuperacaoIndisponivel(formulario) {
  */
 function iniciar() {
     const formulario = document.getElementById("login-form");
+    const parametros = new URLSearchParams(window.location.search);
+    if (parametros.get("cadastro") === "sucesso") {
+        mostrarMensagemGlobal(formulario, "Conta criada. Entre para acessar sua Home.");
+    } else if (parametros.get("motivo") === "sessao-expirada") {
+        mostrarMensagemGlobal(formulario, "Sua sessão expirou ou foi encerrada. Entre novamente.");
+    }
     formulario.addEventListener("submit", enviarLogin);
     formulario.querySelector(".password-toggle").addEventListener("click", (evento) => {
         alternarSenha(evento.currentTarget);

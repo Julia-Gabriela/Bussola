@@ -53,6 +53,20 @@ public class AutenticacaoService {
                 "Bearer", INATIVIDADE_MAXIMA.toSeconds(), UsuarioResponse.de(usuario.get()));
     }
 
+    /** Revoga somente a sessão apresentada; outros dispositivos permanecem conectados. */
+    @Transactional
+    public void encerrarSessao(String token, Long usuarioId) {
+        var jwt = tokens.decodificar(token);
+        var sessao = sessoes.buscarParaAutenticar(jwt.getId());
+        if (sessao.isPresent()) {
+            if (!sessao.get().getUsuario().getId().equals(usuarioId)
+                    || !usuarioId.toString().equals(jwt.getSubject())) {
+                throw new BadCredentialsException("Sessão inválida ou expirada.");
+            }
+            sessoes.delete(sessao.get());
+        }
+    }
+
     @Transactional
     public UsuarioResponse autenticar(String token) {
         try {

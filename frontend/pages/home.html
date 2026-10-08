@@ -3,41 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Home — Bússola</title>
-    <style>
-        body {
-            margin: 0;
-            min-height: 100vh;
-            padding: 48px 24px;
-            background: #17120d;
-            color: #e0b860;
-            font-family: Georgia, "Times New Roman", serif;
-        }
-
-        .sair {
-            display: inline-block;
-            margin-top: 24px;
-            padding: 12px 20px;
-            border: 1px solid #e0b860;
-            border-radius: 9px;
-            color: #e0b860;
-            font: inherit;
-            text-decoration: none;
-        }
-
-        .sair:hover {
-            background: #2a1e0e;
-        }
-
-        .sair:focus-visible {
-            outline: 2px solid #e0b860;
-            outline-offset: 3px;
-        }
-    </style>
+    <title>Início — Bússola</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style/landing-page.css">
+    <link rel="stylesheet" href="../style/home.css">
+    <script src="../js/pages/home-integracoes.js" defer></script>
+    <script src="../js/pages/home.js" defer></script>
 </head>
-<body>
-    <h1>Home</h1>
-    <p>Oi</p>
-    <a class="sair" href="index.html">Sair</a>
+<body class="home-page">
+    <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
+    <div class="home-scene" aria-hidden="true">
+        <img src="../assets/images/fundo-cadastro.png" alt="" class="home-map">
+        <div class="home-ring"></div>
+    </div>
+    <header class="home-header">
+        <div class="home-header-inner">
+            <a href="home.html" class="home-brand" aria-label="Bússola — Início">
+                <span class="home-brand-mark"><img src="../assets/images/home/marca.png" alt=""></span><span>Bússola</span>
+            </a>
+            <nav class="home-nav" aria-label="Navegação principal">
+                <a href="home.html" class="home-nav-link is-current" aria-current="page"><img src="../assets/images/home/inicio.svg" alt="" width="15" height="15">Início</a>
+                <button type="button" class="home-nav-link" data-destino="historico"><img src="../assets/images/home/historico.svg" alt="" width="15" height="15">Histórico</button>
+            </nav>
+            <div class="home-account">
+                <button class="home-profile" type="button" id="perfil-botao" aria-expanded="false" aria-controls="perfil-menu" disabled>
+                    <span class="home-avatar" id="usuario-inicial" aria-hidden="true">…</span><span id="usuario-menu">Minha conta</span>
+                    <img src="../assets/images/home/menu.svg" alt="" width="14" height="14">
+                </button>
+                <div class="home-profile-panel" id="perfil-menu" hidden>
+                    <strong id="perfil-nome"></strong><span id="perfil-email"></span>
+                    <button type="button" data-destino="perfil">Meu perfil</button>
+                </div>
+                <button type="button" class="home-exit" id="sair" aria-label="Sair da conta" title="Sair da conta"><img src="../assets/images/home/sair.svg" alt="" width="16" height="16"></button>
+            </div>
+        </div>
+    </header>
+    <main class="home-dashboard" id="conteudo" aria-busy="true" data-node-id="2:325">
+        <div class="home-intro">
+            <div class="home-greeting">
+                <p class="home-welcome">Seu espaço de decisões</p>
+                <h1>Olá, <span id="usuario-nome">…</span>.</h1>
+                <p class="home-summary" id="resumo">Carregando suas decisões…</p>
+            </div>
+            <time class="home-date" id="data-hoje"></time>
+        </div>
+        <div class="home-feedback" id="home-erro" role="alert" hidden>
+            <p id="home-erro-texto"></p><button type="button" class="home-secondary" id="tentar-novamente">Tentar novamente</button>
+        </div>
+        <section class="home-stats" aria-label="Resumo das decisões">
+            <article class="home-stat">
+                <span class="home-stat-icon is-complete"><img src="../assets/images/home/concluidas.svg" alt="" width="22" height="22"></span>
+                <div><h2>Decisões concluídas</h2><p id="total-concluidas">—</p></div>
+            </article>
+            <article class="home-stat">
+                <span class="home-stat-icon"><img src="../assets/images/home/relogio.svg" alt="" width="22" height="22"></span>
+                <div><h2>Em andamento</h2><p id="total-andamento">—</p></div>
+            </article>
+        </section>
+        <div class="home-columns">
+            <section class="home-recent home-panel" aria-labelledby="recentes-titulo">
+                <div class="home-section-heading">
+                    <h2 id="recentes-titulo">Decisões recentes</h2>
+                    <button type="button" class="home-text-link" data-destino="historico">Ver todas <img src="../assets/images/home/seta-ver-todas.svg" alt="" width="14" height="14"></button>
+                </div>
+                <p id="decisoes-status" class="home-empty" role="status">Buscando suas decisões…</p>
+                <ul class="home-recent-list" id="decisoes-recentes" hidden></ul>
+            </section>
+            <aside class="home-actions" aria-label="Acompanhar decisões">
+                <section class="home-new home-panel" aria-labelledby="nova-titulo">
+                    <img src="../assets/images/home/bussola.svg" alt="" width="28" height="28">
+                    <h2 id="nova-titulo">Nova decisão</h2>
+                    <p>Organize suas opções e encontre o próximo passo.</p>
+                    <button type="button" class="home-primary" data-destino="novaDecisao"><img src="../assets/images/home/mais.svg" alt="" width="16" height="16">Iniciar decisão</button>
+                </section>
+                <section class="home-ongoing home-panel" aria-labelledby="andamento-titulo">
+                    <h2 id="andamento-titulo"><img src="../assets/images/home/progresso.svg" alt="" width="16" height="16">Em andamento</h2>
+                    <p class="home-ongoing-empty" id="andamento-vazio">Carregando seu progresso…</p>
+                    <div id="andamento-conteudo" hidden>
+                        <p class="home-ongoing-title" id="andamento-nome"></p>
+                        <div class="home-progress-label"><span id="andamento-etapa"></span><span id="andamento-percentual"></span></div>
+                        <progress id="andamento-progresso" max="100" value="0" aria-label="Progresso da decisão"></progress>
+                        <button type="button" class="home-secondary" id="continuar">Continuar <img src="../assets/images/home/seta-continuar.svg" alt="" width="14" height="14"></button>
+                    </div>
+                </section>
+            </aside>
+        </div>
+    </main>
+    <dialog class="home-dialog" id="aviso-integracao" aria-labelledby="aviso-titulo" aria-describedby="aviso-texto">
+        <h2 id="aviso-titulo">Em breve</h2><p id="aviso-texto"></p>
+        <form method="dialog"><button class="home-primary" autofocus>Entendi</button></form>
+    </dialog>
+    <noscript><p class="home-noscript">Ative o JavaScript para acessar sua conta e carregar suas decisões.</p></noscript>
 </body>
 </html>
