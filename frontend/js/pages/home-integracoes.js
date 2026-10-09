@@ -7,8 +7,8 @@
  */
 window.BUSSOLA_HOME_ROTAS = {
     historico: null,
-    novaDecisao: null,
-    continuarDecisao: null,
+    novaDecisao: "nova-decisao.html",
+    continuarDecisao: "nova-decisao.html",
     resultadoDecisao: null,
     perfil: null,
     ...window.BUSSOLA_HOME_ROTAS

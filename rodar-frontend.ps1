@@ -48,7 +48,8 @@ $uteis = @(
     @{ Arquivo = "login.html"; Rotulo = "Login:" },
     @{ Arquivo = "cadastro.html"; Rotulo = "Cadastro:" },
     @{ Arquivo = "sobre.html"; Rotulo = "Sobre:" },
-    @{ Arquivo = "home.html"; Rotulo = "Home provisória:" }
+    @{ Arquivo = "home.html"; Rotulo = "Home:" },
+    @{ Arquivo = "nova-decisao.html"; Rotulo = "Nova decisão:" }
 )
 
 foreach ($item in $uteis) {

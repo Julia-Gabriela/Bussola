@@ -7,6 +7,8 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DecisaoRepository extends JpaRepository<Decisao, Long> {
+    Optional<Decisao> findByIdAndUsuarioId(Long id, Long usuarioId);
+
     long countByUsuarioIdAndStatus(Long usuarioId, StatusDecisao status);
 
     List<Decisao> findTop4ByUsuarioIdOrderByDataAtualizacaoDescIdDesc(Long usuarioId);
