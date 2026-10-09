@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../style/landing-page.css">
     <link rel="stylesheet" href="../style/home.css">
     <link rel="stylesheet" href="../style/nova-decisao.css">
+    <script src="../js/pages/decisao-api.js" defer></script>
     <script src="../js/pages/nova-decisao.js" defer></script>
 </head>
 <body class="home-page">
@@ -23,6 +24,7 @@
         </div>
     </header>
     <main id="conteudo" class="nova-decisao">
+        <p class="campo-ajuda">Etapa 1 de 6 · Contextualização</p>
         <h1>Qual decisão você quer explorar?</h1>
         <p class="introducao">Escreva com suas próprias palavras — não precisa ser perfeito. A Bússola te ajuda a estruturar qualquer escolha difícil passo a passo.</p>
         <form id="nova-decisao-form" class="decisao-card">
@@ -32,7 +34,8 @@
                 <p id="titulo-ajuda" class="campo-ajuda">Tente formular como uma pergunta — fica mais fácil de analisar.</p>
                 <label for="contexto">Contexto <span>(opcional)</span></label>
                 <textarea id="contexto" name="contexto" maxlength="16000" rows="5" placeholder="Conte um pouco sobre sua situação e o que está em jogo."></textarea>
-                <button class="home-primary" type="submit" id="salvar">Começar análise →</button>
+                <button class="home-primary" type="submit" id="salvar">Salvar e continuar →</button>
+                <button class="home-secondary" type="submit" id="salvar-depois">Salvar para depois</button>
             </fieldset>
             <p id="mensagem" role="status" aria-live="polite">Verificando sua sessão…</p>
             <a id="ver-decisao" class="home-primary" href="home.html" hidden>Ver na Home</a>
@@ -45,7 +48,7 @@
             <button type="button">Fazer pós-graduação agora ou esperar?</button>
             <button type="button">Dividir apartamento com amigos ou morar sozinha?</button>
         </section>
-        <a class="voltar" href="home.html">← Voltar ao início</a>
+        <a class="voltar" href="home.html">Ir para a Home</a>
     </main>
 </body>
 </html>
