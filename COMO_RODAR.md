@@ -1,12 +1,60 @@
 # Como rodar o Bússola
 
-Este guia é para quem vai executar o projeto pela primeira vez.
+## Para ligar no dia a dia
 
-## Configuração adicional para o login
+Se você já configurou o projeto neste computador, faça só estes passos:
 
-O backend agora precisa de `JWT_SECRET`, além das variáveis do MySQL. É uma chave aleatória para assinar os tokens; não é a senha do usuário nem a senha do banco.
+1. **MySQL:** precisa estar ligado. No PowerShell, `Get-Service *mysql*` deve mostrar `Running`. Se estiver parado, inicie o serviço pelo aplicativo Serviços do Windows.
+2. **Backend no IntelliJ:** abra o projeto, selecione **BussolaApplication** no topo e clique em **▶**. Após atualizar o código, sincronize **pom.xml → Maven → Sync Project** e reinicie a aplicação. Aguarde **Started BussolaApplication** e a porta **8080**. Deixe rodando.
+3. **Frontend:** abra um PowerShell na pasta raiz do projeto e execute:
 
-**Onde:** em um PowerShell normal. Na primeira configuração deste computador, execute o bloco abaixo. Ele cria uma chave e a guarda nas variáveis do seu usuário do Windows, sem exibir o valor e sem criar arquivo no projeto.
+```powershell
+.\.\rodar-frontend.ps1
+```
+
+4. Deixe esse terminal aberto e acesse **http://127.0.0.1:8765/pages/login.html**. Entre com um usuário cadastrado no Bússola, não com a senha do MySQL.
+
+Na máquina da Júlia, para entrar na pasta raiz:
+
+```powershell
+cd "D:\Faculdade\7_semestre\Solucoes_Computacionais\Bussola"
+```
+
+Se o PowerShell bloquear o script, use este comando na raiz:
+
+```powershell
+python -m http.server 8765 --directory frontend
+```
+
+**Para parar:** botão ■ no IntelliJ e **Ctrl + C** no terminal do frontend. Fechar a aba do navegador não desliga os servidores.
+
+## Links úteis
+
+| O que abrir | Endereço |
+| --- | --- |
+| Login | http://127.0.0.1:8765/pages/login.html |
+| Cadastro | http://127.0.0.1:8765/pages/cadastro.html |
+| Home autenticada | http://127.0.0.1:8765/pages/home.html |
+| Nova decisão | http://127.0.0.1:8765/pages/nova-decisao.html |
+| Sobre o projeto | http://127.0.0.1:8765/pages/sobre.html |
+| Swagger: testar a API | http://localhost:8080/swagger-ui/index.html |
+
+Para testar pelo **Swagger**, basta MySQL e backend. Para usar login, cadastro e Home pelas **telas**, ligue também o frontend. Abrir o HTML por `file:///` não substitui o servidor da porta 8765.
+
+## Primeira configuração neste computador
+
+Só precisa fazer esta parte se o projeto ainda não estiver configurado.
+
+1. Instale **JDK 25**, **MySQL 8**, **Python 3** e Git. Confira `java -version` e `python --version` no PowerShell.
+2. Em uma ferramenta conectada ao MySQL, como o Workbench, crie o banco se ele ainda não existir:
+
+```sql
+CREATE DATABASE bussola CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+```
+
+SQL deve ser executado no Workbench, não no PowerShell. As tabelas são criadas pelas migrations do Flyway ao iniciar o backend. Não altere migrations já aplicadas nem recrie um banco existente.
+
+3. Gere a chave JWT uma vez, em um PowerShell normal. Este bloco salva a chave no usuário do Windows sem exibi-la:
 
 ```powershell
 $env:JWT_SECRET = [Environment]::GetEnvironmentVariable("JWT_SECRET", "User")
@@ -21,1328 +69,84 @@ if (-not $env:JWT_SECRET) {
 "JWT_SECRET configurada"
 ```
 
-Depois, feche completamente e abra novamente o IntelliJ para ele herdar a variável. Na configuração `BussolaApplication`, mantenha `Include system environment variables` habilitado e a sua `DB_PASSWORD` configurada. Se rodar pelo PowerShell acima, a chave já está disponível nessa janela.
+4. Feche completamente e abra novamente o IntelliJ para reconhecer a variável. Configure o projeto e o Maven com **JDK 25**.
+5. Em **Run → Edit Configurations**, selecione ou crie uma configuração **Application**:
+   - Nome: `BussolaApplication`.
+   - Main class: `br.com.bussola.BussolaApplication`.
+   - Módulo: `bussola`; JDK: **25**.
+   - **Environment variables:** adicione `DB_PASSWORD` com a senha local do MySQL.
+   - Mantenha **Include system environment variables** habilitado e **Store as project file** desmarcado.
 
-Não copie o valor da chave para o Git, prints ou mensagens. Cada integrante pode gerar sua própria chave local. Trocar a chave invalida os tokens anteriores. Uma chave fornecida por outro ambiente deve estar em Base64 e representar pelo menos 32 bytes aleatórios.
+Os padrões são banco `bussola` em `localhost:3306` e usuário `root`. Se forem diferentes, configure também `DB_URL` e `DB_USERNAME`. Não coloque senhas ou tokens no código, Git ou prints. A chave JWT não é a senha do banco; trocá-la invalida os tokens anteriores.
 
-Na próxima inicialização, o Flyway aplica `V2__Sessoes_autenticacao.sql` automaticamente, criando `sessoes_autenticacao` sem recriar as tabelas anteriores.
+Depois, siga **Para ligar no dia a dia**, no início deste arquivo.
 
-## Testar o login no Swagger
+## Testar nova decisão no Swagger
 
-**Pré-requisitos:** MySQL e backend ligados. O frontend não é necessário para este teste.
+1. Inicie o backend atualizado e abra o Swagger.
+2. Se não tiver usuário, execute **POST /auth/cadastro → Try it out → Execute**. Espere **201**.
+3. Execute **POST /auth/login** com o e-mail e a senha cadastrados. Espere **200**.
+4. Copie o valor de `accessToken`, clique em **Authorize** e cole sem aspas e sem escrever `Bearer` antes.
+5. Abra **POST /decisoes → Try it out** e envie:
 
-1. Sincronize o Maven no IntelliJ após atualizar o projeto e reinicie `BussolaApplication`.
-2. Aguarde `Started BussolaApplication` e abra http://localhost:8080/swagger-ui/index.html.
-3. Se ainda não tiver usuário, execute `POST /auth/cadastro` com dados de teste e guarde a senha usada.
-4. Abra `POST /auth/login` → **Try it out**. Informe o e-mail e a senha do cadastro, não as credenciais do MySQL.
-5. Clique em **Execute**. O resultado esperado é **200**, com `accessToken`, `tokenType: Bearer`, `inatividadeMaximaSegundos: 3600` e os dados públicos do usuário.
-6. Copie somente o valor de `accessToken`. Clique em **Authorize**, cole o token sem escrever `Bearer` antes e confirme.
-7. Execute `GET /auth/me`. O resultado esperado é **200** com os dados do usuário autenticado. Sem token, com token alterado ou sessão expirada, a resposta é **401**.
-
-E-mail inexistente e senha incorreta retornam o mesmo **401**, com a mensagem “E-mail ou senha inválidos.” Campos ausentes ou e-mail malformado retornam **400**.
-
-A sessão expira após 60 minutos sem requisições autenticadas. Cada requisição autenticada válida atualiza a última atividade no banco (UTC). Abrir uma página estática ou apenas mover o mouse não renova a sessão. O JWT identifica a sessão; sua assinatura sozinha não autoriza acesso. Ele não contém prazo fixo `exp`: o backend sempre consulta a sessão persistida e aplica o limite por inatividade. Uma sessão expirada exige novo login. Os dados das decisões permanecem salvos.
-
-O login também existe na tela `frontend/pages/login.html`. Ela envia `POST /auth/login`. Quando a resposta é **200**, o navegador guarda o token em `sessionStorage`, na chave `bussola.sessao`, e abre `home.html`. A senha não é gravada. Essa chave fica só na aba atual e some quando a aba fecha. A Home continua provisória e não consulta `GET /auth/me`. O botão **Sair** da Home volta para `index.html`. Ele não apaga `bussola.sessao` nem revoga a sessão no servidor. Logout ainda não foi implementado. Fechar **Authorize** no Swagger também não revoga a sessão.
-
-Para executar apenas os testes que não exigem banco, no PowerShell dentro de `backend`:
-
-```powershell
-.\mvnw.cmd "-Dtest=UsuarioServiceTest,UsuarioControllerTest,CadastroCorsTest,SwaggerUiTest,AutenticacaoServiceTest,LoginFluxoTest" test
+```json
+{
+  "titulo": "Devo mudar de emprego?",
+  "contexto": "Recebi uma proposta em outra cidade."
+}
 ```
 
-Espere `BUILD SUCCESS`. Os testes usam chaves exclusivas de teste e simulam os repositories; não criam usuários no MySQL. O comando `.\mvnw.cmd test` também executa o teste de contexto completo. Para esse comando, o MySQL precisa estar disponível e as quatro variáveis do backend precisam estar configuradas: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` e `JWT_SECRET`. `BUILD SUCCESS` aqui confirma os testes. Não use só essa frase para saber se `spring-boot:run` deixou o backend no ar.
+6. Espere **201** com um `id`, status `EM_ANDAMENTO` e `etapaAtual: 1`. O título é obrigatório (até 200 caracteres). O contexto é opcional (até 16.000 caracteres).
+7. Use esse `id` em **GET /decisoes/{id}**: deve retornar **200**. Uma decisão inexistente ou de outro usuário retorna **404**. Sem autenticação, as rotas retornam **401**.
+8. Execute **GET /home** ou atualize a Home na aba em que fez login para ver o resumo atualizado.
 
-Se esta é a primeira vez neste computador, siga [Primeira configuração](#primeira-configuração) do começo ao fim.
+O dono da decisão vem do token; não envie `usuarioId`, status ou etapa. A Home já consulta as decisões do próprio usuário. O cálculo de progresso da Home continua com seu contrato existente de 6 etapas; criar uma decisão não conclui a contextualização nem libera etapas futuras.
 
-Se a máquina já foi preparada e você só quer ligar o projeto de novo, vá para [Rodar o Bússola normalmente](#rodar-o-bússola-normalmente).
+Pelas telas: faça login → na Home, clique em **Iniciar decisão** → preencha o título e, se quiser, o contexto → **Começar análise** → **Ver na Home**. A decisão será salva no usuário autenticado. Na Home, **Continuar** e o cartão da decisão em andamento abrem o título e o contexto salvos. Essa consulta não cria outra decisão. Edição do contexto, avanço de etapas e análises ainda serão implementados. Após salvar, a URL guarda o ID: recarregar a página abre a decisão salva. Se a conexão falhar durante o envio, use **Ver na Home** para conferir antes de iniciar outra. Repetir um POST válido pelo Swagger cria outra decisão.
 
-Se você quer abrir uma tela só, vá para [Quero testar só uma tela. O que preciso rodar?](#quero-testar-só-uma-tela-o-que-preciso-rodar).
+O login expira após **60 minutos sem requisições autenticadas**. Quando receber 401 por expiração, faça login de novo. O botão **Sair** da Home chama `POST /auth/logout` e remove a sessão local; fechar Authorize no Swagger apenas remove o token da interface.
 
-## O que eu faço agora?
+## Testes automatizados
 
-A ordem prática é esta:
-
-1. Abrir o PowerShell.
-2. Ver se o MySQL está ligado.
-3. Criar o banco `bussola` numa ferramenta de MySQL, não no PowerShell.
-4. Informar as variáveis do backend no PowerShell: `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` e `JWT_SECRET`. As três primeiras são do MySQL. `JWT_SECRET` é a chave da autenticação e se configura uma vez, na seção [Configuração adicional para o login](#configuração-adicional-para-o-login).
-5. Iniciar o backend e deixar essa janela aberta.
-6. Abrir outro PowerShell, iniciar o frontend e deixar essa segunda janela aberta.
-7. Abrir o navegador em `http://127.0.0.1:8765/pages/index.html`.
-
-## Antes de começar: PowerShell não é MySQL
-
-PowerShell e MySQL são programas diferentes. O lugar onde você cola o comando muda o resultado.
-
-**PowerShell** é a janela preta ou azul do Windows. Nela você executa comandos do Windows e os comandos que iniciam o projeto.
-
-Exemplos de comandos de PowerShell:
-
-```powershell
-Get-Service *mysql*
-```
-
-```powershell
-Test-NetConnection localhost -Port 3306
-```
+No PowerShell, entre em `backend` a partir da raiz e execute os testes sem banco:
 
 ```powershell
 cd backend
+.\mvnw.cmd "-Dtest=*Test" test
 ```
+
+Espere **BUILD SUCCESS**. Esse comando seleciona as classes terminadas em `Test`, incluindo nova decisão, autenticação, Home e Swagger.
+
+Para rodar também `BussolaApplicationTests` (contexto completo), configure as variáveis do banco e JWT nesse terminal e use `.\mvnw.cmd test`. Esse teste conecta ao MySQL e pode aplicar migrations pendentes.
+
+## Alternativa: backend pelo PowerShell
+
+Use isto se preferir não iniciar pelo IntelliJ. Na raiz, execute:
 
 ```powershell
-.\mvnw.cmd spring-boot:run
-```
-
-**SQL** é a linguagem usada dentro de uma ferramenta já conectada ao MySQL.
-
-Exemplos de SQL:
-
-```sql
-CREATE DATABASE bussola;
-```
-
-```sql
-USE bussola;
-```
-
-```sql
-SHOW TABLES;
-```
-
-```sql
-SELECT id, email FROM usuarios;
-```
-
-Não digite `USE bussola;`, `SELECT` nem `SHOW TABLES;` diretamente no PowerShell. Esses comandos precisam ser executados na ferramenta conectada ao MySQL. Se você colar SQL no PowerShell, o Windows responde que não reconhece o comando. Isso não significa que o banco quebrou.
-
-## Como copiar um comando
-
-Quando o guia mostrar um comando dentro de uma caixa, copie somente o texto do comando.
-
-Não copie a palavra `powershell`, a palavra `sql`, nem os símbolos que existem só para formatar este arquivo.
-
-Se a caixa mostrar:
-
-```powershell
-Get-Service *mysql*
-```
-
-copie somente:
-
-```text
-Get-Service *mysql*
-```
-
-Cole na janela indicada naquele passo e pressione Enter.
-
-## Como o sistema funciona
-
-O Bússola, para abrir no navegador e gravar um cadastro, precisa destas quatro partes ao mesmo tempo:
-
-```text
-MySQL
-↓
-Backend Spring Boot
-↓
-Frontend
-↓
-Navegador
-```
-
-- **MySQL** guarda os dados.
-- **Backend** recebe o que o frontend envia e conversa com o banco.
-- **Frontend** contém as páginas que a pessoa vê.
-- **Navegador** é onde a pessoa acessa o Bússola. Não é o PowerShell.
-
-Cada parte usa um número, chamado porta. Você não precisa aprender redes. Esse número só serve para saber onde cada parte está funcionando:
-
-- MySQL → porta `3306`
-- Backend → porta `8080`
-- Frontend → porta `8765`
-
-`localhost` e `127.0.0.1` significam este computador. Não é um site na internet.
-
-## Pré-requisitos
-
-Instale antes de começar:
-
-- Git
-- MySQL 8
-- JDK 25
-- um navegador
-- Python 3, usado só para servir as páginas do frontend
-
-O Maven não precisa ser instalado à parte. O projeto traz o Maven Wrapper na pasta `backend` (`mvnw` e `mvnw.cmd`). O comando `.\mvnw.cmd` usa esse Maven do próprio projeto.
-
-O `pom.xml` configura Java 25 e Spring Boot 4.1.1. A aplicação usa MySQL 8. Não é obrigatório ter exatamente uma revisão intermediária, como 8.0.46.
-
-# Primeira configuração
-
-Esta parte prepara a máquina para executar o projeto. Em geral você faz isso uma vez.
-
-Antes de executar o backend pela primeira vez, além do MySQL e das variáveis do banco, este computador precisa da `JWT_SECRET`. Ela não é senha do MySQL nem senha de usuário do Bússola. A geração e o armazenamento estão em [Configuração adicional para o login](#configuração-adicional-para-o-login), no início deste guia. Faça esse bloco uma vez, de preferência antes do passo 5. O passo 5 não gera a chave de novo: ele só carrega a chave já salva no usuário do Windows.
-
-Quando terminar e tudo estiver funcionando, nas próximas vezes use só o [Resumo rápido — toda vez que for rodar](#resumo-rápido--toda-vez-que-for-rodar).
-
-## Passo 1 — Abrir o PowerShell
-
-**Onde:** no Windows, não dentro do MySQL.
-
-1. Abra o menu Iniciar.
-2. Pesquise por `PowerShell`.
-3. Abra **Windows PowerShell**.
-
-Não abra como Administrador agora. Se um comando específico pedir permissão de administrador, o guia avisa naquele momento.
-
-**Como saber que deu certo:** aparece uma linha parecida com `PS C:\Users\...>` e o cursor piscando. Essa linha é o convite para digitar. Ela se chama prompt.
-
-**O que faço depois:** siga para o passo 2, nesta mesma janela.
-
-**Deixo esta janela aberta?** Sim. Você ainda vai usá-la.
-
-## Passo 2 — Verificar o MySQL
-
-**Onde:** no PowerShell que você acabou de abrir.
-
-**O que digitar:**
-
-```powershell
-Get-Service *mysql*
-```
-
-Um resultado possível é:
-
-```text
-Status   Name      DisplayName
-------   ----      -----------
-Running  MySQL80   MySQL80
-```
-
-`MySQL80` é só um exemplo. O nome na sua máquina pode ser outro. Olhe a coluna `Name`.
-
-**Como saber o que fazer:**
-
-- Se apareceu `Running` → o MySQL está ligado. Continue para o passo 3.
-- Se apareceu `Stopped` → o MySQL existe, mas está parado. Inicie com o nome real da coluna `Name`. Se a coluna mostrou `MySQL80`, o comando é:
-
-```powershell
-Start-Service MySQL80
-```
-
-Troque `MySQL80` pelo `Name` que apareceu na sua tela. Se o PowerShell recusar por falta de permissão, feche-o, abra **Windows PowerShell** como Administrador só para este `Start-Service`, e volte ao PowerShell normal em seguida.
-
-- Se nenhum serviço aparecer → pare e vá para [Problemas comuns](#1-get-service-não-encontra-mysql).
-
-**Deixo esta janela aberta?** Sim.
-
-## Passo 3 — Testar a porta 3306
-
-**Onde:** no mesmo PowerShell.
-
-**O que digitar:**
-
-```powershell
-Test-NetConnection localhost -Port 3306
-```
-
-Vão aparecer várias linhas. Você não precisa entender todas. Procure somente esta:
-
-```text
-TcpTestSucceeded : True
-```
-
-**Como saber o que fazer:**
-
-- Se apareceu `TcpTestSucceeded : True` → deu certo. Continue.
-- Se apareceu `TcpTestSucceeded : False` → pare e vá para [Problemas comuns](#3-tcptestsucceeded-false).
-
-Esse teste não verifica usuário nem senha. Ele só confirma que existe um serviço respondendo na porta `3306`.
-
-**Deixo esta janela aberta?** Sim.
-
-## O comando mysql não é obrigatório
-
-Não use `mysql -u root -p` como etapa obrigatória.
-
-Se você digitar isso e aparecer:
-
-```text
-mysql : O termo 'mysql' não é reconhecido...
-```
-
-isso não significa que o servidor MySQL está desligado. Significa que o programa cliente `mysql` não está disponível no PowerShell.
-
-Se `Get-Service *mysql*` mostrou `Running` e `TcpTestSucceeded : True`, o servidor MySQL está disponível. Continue. Não pare por causa dessa mensagem.
-
-O comando abaixo é um teste opcional, só para quem já tem o cliente `mysql` configurado:
-
-```powershell
-mysql -u root -p
-```
-
-O terminal pede a senha. O que você digita pode não aparecer. Isso é normal. Pressione Enter depois de digitar. Para sair desse cliente, digite `exit`.
-
-## Passo 4 — Criar ou conferir o banco
-
-**ATENÇÃO: OS COMANDOS DESTA ETAPA SÃO SQL. NÃO COLE ESTES COMANDOS NO POWERSHELL.**
-
-**Onde:** numa ferramenta conectada ao MySQL. Este projeto não exige uma ferramenta específica. Abra a que você já usa para administrar o MySQL. Se o MySQL Workbench estiver instalado, ele serve. Ele não é obrigatório.
-
-**O que fazer se o banco ainda não existir.** Execute somente:
-
-```sql
-CREATE DATABASE bussola
-CHARACTER SET utf8mb4
-COLLATE utf8mb4_0900_ai_ci;
-```
-
-Isso cria o banco vazio. Não crie tabelas na mão.
-
-**O que fazer se o banco já existir.** Não execute `CREATE DATABASE` de novo. Execute:
-
-```sql
-USE bussola;
-```
-
-```sql
-SHOW TABLES;
-```
-
-**Como saber que deu certo:** a ferramenta mostra o banco `bussola`. Se `SHOW TABLES` não listar tabelas, isso é normal antes da primeira subida do backend.
-
-O Flyway, que faz parte do backend, cria as tabelas quando o backend conecta nesse banco vazio. O arquivo `backend/src/main/resources/db/migration/V1__Bussola.sql` cria o domínio principal. Na mesma subida, o Flyway também aplica `V2__Sessoes_autenticacao.sql`, que cria `sessoes_autenticacao`, sem recriar as tabelas da V1. A lista das tabelas está em [Tabelas](#tabelas).
-
-**O que faço depois:** volte para o PowerShell. Deixe a ferramenta do MySQL como está. Você pode fechá-la e abri-la de novo mais tarde para consultar os dados.
-
-**Deixo o PowerShell aberto?** Sim. A próxima etapa é nele.
-
-## Passo 5 — Voltar para o PowerShell e informar as variáveis do backend
-
-Agora volte para o PowerShell.
-
-O backend atual usa quatro variáveis:
-
-- `DB_URL`, `DB_USERNAME` e `DB_PASSWORD` são do MySQL.
-- `JWT_SECRET` é da autenticação JWT. Não é senha do banco, não é senha de usuário do Bússola, não deve ser commitada, não deve ser escrita em `application.properties` e este guia não traz um valor de exemplo.
-
-**Onde:** no PowerShell que será usado para executar o backend. Se você ainda está na janela dos passos 1 a 3, use essa mesma janela.
-
-**O que digitar,** uma linha de cada vez, pressionando Enter depois de cada uma. Primeiro as três do MySQL:
-
-```powershell
-$env:DB_URL="jdbc:mysql://localhost:3306/bussola"
-```
-
-```powershell
-$env:DB_USERNAME="root"
-```
-
-```powershell
-$env:DB_PASSWORD="SUA_SENHA_DO_MYSQL"
-```
-
-O que cada linha do MySQL significa:
-
-- `DB_URL` é o endereço do banco. Nesta linha ele aponta para o MySQL deste computador, porta `3306`, banco `bussola`.
-- `DB_USERNAME` é o usuário usado para acessar o MySQL. No exemplo, `root`.
-- `DB_PASSWORD` é a senha desse usuário no MySQL.
-
-`SUA_SENHA_DO_MYSQL` deve ser substituída pela senha real do MySQL daquela máquina. Apague o texto `SUA_SENHA_DO_MYSQL`, inclusive as aspas em volta dele continuam, e coloque a sua senha no lugar. Exemplo de formato, ainda sem senha verdadeira: `$env:DB_PASSWORD="a-senha-deste-computador"`.
-
-Não coloque senha real neste documento. Não compartilhe a senha. Não coloque a senha no Git. Não coloque a senha em `application.properties`. Não faça commit da senha.
-
-Depois, carregue a `JWT_SECRET` já salva no usuário do Windows. Esta linha não gera chave nova e não mostra o valor:
-
-```powershell
+$env:DB_URL = "jdbc:mysql://localhost:3306/bussola"
+$env:DB_USERNAME = "root"
+$senhaBanco = Read-Host "Senha do MySQL" -AsSecureString
+$env:DB_PASSWORD = [System.Net.NetworkCredential]::new("", $senhaBanco).Password
 $env:JWT_SECRET = [Environment]::GetEnvironmentVariable("JWT_SECRET", "User")
-```
-
-Se a conferência abaixo disser `JWT_SECRET não configurada`, pare. Não inicie o backend. Volte a [Configuração adicional para o login](#configuração-adicional-para-o-login), execute o bloco que gera e guarda a chave, e só então repita a linha de carregamento nesta janela.
-
-O arquivo `application.properties` lê estas quatro variáveis. Se `DB_URL` não for definida, o padrão é `jdbc:mysql://localhost:3306/bussola`. Se `DB_USERNAME` não for definida, o padrão é `root`. `DB_PASSWORD` não tem valor padrão. `JWT_SECRET` também não tem valor padrão: a configuração usa `${JWT_SECRET}`. Sem essa variável no ambiente em que o Spring inicia, o backend não sobe.
-
-**Como saber que deu certo:** o PowerShell volta ao prompt e não mostra uma mensagem de erro vermelha. A conferência do próximo bloco confirma sem revelar a senha nem a chave.
-
-**Deixo esta janela aberta?** Sim. É obrigatório. Veja a seção seguinte.
-
-## Conferir sem mostrar a senha
-
-**Onde:** no mesmo PowerShell em que você acabou de definir as variáveis do backend.
-
-**O que digitar:**
-
-```powershell
-$env:DB_URL
-```
-
-```powershell
-$env:DB_USERNAME
-```
-
-```powershell
-if ($env:DB_PASSWORD) { "DB_PASSWORD configurada" } else { "DB_PASSWORD não configurada" }
-```
-
-```powershell
-if ($env:JWT_SECRET) { "JWT_SECRET configurada" } else { "JWT_SECRET não configurada" }
-```
-
-**Resultado esperado:**
-
-```text
-jdbc:mysql://localhost:3306/bussola
-root
-DB_PASSWORD configurada
-JWT_SECRET configurada
-```
-
-Se aparecer `DB_PASSWORD não configurada`, repita a linha da senha. A senha real precisa estar entre aspas.
-
-Se aparecer `JWT_SECRET não configurada`, não inicie o backend. Volte a [Configuração adicional para o login](#configuração-adicional-para-o-login).
-
-Não execute `$env:DB_PASSWORD` sozinho. Não execute `$env:JWT_SECRET` sozinho. Esses comandos exibiriam o segredo na tela.
-
-## A mesma janela
-
-`DB_URL`, `DB_USERNAME` e `DB_PASSWORD` existem somente na janela do PowerShell em que foram digitadas. Se você fechar essa janela e abrir outra, essas três somem. Será preciso digitá-las de novo antes de `.\mvnw.cmd test` ou `.\mvnw.cmd spring-boot:run`.
-
-`JWT_SECRET` funciona de outro jeito. A [Configuração adicional para o login](#configuração-adicional-para-o-login) grava a chave como variável do usuário do Windows. Ela continua existindo depois que o PowerShell fecha. Uma janela que já estava aberta antes dessa gravação, porém, pode não recebê-la sozinha. Por isso, antes de iniciar o backend, carregue a chave nesta janela:
-
-```powershell
-$env:JWT_SECRET = [Environment]::GetEnvironmentVariable("JWT_SECRET", "User")
-```
-
-Não feche a janela em que o backend será iniciado.
-
-## Conferir o Java
-
-**Onde:** no mesmo PowerShell.
-
-**O que digitar:**
-
-```powershell
-java -version
-```
-
-**Como saber que deu certo:** o texto mostra a versão `25`.
-
-Se aparecer que `java` não é reconhecido, ou se a versão for outra, pare e vá para [Problemas comuns](#13-java-não-é-reconhecido). O backend não inicia sem o JDK 25.
-
-**Deixo esta janela aberta?** Sim.
-
-## Passo 6 — Testar o backend
-
-**Onde:** no mesmo PowerShell, aquele em que as quatro variáveis foram configuradas. `.\mvnw.cmd test` também sobe o contexto completo da aplicação, então o MySQL precisa estar disponível e `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` e `JWT_SECRET` precisam estar nesta janela. Os testes isolados citados no início do guia usam chave própria e não criam usuários no MySQL.
-
-**O que digitar.** Primeiro entre na pasta do backend. Faça isso a partir da pasta do projeto. Se o prompt não estiver na pasta do Bússola, vá até ela com `cd` antes. O caminho muda em cada computador. Estando na pasta do projeto:
-
-```powershell
 cd backend
-```
-
-Depois:
-
-```powershell
-.\mvnw.cmd test
-```
-
-A primeira execução pode demorar. Várias linhas vão passar. Você não precisa entender todas. Espere o comando terminar e o prompt voltar.
-
-**Como saber o que fazer:**
-
-- Se no final apareceu `BUILD SUCCESS` → os testes concluíram. Pode continuar.
-- Se apareceu `BUILD FAILURE` → pare e vá para [Problemas comuns](#7-build-failure).
-
-Quando dá certo, o Spring conecta ao MySQL, o Flyway confere as migrations e, se o banco estiver vazio, cria as tabelas. O Hibernate só confere se as tabelas batem com o código. Ele não cria tabelas por conta própria.
-
-**Deixo esta janela aberta?** Sim. O próximo comando é nela, ainda dentro da pasta `backend`.
-
-## Passo 7 — Iniciar o backend
-
-**Onde:** ainda no mesmo PowerShell, dentro da pasta `backend`.
-
-**O que digitar:**
-
-```powershell
 .\mvnw.cmd spring-boot:run
 ```
 
-Várias linhas vão aparecer. Você não precisa entender todas. Procure principalmente:
-
-```text
-Tomcat started on port 8080
-```
-
-e:
-
-```text
-Started BussolaApplication
-```
-
-**Como saber que deu certo:**
-
-- Se essas duas frases aparecerem → o backend está funcionando.
-- Se aparecer `Could not resolve placeholder 'JWT_SECRET'` → pare e vá para [Problemas comuns](#14-jwt_secret-não-configurada). Não recrie o banco por causa disso.
-- Se aparecer `Access denied for user 'root'@'localhost'` → pare e vá para [Problemas comuns](#5-access-denied-for-user). Não abra o navegador esperando gravar cadastro.
-
-`BUILD SUCCESS` sozinho não confirma que o backend está no ar. O Maven pode imprimir essa frase mesmo quando `spring-boot:run` encerrou porque a aplicação falhou ao iniciar. Para este comando, as duas frases acima é que contam.
-
-O prompt, aquela linha `PS ...>`, não volta enquanto o backend estiver executando. Isso é normal. O programa está ocupando a janela.
-
-Não digite mais comandos nessa janela. Não feche essa janela.
-
-Para parar o backend mais tarde, clique nessa janela e pressione `Ctrl + C`. Só faça isso quando quiser desligar o backend.
-
-Com o backend no ar, a página do Swagger fica em `http://localhost:8080/swagger-ui/index.html`. Ela permite testar `POST /auth/cadastro`, `POST /auth/login` e `GET /auth/me`. O passo a passo do login está no início deste guia.
-
-**O que faço depois:** abra um segundo PowerShell para o frontend. Deixe este primeiro aberto.
-
-# Frontend
-
-## Abrir outro PowerShell
-
-Agora não use o PowerShell do backend. Deixe ele aberto, com o texto `Started BussolaApplication` visível.
-
-**Onde:** uma segunda janela do PowerShell. Abra pelo menu Iniciar, como no passo 1. Não feche a primeira.
-
-**O que digitar.** Na segunda janela, estando na pasta do projeto:
-
-```powershell
-.\rodar-frontend.ps1
-```
-
-Esse script encontra a pasta `frontend` a partir do próprio arquivo. Não depende de um caminho fixo do computador.
-
-**Como saber que deu certo:** o terminal mostra primeiro a página inicial:
-
-```text
-Página inicial:
-http://127.0.0.1:8765/pages/index.html
-```
-
-e, em seguida, os links de Cadastro, Sobre e Home provisória. Escolha o endereço que deseja testar e abra no navegador. Não cole a URL no PowerShell.
-
-### Forma manual
-
-Se preferir não usar o script, ainda dá para subir o frontend na mão. Estando na pasta do projeto:
-
-```powershell
-cd frontend
-```
-
-```powershell
-python -m http.server 8765
-```
-
-O Python pode mostrar só:
-
-```text
-Serving HTTP on :: port 8765 (http://[::]:8765/) ...
-```
-
-Esse endereço não é a página do Bússola. Para abrir a página inicial, use no navegador:
-
-```text
-http://127.0.0.1:8765/pages/index.html
-```
-
-Não digite mais comandos nessa janela. Não feche essa janela.
-
-Para parar o frontend mais tarde, clique nessa segunda janela e pressione `Ctrl + C`.
-
-Não abra os arquivos HTML dando dois cliques, no endereço `file:///`. A página de cadastro precisa falar com o backend por HTTP.
-
-## O que deve estar aberto agora?
-
-Confira antes de abrir o navegador.
-
-**Janela 1 — backend**
-
-Está executando:
-
-```powershell
-.\mvnw.cmd spring-boot:run
-```
-
-Status esperado no texto da janela:
-
-```text
-Tomcat started on port 8080
-Started BussolaApplication
-```
-
-Não fechar.
-
-**Janela 2 — frontend**
-
-Está executando:
-
-```powershell
-.\rodar-frontend.ps1
-```
-
-Status esperado: o texto `Página inicial:` seguido de `http://127.0.0.1:8765/pages/index.html`. O Python também pode mostrar `Serving HTTP on :: port 8765`. Essa linha do Python não substitui o link da página inicial.
-
-Não fechar.
-
-**MySQL**
-
-O serviço está `Running`. Você já conferiu isso com `Get-Service *mysql*`.
-
-**Navegador**
-
-É a próxima etapa. É onde o Bússola será aberto. Não digite o endereço do site no PowerShell.
-
-# Abrir o Bússola
-
-**Onde:** no navegador. Não é no PowerShell.
-
-1. Abra o navegador.
-2. Clique na barra de endereço, a faixa onde normalmente aparece o site.
-3. Digite:
-
-```text
-http://127.0.0.1:8765/pages/index.html
-```
-
-4. Pressione Enter.
-
-Essa é a entrada normal atual do Bússola. A página é a Landing, o arquivo `frontend/pages/index.html`.
-
-**Como saber que deu certo:** a página inicial do Bússola aparece. Você vê o texto de uma decisão que não precisa ser tomada no impulso, e o botão do cabeçalho.
-
-**Deixo as janelas do PowerShell abertas?** Sim. As duas.
-
-A entrada normal é a Landing, `http://127.0.0.1:8765/pages/index.html`. No estado atual do protótipo, os dois chamados da Landing levam para `cadastro.html`: **Entre ou cadastre-se** e **Começar uma decisão**. **Começar uma decisão** ainda não inicia uma decisão. Em `cadastro.html`, **Entrar** abre `login.html`. Em `login.html`, **Criar conta** volta para `cadastro.html`.
-
-O cadastro, quando a pessoa já está em `cadastro.html`, foi testado no navegador e funcionou: o formulário envia `POST /auth/cadastro`, o backend grava no MySQL e a resposta `201` abre a Home provisória. O login da tela envia `POST /auth/login`. Só a resposta **200** grava o token e abre a mesma Home. O botão **Sair** dessa Home volta para `index.html`. Ele não faz logout nem revoga tokens. A Home ainda não usa o token, e o fluxo de decisão continua pendente.
-
-Para abrir o formulário sem passar pela Landing, use o endereço direto de teste, explicado em [Exemplo: quero testar somente a tela de cadastro](#exemplo-quero-testar-somente-a-tela-de-cadastro).
-
-A página Sobre, se quiser abri-la direto, é `http://127.0.0.1:8765/pages/sobre.html`.
-
-# Testar o cadastro
-
-Este teste precisa do MySQL, do backend e do frontend ao mesmo tempo. O endereço direto do formulário, na barra do navegador, é:
-
-```text
-http://127.0.0.1:8765/pages/cadastro.html
-```
-
-Esse endereço não é a entrada do sistema. A entrada continua sendo `index.html`.
-
-Preencha nome completo, data de nascimento, e-mail, senha e o aceite dos Termos de Uso e da Política de Privacidade. Depois clique em **Criar conta gratuita**.
-
-O caminho atual do protótipo, já testado no navegador até a Home, é:
-
-```text
-index.html
-↓
-Entre ou cadastre-se ou Começar uma decisão
-↓
-cadastro.html
-↓
-POST /auth/cadastro
-↓
-backend
-↓
-MySQL
-↓
-201 Created
-↓
-home.html provisória
-↓
-Sair
-↓
-index.html
-```
-
-`home.html` ainda não é a Home definitiva. Ela existe para validar o caminho depois do cadastro e do login. O botão **Sair** não faz logout no backend e não apaga o token guardado na aba; só volta para `index.html`. A Home ainda não chama `GET /auth/me`.
-
-O que a tela faz com a resposta:
-
-- `201 Created` → o cadastro foi aceito e o navegador abre `home.html`.
-- `400` → os dados são inválidos. A pessoa permanece no cadastro.
-- `409` → o e-mail já está cadastrado. A pessoa permanece no cadastro.
-- falha de conexão → a pessoa permanece no cadastro e vê "Não foi possível concluir o cadastro. Tente novamente."
-
-O frontend em `http://127.0.0.1:8765` e o backend em `http://localhost:8080` são origens diferentes para o navegador. O `SecurityConfig` já permite essas origens locais no `POST /auth/cadastro`. Os detalhes estão em [CORS](#cors).
-
-# Confirmar o cadastro no banco
-
-**ATENÇÃO: OS COMANDOS ABAIXO SÃO SQL. NÃO COLE NO POWERSHELL.**
-
-**Onde:** na ferramenta usada para administrar o MySQL, a mesma do passo 4.
-
-```sql
-USE bussola;
-```
-
-```sql
-SELECT
-    id,
-    nome_completo,
-    data_nascimento,
-    email,
-    aceite_termos_em
-FROM usuarios
-ORDER BY id DESC;
-```
-
-**Como saber que deu certo:** se o cadastro acabou de ser realizado com sucesso, a pessoa aparece entre os registros mais recentes, no topo dessa lista.
-
-A consulta não pede a senha. A senha digitada no formulário não deve aparecer em texto puro no banco. O backend gera um hash com BCrypt e grava esse hash na coluna `senha_hash`. O aceite dos termos não vira um texto de "sim". O backend preenche `aceite_termos_em` com a data e a hora do aceite.
-
-Se a lista estiver vazia, o `201` não aconteceu. Volte ao teste do cadastro. Não conclua que salvou só porque a página mudou sem a resposta `201`.
-
-# Rodar o Bússola normalmente
-
-Para usar o projeto pelo fluxo normal, estas quatro partes precisam estar disponíveis ao mesmo tempo:
-
-```text
-MySQL
-↓
-Backend
-↓
-Frontend
-↓
-Navegador
-```
-
-1. O MySQL precisa estar `Running`. No PowerShell: `Get-Service *mysql*`.
-2. No PowerShell que será usado para o backend, configure as três variáveis do MySQL. Troque `SUA_SENHA_DO_MYSQL` pela senha real do MySQL desta máquina:
-
-```powershell
-$env:DB_URL="jdbc:mysql://localhost:3306/bussola"
-```
-
-```powershell
-$env:DB_USERNAME="root"
-```
-
-```powershell
-$env:DB_PASSWORD="SUA_SENHA_DO_MYSQL"
-```
-
-3. Carregue a `JWT_SECRET` já salva no usuário do Windows. Não cole um valor de chave neste comando:
-
-```powershell
-$env:JWT_SECRET = [Environment]::GetEnvironmentVariable("JWT_SECRET", "User")
-```
-
-4. Confira sem mostrar a senha nem a chave:
-
-```powershell
-if ($env:DB_PASSWORD) { "DB_PASSWORD configurada" } else { "DB_PASSWORD não configurada" }
-```
-
-```powershell
-if ($env:JWT_SECRET) { "JWT_SECRET configurada" } else { "JWT_SECRET não configurada" }
-```
-
-Se aparecer `JWT_SECRET não configurada`, não inicie o backend. Volte a [Configuração adicional para o login](#configuração-adicional-para-o-login), gere a chave uma vez e carregue de novo nesta janela. Não execute `$env:DB_PASSWORD` sozinho. Não execute `$env:JWT_SECRET` sozinho.
-
-5. Entre na pasta do backend, a partir da pasta do projeto:
-
-```powershell
-cd backend
-```
-
-6. Inicie:
-
-```powershell
-.\mvnw.cmd spring-boot:run
-```
-
-7. Espere aparecer `Tomcat started on port 8080` e `Started BussolaApplication`. Essas duas frases é que confirmam o backend no ar. `BUILD SUCCESS` sozinho não basta: o Maven pode imprimir isso mesmo quando a aplicação falhou ao iniciar.
-8. Não feche esse terminal. O prompt não volta. Isso é normal. Para parar depois, use `Ctrl + C` nessa janela.
-9. Abra outro PowerShell. Deixe o do backend aberto.
-10. Na pasta do projeto, inicie o frontend:
-
-```powershell
-.\rodar-frontend.ps1
-```
-
-11. Espere o terminal mostrar a página inicial `http://127.0.0.1:8765/pages/index.html`.
-12. Não feche esse segundo terminal. Para parar depois, use `Ctrl + C` nele.
-13. Abra o navegador, não o PowerShell, e acesse:
-
-```text
-http://127.0.0.1:8765/pages/index.html
-```
-
-Essa é a entrada normal do sistema. Na Landing, **Entre ou cadastre-se** e **Começar uma decisão** levam para `cadastro.html`. Dali, **Entrar** abre `login.html`. Um cadastro aceito, ou um login aceito, abre `home.html`. O botão **Sair** dessa Home volta para `index.html` e não revoga a sessão.
-
-Não abra o HTML por `file:///`. O script entrega as páginas por HTTP na porta `8765`. O endereço `http://127.0.0.1:8765/...` é o que vai na barra do navegador. SQL, como `SELECT`, fica na ferramenta do MySQL. São três lugares diferentes. A forma manual, `cd frontend` e `python -m http.server 8765`, está na seção do frontend.
-
-# Quero testar só uma tela. O que preciso rodar?
-
-Depende do que a tela faz.
-
-## Caso 1 — Tela que não precisa do backend
-
-Algumas telas são HTML, CSS e JavaScript de aparência. Elas não enviam nem buscam dados na API. Para vê-las, normalmente basta o frontend.
-
-Abra um PowerShell na pasta do projeto e execute:
-
-```powershell
-.\rodar-frontend.ps1
-```
-
-Deixe o terminal aberto. Procure a linha da página inicial, `http://127.0.0.1:8765/pages/index.html`.
-
-### Quero testar só o visual do cadastro
-
-1. Inicie o frontend com `.\rodar-frontend.ps1`.
-2. No navegador, abra `http://127.0.0.1:8765/pages/cadastro.html`.
-
-Se for apenas conferir layout, isso pode ser suficiente. O backend não precisa estar ligado para a página aparecer.
-
-### Quero testar só o visual do login
-
-1. Inicie o frontend com `.\rodar-frontend.ps1`.
-2. No navegador, abra `http://127.0.0.1:8765/pages/login.html`.
-
-A página aparece sem a API. **Criar conta** leva para `cadastro.html`. Clicar em **Acessar minha conta** já é teste funcional e precisa do backend.
-
-### Quero testar o cadastro funcionando
-
-Ver o formulário pode ser só com o frontend. Clicar em **Criar conta gratuita** é teste funcional: MySQL, backend e frontend precisam estar ligados.
-
-O botão chama só `POST /auth/cadastro`, mas o backend inteiro precisa conseguir iniciar. `JwtTokenProvider` faz parte do contexto Spring, então `JWT_SECRET` precisa estar disponível mesmo neste teste. As quatro variáveis são `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` e `JWT_SECRET`.
-
-1. O MySQL precisa estar `Running`.
-2. O backend precisa estar rodando na porta `8080`, com as quatro variáveis disponíveis na janela em que ele foi iniciado.
-3. O frontend precisa estar rodando na porta `8765`.
-4. No navegador, abra `http://127.0.0.1:8765/pages/cadastro.html`.
-5. Preencha o formulário.
-6. Clique em **Criar conta gratuita**.
-7. O frontend chama `POST /auth/cadastro`.
-
-Depois abra a página no navegador. Estas páginas existem hoje e não chamam a API para aparecer:
-
-- Landing: `http://127.0.0.1:8765/pages/index.html`
-- Sobre: `http://127.0.0.1:8765/pages/sobre.html`
-- Login, só para ver a tela: `http://127.0.0.1:8765/pages/login.html`
-
-Se o teste for só aparência, responsividade, textos ou layout, e a página não chamar a API, não é necessário subir o backend só para vê-la. Isso vale para estas telas atuais. Não vale automaticamente para uma tela futura.
-
-## Caso 2 — Tela que usa o backend
-
-Se a tela envia, salva, busca, altera ou exclui dados pela API, abrir o HTML não basta. É preciso:
-
-```text
-MySQL
-+
-Backend
-+
-Frontend
-```
-
-O backend atual só inicia com `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` e `JWT_SECRET` disponíveis na janela do PowerShell.
-
-## Exemplo: quero testar somente a tela de cadastro
-
-Mesmo abrindo `cadastro.html` direto, o botão de criar conta conversa com `POST http://localhost:8080/auth/cadastro`. Por isso o MySQL, o backend e o frontend precisam estar ligados. O backend só inicia se `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` e `JWT_SECRET` estiverem disponíveis. A chave JWT entra mesmo quando o teste é só o cadastro, porque ela faz parte da subida da aplicação.
-
-1. No PowerShell, confira o MySQL:
-
-```powershell
-Get-Service *mysql*
-```
-
-Se apareceu `Running`, continue. Se não, veja [Problemas comuns](#problemas-comuns).
-
-2. No PowerShell que será usado para o backend, informe as três variáveis do MySQL:
-
-```powershell
-$env:DB_URL="jdbc:mysql://localhost:3306/bussola"
-```
-
-```powershell
-$env:DB_USERNAME="root"
-```
-
-```powershell
-$env:DB_PASSWORD="SUA_SENHA_DO_MYSQL"
-```
-
-3. Carregue a `JWT_SECRET` e confira sem mostrar segredos:
-
-```powershell
-$env:JWT_SECRET = [Environment]::GetEnvironmentVariable("JWT_SECRET", "User")
-```
-
-```powershell
-if ($env:DB_PASSWORD) { "DB_PASSWORD configurada" } else { "DB_PASSWORD não configurada" }
-```
-
-```powershell
-if ($env:JWT_SECRET) { "JWT_SECRET configurada" } else { "JWT_SECRET não configurada" }
-```
-
-Se aparecer `JWT_SECRET não configurada`, não inicie o backend. Volte a [Configuração adicional para o login](#configuração-adicional-para-o-login). Não execute `$env:DB_PASSWORD` sozinho. Não execute `$env:JWT_SECRET` sozinho.
-
-4. Entre no backend, a partir da pasta do projeto:
-
-```powershell
-cd backend
-```
-
-5. Rode:
-
-```powershell
-.\mvnw.cmd spring-boot:run
-```
-
-6. Espere `Tomcat started on port 8080` e `Started BussolaApplication`. `BUILD SUCCESS` sozinho não confirma que o backend ficou no ar.
-7. Deixe essa janela aberta.
-8. Abra outro PowerShell.
-9. Na pasta do projeto, inicie o frontend:
-
-```powershell
-.\rodar-frontend.ps1
-```
-
-10. Espere a página inicial aparecer no texto do terminal.
-11. Deixe essa segunda janela aberta.
-12. Agora abra direto no navegador:
-
-```text
-http://127.0.0.1:8765/pages/cadastro.html
-```
-
-Aqui a Landing é pulada de propósito, porque o teste é o cadastro. Isso não transforma `cadastro.html` na página inicial. A página inicial continua sendo:
-
-```text
-http://127.0.0.1:8765/pages/index.html
-```
-
-## Teste visual e teste funcional
-
-Há dois jeitos de olhar uma tela.
-
-**Teste visual:** layout, cores, responsividade, espaçamento e textos. Se a tela não depende de dados do backend para aparecer, o frontend basta.
-
-**Teste funcional:** criar cadastro, salvar, buscar, editar, excluir ou enviar um formulário para a API. Se a função depende da API, o backend precisa estar rodando. Se essa operação usa o banco, o MySQL também precisa estar rodando. Para o backend atual iniciar, `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` e `JWT_SECRET` precisam estar disponíveis na janela do PowerShell.
-
-No cadastro, ver o formulário pode ser só com o frontend. Clicar em **Criar conta** e gravar a pessoa exige MySQL, backend e frontend, e o backend só sobe com as quatro variáveis, inclusive `JWT_SECRET`.
-
-No login, ver `login.html` pode ser só com o frontend. Clicar em **Acessar minha conta** chama `POST /auth/login` e exige MySQL, backend e frontend. O backend precisa de `DB_URL`, `DB_USERNAME`, `DB_PASSWORD` e `JWT_SECRET`.
-
-| O que quero testar | MySQL | Backend | Frontend |
-| --- | --- | --- | --- |
-| Landing visual | Não | Não | Sim |
-| Sobre visual | Não | Não | Sim |
-| Cadastro apenas visual | Não | Não | Sim |
-| Login apenas visual | Não | Não | Sim |
-| Cadastro funcionando de verdade | Sim | Sim | Sim |
-| Login funcionando de verdade | Sim | Sim | Sim |
-
-A Landing e a página Sobre atuais não carregam dados da API. Os formulários de cadastro e de login aparecem sem a API. O envio do cadastro chama `POST /auth/cadastro`. O envio do login chama `POST /auth/login`. E-mail ou senha recusados respondem **401** com “E-mail ou senha inválidos.” e a pessoa permanece em `login.html`.
-
-## Como abrir uma página específica
-
-Com o frontend iniciado por `.\rodar-frontend.ps1`, os arquivos de `frontend/pages/` abrem no navegador assim:
-
-```text
-http://127.0.0.1:8765/pages/NOME-DO-ARQUIVO.html
-```
-
-Exemplos que existem hoje:
-
-- `index.html`: `http://127.0.0.1:8765/pages/index.html`
-- `sobre.html`: `http://127.0.0.1:8765/pages/sobre.html`
-- `cadastro.html`: `http://127.0.0.1:8765/pages/cadastro.html`
-- `login.html`: `http://127.0.0.1:8765/pages/login.html`
-- `home.html`: `http://127.0.0.1:8765/pages/home.html`
-
-Isso serve para desenvolvimento e teste. No fluxo normal do protótipo, a pessoa entra por `index.html`. **Entre ou cadastre-se** e **Começar uma decisão** levam para `cadastro.html`. **Entrar**, no cadastro, leva para `login.html`. **Criar conta**, no login, leva para `cadastro.html`. O botão **Sair** da Home provisória volta para `index.html` e não revoga a sessão. **Sobre o projeto** continua levando para `sobre.html`. **Início** continua levando para `index.html`.
-
-Não abra as páginas por `file:///`. Use o servidor HTTP acima e o endereço `http://127.0.0.1:8765/...`. Assim o teste fica no mesmo tipo de endereço que as telas usam para conversar com a API.
-
-# Resumo rápido — toda vez que for rodar
-
-Três caminhos. Não misture comando, endereço e SQL.
-
-**Quero rodar o sistema completo**
-
-```text
-MySQL Running
-↓
-backend :8080
-↓
-frontend :8765
-↓
-abrir index.html
-```
-
-O endereço, no navegador, é `http://127.0.0.1:8765/pages/index.html`.
-
-**Quero testar só uma tela visual**
-
-```text
-frontend :8765
-↓
-abrir diretamente a URL da tela
-```
-
-**Quero testar uma funcionalidade que usa API**
-
-```text
-MySQL, se a operação usar banco
-+
-backend
-+
-frontend
-↓
-abrir diretamente a tela que quero testar
-```
-
-Exemplo de cadastro funcionando de verdade: MySQL, backend e frontend, e no navegador `http://127.0.0.1:8765/pages/cadastro.html`. Isso não é a página inicial. O backend desse teste também precisa das quatro variáveis, inclusive `JWT_SECRET`.
-
-Isto é comando de PowerShell, na pasta do projeto: `.\rodar-frontend.ps1`.
-
-Isto é endereço para o navegador: `http://127.0.0.1:8765/pages/index.html`.
-
-Isto é SQL para a ferramenta do MySQL: `SELECT id, email FROM usuarios;`.
-
-Os passos numerados abaixo ligam o sistema completo quando o banco `bussola` já existe.
-
-Use esta lista quando a primeira configuração já tiver sido feita. O banco `bussola` já existe. Você já sabe a senha do MySQL. A `JWT_SECRET` já foi gerada uma vez e ficou salva no usuário do Windows.
-
-A rotina é: conferir o MySQL; configurar as variáveis do MySQL e carregar a `JWT_SECRET`; confirmar `DB_PASSWORD` e `JWT_SECRET` sem mostrar os valores; entrar em `backend`; executar `spring-boot:run`; esperar `Tomcat started on port 8080` e `Started BussolaApplication`; abrir outro PowerShell; executar `.\rodar-frontend.ps1`; abrir `index.html` no navegador.
-
-Se algum "apareceu?" for não, vá para [Problemas comuns](#problemas-comuns). Não continue no escuro.
-
-## Passo 1 — MySQL
-
-**Onde:** um PowerShell novo.
-
-```powershell
-Get-Service *mysql*
-```
-
-Apareceu `Running`?
-
-- Sim → continue.
-- Não → veja [Problemas comuns](#problemas-comuns).
-
-## Passo 2 — Backend
-
-**Onde:** na janela que será usada para o backend. Pode ser a mesma do passo 1.
-
-Configure as três variáveis do MySQL. Troque `SUA_SENHA_DO_MYSQL` pela senha real do seu MySQL:
-
-```powershell
-$env:DB_URL="jdbc:mysql://localhost:3306/bussola"
-```
-
-```powershell
-$env:DB_USERNAME="root"
-```
-
-```powershell
-$env:DB_PASSWORD="SUA_SENHA_DO_MYSQL"
-```
-
-Carregue a `JWT_SECRET` já salva:
-
-```powershell
-$env:JWT_SECRET = [Environment]::GetEnvironmentVariable("JWT_SECRET", "User")
-```
-
-Confirme sem mostrar a senha nem a chave:
-
-```powershell
-if ($env:DB_PASSWORD) { "DB_PASSWORD configurada" } else { "DB_PASSWORD não configurada" }
-```
-
-```powershell
-if ($env:JWT_SECRET) { "JWT_SECRET configurada" } else { "JWT_SECRET não configurada" }
-```
-
-Apareceu `DB_PASSWORD configurada` e `JWT_SECRET configurada`?
-
-- Sim → continue. Não execute `$env:DB_PASSWORD` sozinho. Não execute `$env:JWT_SECRET` sozinho.
-- Não, e a linha da chave foi `JWT_SECRET não configurada` → não inicie o backend. Volte a [Configuração adicional para o login](#configuração-adicional-para-o-login).
-- Não, e a linha da senha foi `DB_PASSWORD não configurada` → repita a linha da senha do MySQL.
-
-Estando na pasta do projeto:
-
-```powershell
-cd backend
-```
-
-```powershell
-.\mvnw.cmd spring-boot:run
-```
-
-Procure `Tomcat started on port 8080` e `Started BussolaApplication`. `BUILD SUCCESS` sozinho não confirma que o backend está no ar.
-
-Apareceu?
-
-- Sim → o backend está funcionando. Deixe essa janela aberta. Não digite mais nada nela.
-- Não → veja [Problemas comuns](#problemas-comuns). Se o texto citar `Could not resolve placeholder 'JWT_SECRET'`, vá para [JWT_SECRET não configurada](#14-jwt_secret-não-configurada).
-
-## Passo 3 — Frontend
-
-**Onde:** outro PowerShell. Não use a janela do backend.
-
-Estando na pasta do projeto:
-
-```powershell
-.\rodar-frontend.ps1
-```
-
-Procure `Página inicial:` e o endereço `http://127.0.0.1:8765/pages/index.html`.
-
-Apareceu?
-
-- Sim → o frontend está funcionando. Deixe essa janela aberta.
-- Não → veja [Problemas comuns](#9-frontend-não-abre).
-
-## Passo 4 — Navegador
-
-**Onde:** no navegador. Não digite a URL no PowerShell.
-
-Acesse:
-
-```text
-http://127.0.0.1:8765/pages/index.html
-```
-
-Pronto. Essa é a página inicial. O endereço de `cadastro.html` não é a entrada do sistema.
-
-# Detalhes que não fazem parte do liga-e-desliga
-
-Leia esta parte quando quiser entender o que o projeto guarda. Para ligar o sistema no dia a dia, o resumo rápido basta.
-
-## Tabelas
-
-**Onde:** na ferramenta do MySQL, não no PowerShell.
-
-```sql
-USE bussola;
-```
-
-```sql
-SHOW TABLES;
-```
-
-Depois que as migrations V1 e V2 tiverem sido aplicadas, devem existir estas 13 tabelas da aplicação:
-
-- `usuarios`
-- `decisoes`
-- `opcoes`
-- `criterios`
-- `avaliacoes`
-- `ideias_brainstorming`
-- `itens_gut`
-- `pros_contras`
-- `reflexoes_101010`
-- `inversoes`
-- `resultados`
-- `tokens_recuperacao_senha`
-- `sessoes_autenticacao`
-
-Além delas, o Flyway cria `flyway_schema_history`. No total, são 14 tabelas após V2.
-
-## Migrations futuras
-
-Depois que `V1__Bussola.sql` já foi aplicada e compartilhada com o grupo, não altere esse arquivo para representar uma mudança nova de estrutura.
-
-Uma migration já compartilhada e aplicada não deve ser simplesmente modificada. A alteração nova vira um arquivo novo em `backend/src/main/resources/db/migration/`. `V1__Bussola.sql` e `V2__Sessoes_autenticacao.sql` já existem. A próxima seria, por exemplo, `V3__descricao_da_alteracao.sql`.
-
-Na próxima subida, o Flyway aplica só o que ainda não está em `flyway_schema_history`. Cada integrante atualiza o próprio MySQL local desse modo. O banco não fica dentro do Git.
-
-## CORS
-
-O frontend local e o backend usam origens diferentes. A página fica em `http://127.0.0.1:8765` ou `http://localhost:8765`. A API fica em `http://localhost:8080`. Para o navegador, isso é outro endereço, então ele só aceita a resposta se o backend autorizar.
-
-`backend/src/main/java/br/com/bussola/security/SecurityConfig.java` já faz essa autorização nos caminhos `/auth/**`. As origens permitidas são exatamente:
-
-- `http://127.0.0.1:8765`
-- `http://localhost:8765`
-
-Nos caminhos `/auth/**`, os métodos permitidos são `GET`, `POST` e `OPTIONS`. Os cabeçalhos permitidos são `Content-Type`, `Accept` e `Authorization`. Não há permissão para qualquer origem.
-
-O mesmo arquivo libera `POST /auth/cadastro`, `POST /auth/login` e a consulta do Swagger sem login. As demais rotas exigem token Bearer. A API não autentica por cookie nem usa sessão HTTP; o CSRF está desabilitado e a sessão de autenticação é validada no banco a partir do JWT. O cadastro pela tela, com o frontend na porta `8765` e o backend na porta `8080`, foi testado anteriormente no navegador.
-
-Se a porta ou o endereço do frontend mudar, essa lista no `SecurityConfig` precisa ser atualizada. Sem isso, o DevTools pode mostrar de novo que a resposta CORS foi bloqueada.
-
-## Problemas comuns
-
-Cada item é um problema diferente. Leia o sintoma antes de trocar a senha ou recriar o banco.
-
-### 1. Get-Service não encontra MySQL
-
-**O que significa:** o PowerShell não achou um serviço com `mysql` no nome. O MySQL pode não estar instalado, ou o serviço pode ter outro nome.
-
-**O que conferir:** a instalação do MySQL 8 neste computador.
-
-**Onde:** no PowerShell, com `Get-Service *mysql*`. A janela Serviços do Windows (`Win + R`, depois `services.msc`) também lista serviços, se quiser procurar visualmente.
-
-**Quando continuar:** só depois que um serviço do MySQL aparecer e estiver `Running`. Isso é diferente de um serviço encontrado com status `Stopped`.
-
-### 2. MySQL aparece Stopped
-
-**O que significa:** o MySQL está instalado e parado.
-
-**O que conferir:** a coluna `Name`.
-
-**Onde:** no PowerShell, `Start-Service` com esse nome. Se faltar permissão, use o PowerShell como Administrador só nesse comando.
-
-**Quando continuar:** quando um novo `Get-Service *mysql*` mostrar `Running`, e o teste da porta `3306` mostrar `True`.
-
-### 3. TcpTestSucceeded False
-
-**O que significa:** nada aceitou conexão na porta `3306`. O serviço pode estar parado, o MySQL pode escutar outra porta, ou a instalação pode estar incompleta.
-
-**O que conferir:** o status do serviço, antes de mexer em senha.
-
-**Onde:** no PowerShell, `Get-Service *mysql*` e de novo `Test-NetConnection localhost -Port 3306`.
-
-**Quando continuar:** quando aparecer `TcpTestSucceeded : True`. Esse teste continua sem dizer se a senha está certa.
-
-### 4. mysql não é reconhecido
-
-**O que significa:** o cliente de linha de comando não está disponível no PowerShell. O servidor pode estar `Running` mesmo assim.
-
-**O que conferir:** `Get-Service *mysql*` e a porta `3306`.
-
-**Onde:** no PowerShell. Não é preciso corrigir o `PATH` para subir o Bússola.
-
-**Quando continuar:** se o serviço está `Running` e `TcpTestSucceeded` é `True`. Use a ferramenta gráfica para o SQL.
-
-### 5. Access denied for user
-
-**O que significa:** o MySQL foi encontrado, mas recusou o usuário ou a senha. A mensagem típica é `Access denied for user 'root'@'localhost' (using password: YES)`.
-
-**O que conferir:** `DB_URL`, `DB_USERNAME` e `DB_PASSWORD` na mesma janela do backend. A senha tem de ser a senha real daquele MySQL, não o texto de exemplo. Este erro é do MySQL. Não se corrige gerando outra `JWT_SECRET`. Mesmo assim, ao subir de novo, carregue também a `JWT_SECRET`, porque o backend atual não inicia sem ela.
-
-**Onde:** no PowerShell do backend. Feche o processo com `Ctrl + C` se ele ainda estiver na tela, defina de novo `DB_URL`, `DB_USERNAME` e `DB_PASSWORD`, carregue a chave com `$env:JWT_SECRET = [Environment]::GetEnvironmentVariable("JWT_SECRET", "User")` e rode `.\mvnw.cmd spring-boot:run` outra vez. Não grave a senha nem a chave no repositório. Se a conferência disser `JWT_SECRET não configurada`, use o item 14. Não execute `$env:DB_PASSWORD` nem `$env:JWT_SECRET` sozinhos.
-
-**Quando continuar:** quando aparecerem `Tomcat started on port 8080` e `Started BussolaApplication`. Antes disso o Spring não termina, a porta `8080` não fica disponível, o navegador pode mostrar "Não foi possível concluir o cadastro. Tente novamente." e nenhum usuário é salvo.
-
-### 6. Banco bussola não existe
-
-**O que significa:** o MySQL aceitou a autenticação e não encontrou o banco. O log costuma citar `Unknown database`.
-
-**O que conferir:** se o `CREATE DATABASE bussola` foi feito.
-
-**Onde:** na ferramenta do MySQL, com o SQL do passo 4. Não cole esse SQL no PowerShell.
-
-**Quando continuar:** depois de criar o banco vazio e subir o backend de novo, até ver `Started BussolaApplication`.
-
-### 7. BUILD FAILURE
-
-**O que significa:** `.\mvnw.cmd test` não chegou a `BUILD SUCCESS`.
-
-**O que conferir:** as últimas linhas do log. Muitas vezes é o item 5, o item 6, o item 13 ou a `JWT_SECRET` ausente, no item 14. `BUILD SUCCESS` é o sinal deste comando de teste. Não misture com `spring-boot:run`, em que o sinal de backend no ar são `Tomcat started on port 8080` e `Started BussolaApplication`.
-
-**Onde:** no PowerShell do backend.
-
-**Quando continuar:** quando uma nova execução terminar com `BUILD SUCCESS`.
-
-### 8. Backend não permanece na porta 8080
-
-**O que significa:** `http://localhost:8080` não responde porque o processo encerrou durante a inicialização. `Tomcat initialized` sem `Tomcat started` e sem `Started BussolaApplication` não conta como backend pronto.
-
-**O que conferir:** o texto da janela 1, em especial `Could not resolve placeholder 'JWT_SECRET'`, `Access denied` ou `Unknown database`. `BUILD SUCCESS` no final do Maven não substitui `Started BussolaApplication`.
-
-**Onde:** no PowerShell em que você rodou `.\mvnw.cmd spring-boot:run`.
-
-**Quando continuar:** quando as duas frases de sucesso estiverem na tela e a janela continuar aberta, sem voltar ao prompt.
-
-### 9. Frontend não abre
-
-**O que significa:** o navegador não carrega a página.
-
-**O que conferir:** a janela 2 ainda está aberta, com `Página inicial:` ou `Serving HTTP on :: port 8765`? O endereço na barra do navegador é `http://127.0.0.1:8765/pages/index.html`, e não o texto `http://[::]:8765/` que o Python imprime?
-
-**Onde:** segundo PowerShell para o servidor, navegador para o endereço. Página que não abre é diferente de página que abre e falha ao chamar a API.
-
-**Quando continuar:** quando a Landing aparecer.
-
-### 10. Failed to fetch
-
-**O que significa:** o navegador não completou a chamada ao backend. Na tela, a mensagem é "Não foi possível concluir o cadastro. Tente novamente."
-
-**O que conferir:** a janela 1 ainda está em `Started BussolaApplication`? A página foi aberta pelo endereço `8765`, não por `file:///`? Se o backend estiver no ar e o erro continuar, veja CORS.
-
-**Onde:** janela do backend, janela do frontend e a barra de endereço do navegador.
-
-**Quando continuar:** quando a resposta for `201`. Até lá, não assuma que um usuário novo foi salvo.
-
-### 11. CORS
-
-**O que significa:** o navegador bloqueou a resposta porque a página e a API estão em origens diferentes e os cabeçalhos CORS não bateram. No DevTools, a mensagem fala em CORS, preflight ou `Ensure CORS response header values are valid`.
-
-**O que conferir:** a página está em `http://127.0.0.1:8765` ou `http://localhost:8765`? O backend que está no ar já inclui a configuração atual do `SecurityConfig`? Essas duas origens, os métodos `GET`, `POST` e `OPTIONS`, e os cabeçalhos `Content-Type`, `Accept` e `Authorization` são os que o código permite em `/auth/**`. Se o frontend for servido em outra porta, essa lista precisa ser atualizada no backend. Isso é diferente de `Access denied`, em que o MySQL recusa a senha e o backend nem permanece no ar.
-
-**Onde:** no código `SecurityConfig.java` e no endereço da barra do navegador. Não se corrige trocando um comando SQL.
-
-**Quando continuar:** quando o cadastro pela tela receber `201` e abrir `home.html`. Com as origens acima e o backend reiniciado depois da configuração, esse caminho já foi testado e funcionou.
-
-### 12. 409 e-mail já cadastrado
-
-**O que significa:** a API respondeu. Aquele e-mail já existe na tabela `usuarios`. O backend estava no ar e recusou a duplicata. A pessoa permanece no cadastro.
-
-**O que conferir:** a consulta SQL em [Confirmar o cadastro no banco](#confirmar-o-cadastro-no-banco), na ferramenta do MySQL.
-
-**Onde:** para um teste novo, use outro e-mail no formulário do navegador.
-
-**Quando continuar:** o sistema está respondendo. Não trate o `409` como falha de conexão.
-
-### 13. Java não é reconhecido
-
-**O que significa:** o PowerShell não encontrou o JDK 25.
-
-**O que conferir:** se o JDK 25 está instalado. `JAVA_HOME` deve apontar para a pasta raiz desse JDK, a que contém `bin` e `lib`. Não aponte `JAVA_HOME` para a pasta `bin`.
-
-**Onde:** no PowerShell, nesta sessão:
-
-```powershell
-$env:JAVA_HOME="C:\caminho\para\jdk-25"
-```
-
-```powershell
-$env:Path="$env:JAVA_HOME\bin;$env:Path"
-```
-
-Troque `C:\caminho\para\jdk-25` pela pasta real do JDK na sua máquina. Essas duas linhas valem só para essa janela.
-
-**Quando continuar:** quando `java -version` mostrar a versão `25`.
-
-### 14. JWT_SECRET não configurada
-
-**O que significa:** o backend encontrou `${JWT_SECRET}` em `application.properties` e a variável não estava disponível no ambiente em que o Spring foi iniciado. A mensagem típica é `Could not resolve placeholder 'JWT_SECRET'`.
-
-Isso não é erro do MySQL. Não é preciso recriar o banco. Não é preciso alterar `V1__Bussola.sql` nem `V2__Sessoes_autenticacao.sql`.
-
-**O que conferir:** se esta janela carregou a chave salva no usuário do Windows. Uma janela aberta antes da criação da variável pode não tê-la recebido.
-
-**Onde:** no PowerShell que vai iniciar o backend. Se `spring-boot:run` ainda estiver na tela, pare com `Ctrl + C`. Depois carregue a chave já salva, sem exibir o valor:
-
-```powershell
-$env:JWT_SECRET = [Environment]::GetEnvironmentVariable("JWT_SECRET", "User")
-```
-
-```powershell
-if ($env:JWT_SECRET) { "JWT_SECRET configurada" } else { "JWT_SECRET não configurada" }
-```
-
-Não execute `$env:JWT_SECRET` sozinho.
-
-Se ainda aparecer `JWT_SECRET não configurada`, a chave não foi gravada neste usuário do Windows. Use o bloco de [Configuração adicional para o login](#configuração-adicional-para-o-login). Ele procura a variável, e só se ela não existir gera 32 bytes aleatórios, converte para Base64 e guarda no usuário do Windows. Não copie o valor para o Git, para `application.properties` nem para este guia.
-
-Quando a conferência disser `JWT_SECRET configurada`, estando na pasta `backend`, execute de novo:
-
-```powershell
-.\mvnw.cmd spring-boot:run
-```
-
-**Quando continuar:** quando aparecerem `Tomcat started on port 8080` e `Started BussolaApplication`, e a janela continuar aberta. `BUILD SUCCESS` sozinho não confirma isso. O Maven pode imprimir `BUILD SUCCESS` mesmo quando `spring-boot:run` encerrou porque a aplicação falhou durante a inicialização.
+Faça antes a primeira configuração da chave JWT. Deixe esse terminal aberto. As variáveis colocadas no IntelliJ não passam automaticamente para o PowerShell.
+
+## Se algo não funcionar
+
+| Sintoma | O que conferir |
+| --- | --- |
+| `Access denied for user` | Usuário/senha do MySQL na configuração usada para iniciar o backend. |
+| `Unknown database bussola` | Crie o banco no Workbench; não crie as tabelas manualmente. |
+| Erro com `JWT_SECRET` | Faça a configuração da chave acima e reinicie o IntelliJ. |
+| Porta 8080 ocupada | Já pode existir um backend rodando. Pare a execução antiga antes de iniciar outra. |
+| `Failed to fetch` ou CORS | Backend ligado e tela aberta pela porta 8765, usando localhost ou 127.0.0.1. |
+| Site não abre na 8765 | Inicie o frontend e mantenha o terminal aberto. |
+| `401` | Faça login novamente e use o token; no Swagger, clique em Authorize. |
+| `409` no cadastro | O e-mail já existe: faça login ou use outro e-mail de teste. |
+| `BUILD FAILURE` | Leia o erro; não significa que o backend iniciou. |
+
+**Resumo:** MySQL ligado → ▶ BussolaApplication → `.\rodar-frontend.ps1` na raiz → abrir login.

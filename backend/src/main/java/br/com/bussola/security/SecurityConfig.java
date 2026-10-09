@@ -46,6 +46,8 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/auth/**", cadastro);
         source.registerCorsConfiguration("/home", cadastro);
+        source.registerCorsConfiguration("/decisoes", cadastro);
+        source.registerCorsConfiguration("/decisoes/**", cadastro);
         return source;
     }
 }
