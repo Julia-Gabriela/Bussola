@@ -102,7 +102,44 @@ Depois, siga **Para ligar no dia a dia**, no início deste arquivo.
 
 O dono da decisão vem do token; não envie `usuarioId`, status ou etapa. A Home já consulta as decisões do próprio usuário. O cálculo de progresso da Home continua com seu contrato existente de 6 etapas; criar uma decisão não conclui a contextualização nem libera etapas futuras.
 
-Pelas telas: faça login → na Home, clique em **Iniciar decisão** → preencha o título e, se quiser, o contexto → **Começar análise** → **Ver na Home**. A decisão será salva no usuário autenticado. Na Home, **Continuar** e o cartão da decisão em andamento abrem o título e o contexto salvos. Essa consulta não cria outra decisão. Edição do contexto, avanço de etapas e análises ainda serão implementados. Após salvar, a URL guarda o ID: recarregar a página abre a decisão salva. Se a conexão falhar durante o envio, use **Ver na Home** para conferir antes de iniciar outra. Repetir um POST válido pelo Swagger cria outra decisão.
+## Testar contextualização e brainstorming pelas telas
+
+Depois de atualizar o projeto, **reinicie o backend no IntelliJ** e atualize o navegador com **Ctrl + F5**. Não precisa criar tabelas nem mudar variáveis ou portas.
+
+1. Faça login e clique em **Iniciar decisão** na Home.
+2. Informe o título e, se quiser, o contexto. **Salvar para depois** mantém a decisão na etapa 1.
+3. Reabra pela Home, altere o contexto e clique em **Salvar e continuar**. Deve abrir o brainstorming (etapa 2 de 6).
+4. Selecione **Favorável**, **Desfavorável** ou **Dúvida**, escreva uma ideia e clique em **Adicionar**.
+5. Use **Editar** para mudar texto ou categoria. **Excluir** pede confirmação. Cada ação é salva no banco.
+6. Atualize a página ou retorne pela Home: as ideias devem continuar lá. Tanto o cartão da decisão quanto **Continuar** retomam o fluxo salvo.
+7. Clique em **Próxima etapa** depois de salvar ou cancelar o texto em edição. A decisão passa para **Opções (etapa 3)**, preservando as ideias e o status **Em andamento**.
+
+A tela de Opções será entregue pela Dupla B; por enquanto aparece a confirmação com as ideias salvas. Depois de avançar, as etapas anteriores ficam apenas para consulta até a entrega da revisão de etapas. Não há quantidade mínima de ideias exigida pela documentação. Texto de ideia é obrigatório ao adicionar/editar; limite técnico: 16.000 caracteres, compatível com a coluna TEXT.
+
+Se o envio falhar sem confirmação, recarregue os dados antes de reenviar. No brainstorming, use **Recarregar dados**. Na criação, confira a Home para evitar duplicação. O que ainda não foi salvo no formulário não é recuperado ao sair.
+
+### Rotas para testar no Swagger
+
+Use o ID de uma decisão sua e autorize com o token do login:
+
+| Operação | Rota | Resultado |
+| --- | --- | --- |
+| Salvar título/contexto | PUT /decisoes/{id}/contexto | 200; somente etapa 1; corpo igual ao da criação |
+| Avançar ao brainstorming | POST /decisoes/{id}/contexto/concluir | 200; etapa 2 |
+| Consultar ideias | GET /decisoes/{id}/ideias | 200; lista ordenada por ID |
+| Adicionar ideia | POST /decisoes/{id}/ideias | 201 |
+| Editar texto/categoria | PUT /decisoes/{id}/ideias/{ideiaId} | 200 |
+| Excluir ideia | DELETE /decisoes/{id}/ideias/{ideiaId} | 204 |
+| Concluir brainstorming | POST /decisoes/{id}/brainstorming/concluir | 200; etapa 3, ainda Em andamento |
+
+Corpo de adicionar/editar ideia:
+
+```json
+{"conteudo": "Ganhar experiência profissional", "categoria": "FAVORAVEL"}
+```
+
+Categorias aceitas: `FAVORAVEL`, `DESFAVORAVEL`, `DUVIDA`. Sem login: **401**. Dados inválidos: **400**. Decisão de outra pessoa ou ideia fora da decisão informada: **404**. Etapa incorreta ou decisão concluída: **409**. Repetir a conclusão da etapa imediatamente anterior não avança uma segunda vez.
+
 
 O login expira após **60 minutos sem requisições autenticadas**. Quando receber 401 por expiração, faça login de novo. O botão **Sair** da Home chama `POST /auth/logout` e remove a sessão local; fechar Authorize no Swagger apenas remove o token da interface.
 
@@ -115,7 +152,7 @@ cd backend
 .\mvnw.cmd "-Dtest=*Test" test
 ```
 
-Espere **BUILD SUCCESS**. Esse comando seleciona as classes terminadas em `Test`, incluindo nova decisão, autenticação, Home e Swagger.
+Espere **BUILD SUCCESS**. Esse comando seleciona as classes terminadas em `Test`, incluindo contextualização, brainstorming, nova decisão, autenticação, Home e Swagger. `FluxoDecisaoControllerTest` cobre as novas rotas com serviço real e repositories simulados, sem exigir MySQL.
 
 Para rodar também `BussolaApplicationTests` (contexto completo), configure as variáveis do banco e JWT nesse terminal e use `.\mvnw.cmd test`. Esse teste conecta ao MySQL e pode aplicar migrations pendentes.
 

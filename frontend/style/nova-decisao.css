@@ -11,6 +11,7 @@
 .campo-ajuda { color: var(--muted); font-size: 12px; margin: 8px 0 26px; line-height: 1.5; }
 .decisao-card .home-primary { width: 100%; margin-top: 28px; box-sizing: border-box; text-decoration: none; background: linear-gradient(120deg, #ac8137, #e0b758); font-weight: 600; }
 .decisao-card fieldset:disabled { opacity: .65; }
+.decisao-card .home-secondary { width: 100%; margin-top: 12px; }
 #mensagem { color: var(--home-text); line-height: 1.6; margin: 16px 0 0; }
 #mensagem:empty { display: none; }
 .exemplos { margin: 28px 0; }

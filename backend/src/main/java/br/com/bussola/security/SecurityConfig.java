@@ -47,7 +47,9 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/auth/**", cadastro);
         source.registerCorsConfiguration("/home", cadastro);
         source.registerCorsConfiguration("/decisoes", cadastro);
-        source.registerCorsConfiguration("/decisoes/**", cadastro);
+        CorsConfiguration fluxo = new CorsConfiguration(cadastro);
+        fluxo.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        source.registerCorsConfiguration("/decisoes/**", fluxo);
         return source;
     }
 }
