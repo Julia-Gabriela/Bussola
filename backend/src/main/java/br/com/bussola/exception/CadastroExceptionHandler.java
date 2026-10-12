@@ -12,6 +12,16 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class CadastroExceptionHandler {
 
+    @ExceptionHandler(CriteriosInvalidosException.class)
+    public ResponseEntity<Map<String, String>> criteriosInvalidos(CriteriosInvalidosException exception) {
+        return ResponseEntity.badRequest().body(Map.of("erro", exception.getMessage()));
+    }
+
+    @ExceptionHandler(OpcoesInvalidasException.class)
+    public ResponseEntity<Map<String, String>> opcoesInvalidas(OpcoesInvalidasException exception) {
+        return ResponseEntity.badRequest().body(Map.of("erro", exception.getMessage()));
+    }
+
     @ExceptionHandler(EtapaInvalidaException.class)
     public ResponseEntity<Map<String, String>> etapaInvalida(EtapaInvalidaException exception) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("erro", exception.getMessage()));

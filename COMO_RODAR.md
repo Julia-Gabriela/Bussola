@@ -36,6 +36,9 @@ python -m http.server 8765 --directory frontend
 | Cadastro | http://127.0.0.1:8765/pages/cadastro.html |
 | Home autenticada | http://127.0.0.1:8765/pages/home.html |
 | Nova decisão | http://127.0.0.1:8765/pages/nova-decisao.html |
+| Brainstorming | `http://127.0.0.1:8765/pages/brainstorming.html?decisaoId=ID_DA_DECISAO` (após concluir a contextualização) |
+| Avaliação por critérios | `http://127.0.0.1:8765/pages/criterios.html?decisaoId=ID_DA_DECISAO` (após concluir Opções) |
+| Definição das opções | `http://127.0.0.1:8765/pages/opcoes.html?decisaoId=ID_DA_DECISAO` (use uma decisão sua na etapa 3 ou posterior) |
 | Sobre o projeto | http://127.0.0.1:8765/pages/sobre.html |
 | Swagger: testar a API | http://localhost:8080/swagger-ui/index.html |
 
@@ -102,19 +105,34 @@ Depois, siga **Para ligar no dia a dia**, no início deste arquivo.
 
 O dono da decisão vem do token; não envie `usuarioId`, status ou etapa. A Home já consulta as decisões do próprio usuário. O cálculo de progresso da Home continua com seu contrato existente de 6 etapas; criar uma decisão não conclui a contextualização nem libera etapas futuras.
 
-## Testar contextualização e brainstorming pelas telas
+## Confirmar o avanço entre etapas
+
+Nas telas de Contextualização, Brainstorming, Opções e Critérios, **Salvar e continuar** ou **Próxima etapa** abre a pergunta **Concluir esta etapa?**, depois da validação dos campos. A mensagem informa que a etapa concluída ficará apenas para consulta e não poderá mais ser editada.
+
+Para testar no navegador, mantenha **MySQL + backend + frontend** ligados e use uma decisão de teste:
+
+1. Preencha os campos obrigatórios e clique para avançar. Antes de confirmar, nenhum salvamento ou avanço é enviado por esse clique.
+2. Clique em **Continuar revisando** ou pressione **Esc**. A tela deve manter os dados digitados, a etapa atual e o foco no botão que abriu a confirmação.
+3. Abra novamente e clique em **Confirmar e avançar**. Só então a tela envia a conclusão ao backend e segue o fluxo. Em Critérios, Pesos continua pendente e aparece o aviso de avaliações salvas.
+4. **Salvar para depois** continua salvando sem abrir essa confirmação e sem encerrar a etapa. No Brainstorming, salvar ideias também não conclui a etapa.
+
+Essa confirmação pertence à interface. No Swagger, as rotas de conclusão continuam avançando diretamente quando a requisição é válida. Não houve mudança nos comandos de inicialização; após atualizar, reinicie o backend e use **Ctrl + F5** nas páginas.
+
+## Testar contextualização e brainstorming
+
+A integração agora inclui a página de Brainstorming, o cliente `decisao-api.js`, as rotas de contexto/ideias e `FluxoDecisaoControllerTest`. O fluxo disponível é **Home → Contextualização → Brainstorming → Opções → Critérios**. Pesos e Análise permanecem pendentes.
 
 Depois de atualizar o projeto, **reinicie o backend no IntelliJ** e atualize o navegador com **Ctrl + F5**. Não precisa criar tabelas nem mudar variáveis ou portas.
 
 1. Faça login e clique em **Iniciar decisão** na Home.
 2. Informe o título e, se quiser, o contexto. **Salvar para depois** mantém a decisão na etapa 1.
-3. Reabra pela Home, altere o contexto e clique em **Salvar e continuar**. Deve abrir o brainstorming (etapa 2 de 6).
+3. Reabra pela Home, altere o contexto e clique em **Salvar e continuar** e depois em **Confirmar e avançar**. Deve abrir o brainstorming (etapa 2 de 6).
 4. Selecione **Favorável**, **Desfavorável** ou **Dúvida**, escreva uma ideia e clique em **Adicionar**.
 5. Use **Editar** para mudar texto ou categoria. **Excluir** pede confirmação. Cada ação é salva no banco.
 6. Atualize a página ou retorne pela Home: as ideias devem continuar lá. Tanto o cartão da decisão quanto **Continuar** retomam o fluxo salvo.
-7. Clique em **Próxima etapa** depois de salvar ou cancelar o texto em edição. A decisão passa para **Opções (etapa 3)**, preservando as ideias e o status **Em andamento**.
+7. Clique em **Próxima etapa** depois de salvar ou cancelar o texto em edição e escolha **Confirmar e avançar**. A decisão passa para **Opções (etapa 3)**, preservando as ideias e o status **Em andamento**.
 
-A tela de Opções será entregue pela Dupla B; por enquanto aparece a confirmação com as ideias salvas. Depois de avançar, as etapas anteriores ficam apenas para consulta até a entrega da revisão de etapas. Não há quantidade mínima de ideias exigida pela documentação. Texto de ideia é obrigatório ao adicionar/editar; limite técnico: 16.000 caracteres, compatível com a coluna TEXT.
+A tela de Opções já está implementada em `opcoes.html`. A conclusão do brainstorming abre `opcoes.html?decisaoId=ID_DA_DECISAO` após salvar `etapaAtual: 3`. Depois de avançar, as etapas anteriores ficam apenas para consulta até a entrega da revisão de etapas. Não há quantidade mínima de ideias exigida pela documentação. Texto de ideia é obrigatório ao adicionar/editar; limite técnico: 16.000 caracteres, compatível com a coluna TEXT.
 
 Se o envio falhar sem confirmação, recarregue os dados antes de reenviar. No brainstorming, use **Recarregar dados**. Na criação, confira a Home para evitar duplicação. O que ainda não foi salvo no formulário não é recuperado ao sair.
 
@@ -141,7 +159,157 @@ Corpo de adicionar/editar ideia:
 Categorias aceitas: `FAVORAVEL`, `DESFAVORAVEL`, `DUVIDA`. Sem login: **401**. Dados inválidos: **400**. Decisão de outra pessoa ou ideia fora da decisão informada: **404**. Etapa incorreta ou decisão concluída: **409**. Repetir a conclusão da etapa imediatamente anterior não avança uma segunda vez.
 
 
+
 O login expira após **60 minutos sem requisições autenticadas**. Quando receber 401 por expiração, faça login de novo. O botão **Sair** da Home chama `POST /auth/logout` e remove a sessão local; fechar Authorize no Swagger apenas remove o token da interface.
+
+## Testar a definição das opções
+
+A tela **Defina suas opções** está em `frontend/pages/opcoes.html`. Ela exibe o nome da decisão apenas para consulta, permite salvar duas alternativas (A e B) com descrições e avançar para Critérios. O nome é definido na contextualização e não pode ser alterado em Opções, nem pela API. Os dados pertencem exclusivamente à conta autenticada.
+
+**A forma de ligar o projeto continua a mesma.** Reinicie o backend com os comandos/configurações que você já usa e aguarde **Started BussolaApplication**. Mantenha MySQL, backend e frontend ligados para testar o salvamento. Atualize a página com **Ctrl + F5**. Não há nova dependência, variável, porta ou migration; a API usa as tabelas `decisoes` e `opcoes` existentes.
+
+### Pré-requisito: decisão na etapa de opções
+
+Opções corresponde a `etapa_atual = 3` no banco, depois da contextualização (1) e do brainstorming (2). O indicador do Figma mostra **Etapa 2 de 5** porque conta as cinco etapas da análise, sem a contextualização. A Home continua contando o fluxo completo de seis etapas.
+
+O backend bloqueia o acesso antecipado com **409**. Criar uma decisão pela Home ainda a deixa na etapa 1; mudar o número na URL não libera etapas. Para chegar à etapa 3 pela interface, conclua a contextualização e o brainstorming conforme a seção anterior.
+
+**Opcional: testar Opções isoladamente com uma decisão fictícia:**
+
+1. Cadastre uma **conta de teste** pelo frontend e faça login nela.
+2. Abra o MySQL Workbench e conecte ao mesmo banco local usado pelo backend. Se seu MySQL está na porta **3307**, use essa porta na conexão; o padrão do guia é 3306.
+3. No Workbench, abra **File → Open SQL Script** e selecione `backend/src/test/resources/opcoes-desenvolvimento.sql` dentro do projeto.
+4. No editor do Workbench, substitua `SEU_EMAIL_DE_TESTE` pelo e-mail da conta de teste. Não precisa colocar senha no arquivo; execute o SQL completo pelo botão de raio.
+5. A consulta final mostra `decisao_id` e uma URL. Se aparecer “Nenhuma decisão criada”, confira o e-mail e se a conta foi cadastrada nesse banco.
+6. Abra a URL retornada **na mesma aba em que fez login**, ou atualize a Home e clique em **Continuar** na decisão com prefixo `[TESTE]`. A sessão fica no armazenamento da aba; se abrir outra, faça login nela também.
+
+Esse SQL é uma fixture manual para desenvolvimento: cria somente uma nova decisão fictícia na etapa 3 e não modifica decisões existentes. Cada execução válida cria outra decisão de teste. **Não é migration, não é executado automaticamente e não substitui a conclusão do brainstorming no fluxo normal.** O servidor continua exigindo a etapa correta. Não salve o e-mail pessoal alterado no Git.
+
+### Teste funcional pela tela
+
+1. Abra a decisão de teste. O título deve vir da API e aparecer como texto, sem campo de edição. Os campos A e B ficam disponíveis.
+2. Tente avançar sem preencher os nomes: a tela deve indicar os campos obrigatórios sem enviar a requisição.
+3. Preencha nomes diferentes para A e B e, opcionalmente, as descrições. Os nomes das alternativas aceitam até **200 caracteres** cada; as descrições aceitam até **16.000 caracteres** cada.
+4. Clique em **Salvar para depois**. Aguarde a confirmação. Recarregue a página: os valores devem continuar preenchidos e a decisão deve permanecer na etapa 3. Você pode editar e salvar novamente sem criar outro par de opções.
+5. Clique em **Próxima etapa** e teste **Continuar revisando**: os valores devem permanecer na tela sem avançar. Abra novamente e escolha **Confirmar e avançar**. O backend salva os dados e avança para a etapa 4 na mesma transação, mantendo o status **EM_ANDAMENTO**. O título original da decisão é preservado.
+6. A página `criterios.html?decisaoId=ID` abre com as duas opções salvas. Ao retomar pela Home, a decisão na etapa 4 ou posterior abre Critérios; as opções anteriores continuam disponíveis para consulta.
+7. Depois do avanço, edição/revisão de etapas anteriores depende da futura integração do fluxo de revisão com confirmação. Uma decisão concluída fica somente para consulta.
+
+Se uma falha de rede impedir a confirmação do salvamento, a tela preserva os valores digitados e bloqueia novos envios. Use **Recarregar dados** para consultar o que o servidor salvou; a tela pede confirmação antes de substituir o formulário. Alterações ainda não salvas não são recuperadas depois de fechar a aba. A página avisa ao tentar sair com alterações pendentes.
+
+**Teste visual:** iniciar apenas o frontend permite conferir a estrutura responsiva. Para ver os campos preenchidos com dados reais, validar a sessão, salvar ou avançar, também são necessários backend e MySQL. Sem sessão, a página encaminha ao login; sem ID, orienta abrir uma decisão pela Home.
+
+### Teste da API pelo Swagger
+
+Com MySQL e backend ligados, abra **http://localhost:8080/swagger-ui/index.html**, faça login em **POST /auth/login** e informe o `accessToken` em **Authorize**, conforme as instruções anteriores. Use o ID da decisão de teste.
+
+| Operação | Rota | Resultado esperado |
+| --- | --- | --- |
+| Carregar | GET /decisoes/{decisaoId}/opcoes | 200; título, etapa, status e opções; A/B são null quando ainda não foram salvas |
+| Salvar sem avançar | PUT /decisoes/{decisaoId}/opcoes | 200; mantém etapa 3 e IDs existentes |
+| Salvar e avançar | POST /decisoes/{decisaoId}/opcoes/concluir | 200; etapa 4, ainda EM_ANDAMENTO |
+
+Use este corpo no PUT e no POST, copiando em `titulo` o nome exato retornado pelo GET. Esse campo permanece no contrato da API para compatibilidade; não permite renomear a decisão. Enviar outro título retorna **409**, sem salvar as opções nem avançar:
+
+```json
+{
+  "titulo": "Aceitar estágio ou focar na faculdade?",
+  "opcaoA": {
+    "nome": "Aceitar o estágio",
+    "descricao": "Ganhar experiência e conciliar os horários."
+  },
+  "opcaoB": {
+    "nome": "Focar na faculdade",
+    "descricao": "Dedicar mais tempo às disciplinas e projetos."
+  }
+}
+```
+
+A resposta contém `decisaoId`, `titulo`, `etapaAtual`, `status`, `opcaoA` e `opcaoB`. Cada opção salva tem `id`, `nome` e `descricao`. Descrição vazia é armazenada como null. Para manter A/B estáveis, A corresponde ao menor ID e B ao próximo ID daquela decisão; as edições preservam esses IDs.
+
+Sem autenticação: **401**. Decisão inexistente ou de outra conta: **404**. Campos obrigatórios ausentes, limites excedidos ou nomes iguais (desconsiderando caixa e espaços nas pontas): **400**. Etapa incorreta ou alteração de decisão concluída: **409**. Reenviar a mesma conclusão na etapa 4 retorna os dados salvos sem duplicar opções nem avançar novamente; enviar dados diferentes retorna 409.
+
+**Integração entre as etapas:** `frontend/js/pages/opcoes-integracoes.js` já aponta para `criterios.html`; a navegação acrescenta `decisaoId`. O evento cancelável `bussola:opcoes-concluidas` continua disponível. Brainstorming abre `opcoes.html?decisaoId=ID` depois de concluir sua etapa. A retomada da Home passa por `nova-decisao.html`, consulta o estado real da decisão e encaminha a etapa 3 para Opções e as etapas 4 ou posteriores para Critérios. Pesos ainda depende da integração descrita abaixo.
+
+### Testes automatizados de Opções
+
+No PowerShell, dentro de `backend`, execute:
+
+```powershell
+.\mvnw.cmd "-Dtest=OpcoesServiceTest,OpcoesControllerTest" test
+```
+
+Espere **BUILD SUCCESS**. Os testes não usam MySQL: verificam regras de etapa, titularidade, preservação dos IDs, reenvio da conclusão, campos obrigatórios, limites, autenticação e CORS com repositórios simulados. Eles não substituem o teste funcional de persistência no MySQL descrito acima.
+
+## Testar a avaliação por critérios
+
+A página está em `frontend/pages/criterios.html`. **Continue usando os mesmos comandos e terminais para ligar o projeto.** Não há nova porta, variável, dependência ou migration. Reinicie o backend atualizado, espere **Started BussolaApplication**, mantenha MySQL e frontend ligados e atualize o navegador com **Ctrl + F5**.
+
+### Abrir e testar pela tela
+
+1. Faça login. Abra uma decisão que já passou por Opções e clique em **Próxima etapa**. A URL será `http://localhost:8765/pages/criterios.html?decisaoId=ID_DA_DECISAO`, com o número real da sua decisão.
+2. Para testar o fluxo completo, crie uma decisão pela Home, clique em **Salvar e continuar**, registre ideias no Brainstorming e avance para Opções. Preencha A/B e conclua Opções. A fixture `opcoes-desenvolvimento.sql` continua sendo uma alternativa opcional para testes isolados; não é necessária para percorrer as telas.
+3. Confira título e nomes das alternativas. A tela tem cinco critérios fixos e começa sem notas inventadas: **Segurança, Crescimento, Risco, Impacto emocional e Alinhamento a valores**.
+4. Selecione notas inteiras de **1 a 5**, usando os botões ou as setas do teclado dentro de cada grupo. Nos critérios favoráveis, 5 é mais favorável. **Em Risco, 1 significa menor risco e 5 significa maior risco.** Essa nota é salva como escolhida, sem inversão no banco.
+5. Preencha apenas algumas notas e clique em **Salvar para depois**. Espere a confirmação, recarregue e confira que as notas continuam lá. A decisão permanece em `etapaAtual: 4`.
+6. Use **Adicionar critério** para um aspecto pessoal. Nome obrigatório (até 200 caracteres), descrição opcional (até 1.000). Os nomes não podem se repetir; o limite é de **20 critérios no total** (5 fixos + até 15 personalizados). Formule o personalizado de modo que 5 seja mais favorável. Ele começa com peso 1, como os fixos. Adicionar e remover só são persistidos quando você salva ou avança. Remover pede confirmação e exclui também as notas daquele personalizado ao salvar. Os cinco fixos não podem ser removidos.
+7. Tente **Próxima etapa** com uma nota faltando: a tela deve focar o primeiro grupo incompleto e continuar na etapa atual. Depois, preencha A/B em todos os critérios, clique para avançar e escolha **Confirmar e avançar**. O backend salva e passa de **4 para 5**, mantendo a decisão **EM_ANDAMENTO**.
+8. Como **Pesos ainda não está implementada**, aparece a confirmação de que a avaliação foi salva. Nenhuma página inexistente é aberta. Ao retomar pela Home, Critérios fica disponível para consulta. A revisão de etapas anteriores ainda depende da futura integração de revisão com confirmação.
+
+O indicador **Etapa 3 de 5** segue o Figma e conta as etapas da análise; o banco/Home contam também a contextualização, por isso Critérios é a etapa 4 de 6.
+
+**Totais:** são somas brutas sem pesos, com indicação de parcial quando há notas faltantes. Não são uma recomendação: incluem a nota de Risco no sentido escolhido pelo usuário. A futura análise deve interpretar `sentido: MENOR_MELHOR` antes de comparar alternativas. Os pesos existentes não são redefinidos ao salvar notas.
+
+Se a conexão falhar sem confirmar a gravação, o formulário preserva as notas e bloqueia reenvios. Use **Recarregar dados** para conferir o que foi salvo; haverá confirmação antes de substituir alterações locais. A página avisa ao sair com alterações não salvas, mas não as recupera depois de fechar a aba.
+
+**Teste visual e funcional:** só o frontend permite verificar o cabeçalho e os estados sem dados. A tabela é montada com os critérios e as opções retornados pela API; para ver dados reais, validar a sessão, salvar e avançar, mantenha **MySQL + backend + frontend** ligados. Sem sessão, a tela encaminha ao login; sem ID válido, orienta abrir a decisão pela Home. Uma decisão de outra conta não pode ser consultada.
+
+### Testar Critérios no Swagger
+
+No navegador, abra **http://localhost:8080/swagger-ui/index.html**, faça login e informe o token em **Authorize** como explicado anteriormente. Use o ID de uma decisão sua que esteja na etapa 4 (conclua Opções antes).
+
+| Operação | Rota | Resultado esperado |
+| --- | --- | --- |
+| Consultar | GET /decisoes/{decisaoId}/criterios | 200; opções A/B, critérios, notas e sentido da escala; não grava nada |
+| Salvar parcial | PUT /decisoes/{decisaoId}/criterios | 200; mantém etapa 4; notas não preenchidas são null |
+| Concluir | POST /decisoes/{decisaoId}/criterios/concluir | 200; todas as notas preenchidas, etapa 5, EM_ANDAMENTO |
+
+Exemplo de corpo completo para PUT e POST:
+
+```json
+{
+  "criterios": [
+    { "nome": "Segurança", "notaA": 3, "notaB": 4 },
+    { "nome": "Crescimento", "notaA": 5, "notaB": 3 },
+    { "nome": "Risco", "notaA": 3, "notaB": 2 },
+    { "nome": "Impacto emocional", "notaA": 2, "notaB": 4 },
+    { "nome": "Alinhamento a valores", "notaA": 4, "notaB": 4 }
+  ]
+}
+```
+
+No PUT, pode trocar uma nota por `null` para testar o salvamento parcial. Envie sempre a **lista completa**: omitir um personalizado o remove com suas notas; omitir um fixo é inválido. Para adicionar, inclua outro objeto com `nome`, `descricao` opcional, `notaA` e `notaB`. Os nomes identificam os critérios dentro da decisão; reenvios preservam IDs. A interface não oferece renomeação de critérios.
+
+Sem autenticação: **401**. Decisão inexistente/de outra conta: **404**. Nota fora de 1–5, fracionária ou em texto, nome repetido, fixo ausente ou conclusão incompleta: **400**. Etapa incorreta/decisão concluída: **409**. Repetir a mesma conclusão na etapa 5 retorna os dados salvos sem avançar novamente; dados diferentes retornam 409. Para evidências, capture a rota, o código de resposta e o corpo, ocultando o token do trecho Curl.
+
+### Integração com as próximas telas
+
+- Brainstorming está integrada: sua conclusão persiste a etapa 3 e abre `opcoes.html?decisaoId=ID`. Ao consultar ideias de uma etapa já concluída, **Continuar decisão** retoma o estágio salvo pela API.
+- Opções já abre Critérios. Os IDs de A/B são preservados: A é a opção de menor ID, B é a seguinte.
+- Quando Pesos existir, configure `pesos` em `frontend/js/pages/criterios-integracoes.js`. A navegação acrescenta `decisaoId`. Outra integração pode interceptar o evento cancelável `bussola:criterios-concluidos`, com `detail: { decisaoId, etapa: 5 }`.
+- A API retorna `criterios[].id`, `codigo`, `nome`, `descricao`, `personalizado`, `peso`, `sentido`, `notaA` e `notaB`. IDs são null somente para os cinco critérios ainda não gravados; depois de salvar, são os IDs reais para Pesos/Avaliações. O GET não cria registros.
+- `sentido` é `MENOR_MELHOR` em Risco e `MAIOR_MELHOR` nos demais. Na futura comparação em que uma pontuação maior significa preferência, normalize Risco como `6 - nota` antes de aplicar seu peso. O total bruto desta tela não deve ser reutilizado como resultado final.
+- Enquanto Pesos não existe, a retomada da Home permanece em Critérios para consulta a partir da etapa 5. Ao entregar Pesos/Análise, atualize também o encaminhamento em `nova-decisao.js` para o estágio real do backend.
+
+### Testes automatizados de Critérios
+
+Em um PowerShell, **dentro da pasta `backend`**, execute:
+
+```powershell
+.\mvnw.cmd "-Dtest=CriteriosServiceTest,CriteriosControllerTest" test
+```
+
+Espere **BUILD SUCCESS**. Esses testes usam repositórios simulados, sem MySQL: verificam notas parciais, escala de Risco, validação, titularidade, IDs/pesos preservados, remoção de personalizados, conclusão idempotente, autenticação e CORS. Eles não substituem a conferência da persistência real pelo roteiro da tela e do Swagger acima.
 
 ## Testes automatizados
 
@@ -152,7 +320,7 @@ cd backend
 .\mvnw.cmd "-Dtest=*Test" test
 ```
 
-Espere **BUILD SUCCESS**. Esse comando seleciona as classes terminadas em `Test`, incluindo contextualização, brainstorming, nova decisão, autenticação, Home e Swagger. `FluxoDecisaoControllerTest` cobre as novas rotas com serviço real e repositories simulados, sem exigir MySQL.
+Espere **BUILD SUCCESS**. Esse comando seleciona as classes terminadas em `Test` presentes no repositório, incluindo cadastro, nova decisão, definição das opções, avaliação por critérios, autenticação, Home, CORS e Swagger. Elas usam repositórios simulados e não exigem MySQL. A suíte também inclui `FluxoDecisaoControllerTest`, que verifica contextualização, ideias e avanço do brainstorming.
 
 Para rodar também `BussolaApplicationTests` (contexto completo), configure as variáveis do banco e JWT nesse terminal e use `.\mvnw.cmd test`. Esse teste conecta ao MySQL e pode aplicar migrations pendentes.
 
@@ -182,8 +350,11 @@ Faça antes a primeira configuração da chave JWT. Deixe esse terminal aberto. 
 | Porta 8080 ocupada | Já pode existir um backend rodando. Pare a execução antiga antes de iniciar outra. |
 | `Failed to fetch` ou CORS | Backend ligado e tela aberta pela porta 8765, usando localhost ou 127.0.0.1. |
 | Site não abre na 8765 | Inicie o frontend e mantenha o terminal aberto. |
+| Login fica em `Entrando...` ou o servidor demora | O login aguarda até 15 segundos e libera o botão se não receber resposta. No PowerShell clássico, deixar texto selecionado pode pausar o backend: pressione **Esc** no terminal do backend, mantenha-o aberto e tente novamente. Se persistir, confira os erros no terminal. Após atualizar o JavaScript, use **Ctrl + F5** na página. |
+| Erro ao ler `idDaUrl` na nova decisão | Confira se `frontend/js/pages/decisao-api.js` está presente e carregado antes de `nova-decisao.js`/`brainstorming.js`. A integração atual inclui esse arquivo. Atualize os arquivos completos e use **Ctrl + F5**. |
 | `401` | Faça login novamente e use o token; no Swagger, clique em Authorize. |
 | `409` no cadastro | O e-mail já existe: faça login ou use outro e-mail de teste. |
 | `BUILD FAILURE` | Leia o erro; não significa que o backend iniciou. |
+| `cannot find symbol` para `EtapaInvalidaException` ou `IdeiaNaoEncontradaException` | Confira se os dois arquivos `.java` estão em `backend/src/main/java/br/com/bussola/exception/`, com o pacote `br.com.bussola.exception`. Esse erro ocorre antes da conexão ao banco; não exige trocar senha ou porta. Após obter a correção, execute os testes ou inicie novamente o backend. |
 
 **Resumo:** MySQL ligado → ▶ BussolaApplication → `.\rodar-frontend.ps1` na raiz → abrir login.

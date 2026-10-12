@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Avaliação por critérios — Bússola</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style/landing-page.css">
+    <link rel="stylesheet" href="../style/home.css">
+    <link rel="stylesheet" href="../style/fluxo-decisao.css">
+    <link rel="stylesheet" href="../style/criterios.css">
+    <link rel="stylesheet" href="../style/confirmacao-etapa.css">
+    <script src="../js/shared/confirmacao-etapa.js" defer></script>
+    <script src="../js/pages/criterios-integracoes.js" defer></script>
+    <script src="../js/pages/criterios.js" type="module"></script>
+</head>
+<body class="home-page fluxo-page criterios-page">
+    <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
+    <div class="home-scene" aria-hidden="true">
+        <img src="../assets/images/fundo-cadastro.png" alt="" class="home-map">
+        <div class="home-ring"></div>
+    </div>
+    <header class="home-header">
+        <div class="home-header-inner">
+            <a href="home.html" class="home-brand" aria-label="Bússola — Início"><span class="home-brand-mark"><img src="../assets/images/home/marca.png" alt=""></span><span>Bússola</span></a>
+            <nav class="home-nav" aria-label="Navegação principal">
+                <a href="home.html" class="home-nav-link"><img src="../assets/images/opcoes/inicio.svg" alt="" width="15" height="15">Início</a>
+                <button type="button" class="home-nav-link" id="historico"><img src="../assets/images/home/historico.svg" alt="" width="15" height="15">Histórico</button>
+            </nav>
+            <div class="home-account">
+                <button class="home-profile" type="button" id="perfil-botao" aria-expanded="false" aria-controls="perfil-menu" disabled>
+                    <span class="home-avatar" id="usuario-inicial" aria-hidden="true">…</span><span id="usuario-menu">Minha conta</span>
+                    <img src="../assets/images/home/menu.svg" alt="" width="14" height="14">
+                </button>
+                <div class="home-profile-panel" id="perfil-menu" hidden><strong id="perfil-nome"></strong><span id="perfil-email"></span></div>
+                <button type="button" class="home-exit" id="sair" aria-label="Sair da conta" title="Sair da conta"><img src="../assets/images/home/sair.svg" alt="" width="16" height="16"></button>
+            </div>
+        </div>
+    </header>
+    <main class="fluxo-conteudo criterios-conteudo" id="conteudo" aria-busy="true">
+        <ol class="fluxo-etapas" aria-label="Etapas da análise após contextualizar a decisão">
+            <li class="concluida"><span class="etapa-circulo" aria-label="Concluído">✓</span><span>Brainstorm</span></li>
+            <li class="concluida"><span class="etapa-circulo" aria-label="Concluído">✓</span><span>Opções</span></li>
+            <li class="atual" aria-current="step"><span class="etapa-circulo">3</span><span>Critérios</span></li>
+            <li><span class="etapa-circulo">4</span><span>Pesos</span></li>
+            <li><span class="etapa-circulo">5</span><span>Análise</span></li>
+        </ol>
+        <div class="criterios-abertura">
+            <div class="fluxo-intro">
+                <span class="fluxo-badge"><img src="../assets/images/criterios/etapa.svg" alt="" width="13" height="13">Etapa 3 de 5</span>
+                <h1>Avaliação por critérios</h1>
+                <p>Olhe para cada alternativa com mais clareza. Escolha uma nota de 1 a 5 para cada critério.</p>
+            </div>
+            <aside class="criterios-contexto" aria-labelledby="decisao-label">
+                <span id="decisao-label">Sua decisão</span>
+                <p class="criterios-decisao" id="decisao-resumo"></p>
+            </aside>
+        </div>
+        <div class="criterios-escala" id="escala">
+            <p><strong>Como avaliar</strong><span>1 = menos favorável <span aria-hidden="true">→</span> 5 = mais favorável</span></p>
+            <p class="criterios-escala-risco"><img src="../assets/images/criterios/risco.svg" alt="" width="16" height="16"><span><strong>Em Risco, a escala muda:</strong> 1 = menor risco · 5 = maior risco.</span></p>
+        </div>
+        <form id="criterios-form" novalidate>
+            <fieldset id="criterios-campos" disabled aria-describedby="escala">
+                <legend class="fluxo-sr-only">Notas dos critérios para as opções A e B</legend>
+                <section class="criterios-tabela" aria-label="Avaliação das alternativas">
+                    <div class="criterios-cabecalho criterios-grade">
+                        <div class="criterios-coluna-titulo"><span>Critério</span><small>O que importa para você</small></div>
+                        <div class="criterios-opcao cor-a"><span class="criterios-letra">A</span><span id="nome-a">Opção A</span></div>
+                        <div class="criterios-opcao cor-b"><span class="criterios-letra">B</span><span id="nome-b">Opção B</span></div>
+                    </div>
+                    <div id="criterios-lista"></div>
+                    <button type="button" class="criterios-adicionar" id="adicionar"><img src="../assets/images/criterios/adicionar.svg" width="14" height="14" alt="">Adicionar critério</button>
+                    <div class="criterios-totais criterios-grade" aria-live="polite" aria-atomic="true">
+                        <span id="total-rotulo">Total parcial (sem pesos)</span>
+                        <span class="cor-a"><span class="criterios-mobile">A: </span><strong id="total-a">0</strong><span id="maximo-a"> / 25</span></span>
+                        <span class="cor-b"><span class="criterios-mobile">B: </span><strong id="total-b">0</strong><span id="maximo-b"> / 25</span></span>
+                    </div>
+                </section>
+                <div class="criterios-resumo"><p id="progresso">Carregando avaliações…</p><p>As somas mostram as notas dadas, sem ajuste de risco ou pesos. Ainda não indicam a melhor opção.</p></div>
+                <div class="fluxo-acoes" id="acoes-edicao">
+                    <button type="submit" class="fluxo-salvar" id="salvar-criterios">Salvar para depois</button>
+                    <button type="submit" class="fluxo-proxima" id="avancar"><span>Próxima etapa</span><img src="../assets/images/opcoes/proxima.svg" alt="" width="17" height="17"></button>
+                </div>
+            </fieldset>
+        </form>
+        <div class="fluxo-feedback" id="feedback" role="status" tabindex="-1"><p id="mensagem">Carregando sua avaliação…</p>
+            <button type="button" id="recarregar" class="fluxo-salvar" hidden>Recarregar dados</button>
+            <button type="button" id="ir-pesos" class="fluxo-salvar" hidden>Continuar para pesos</button>
+        </div>
+    </main>
+    <dialog class="home-dialog criterios-dialog" id="novo-criterio" aria-labelledby="novo-titulo">
+        <form id="novo-form">
+            <h2 id="novo-titulo">Adicionar critério</h2>
+            <p>O que mais importa nessa decisão? O critério será avaliado nas duas opções.</p>
+            <label for="criterio-nome">Nome do critério</label><input id="criterio-nome" maxlength="200" required autocomplete="off" placeholder="Ex.: Tempo disponível" aria-describedby="novo-erro">
+            <label for="criterio-descricao">Descrição <span>(opcional)</span></label><textarea id="criterio-descricao" maxlength="1000" rows="3" placeholder="O que você quer considerar?"></textarea>
+            <p class="criterios-ajuda">Escreva de modo que 5 seja mais favorável. Ex.: “Economia” em vez de “Custo”.</p>
+            <p id="novo-erro" class="fluxo-erro-campo" role="alert"></p>
+            <div class="fluxo-acoes"><button type="button" id="cancelar-criterio" class="fluxo-salvar">Cancelar</button><button type="submit" class="fluxo-proxima">Adicionar</button></div>
+        </form>
+    </dialog>
+    <dialog class="home-dialog" id="aviso" aria-labelledby="aviso-titulo" aria-describedby="aviso-texto">
+        <h2 id="aviso-titulo"></h2><p id="aviso-texto"></p><form method="dialog"><button class="home-primary" autofocus>Entendi</button></form>
+    </dialog>
+    <noscript><p class="home-noscript">Ative o JavaScript para carregar e salvar suas avaliações.</p></noscript>
+</body>
+</html>

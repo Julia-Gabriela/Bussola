@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Defina suas opções — Bússola</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style/landing-page.css">
+    <link rel="stylesheet" href="../style/home.css">
+    <link rel="stylesheet" href="../style/fluxo-decisao.css">
+    <link rel="stylesheet" href="../style/opcoes.css">
+    <link rel="stylesheet" href="../style/confirmacao-etapa.css">
+    <script src="../js/shared/confirmacao-etapa.js" defer></script>
+    <script src="../js/pages/opcoes-integracoes.js" defer></script>
+    <script src="../js/pages/opcoes.js" defer></script>
+</head>
+<body class="home-page fluxo-page opcoes-page">
+    <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
+    <div class="home-scene" aria-hidden="true">
+        <img src="../assets/images/fundo-cadastro.png" alt="" class="home-map">
+        <div class="home-ring"></div>
+    </div>
+    <header class="home-header">
+        <div class="home-header-inner">
+            <a href="home.html" class="home-brand" aria-label="Bússola — Início"><span class="home-brand-mark"><img src="../assets/images/home/marca.png" alt=""></span><span>Bússola</span></a>
+            <nav class="home-nav" aria-label="Navegação principal">
+                <a href="home.html" class="home-nav-link"><img src="../assets/images/opcoes/inicio.svg" alt="" width="15" height="15">Início</a>
+                <button type="button" class="home-nav-link" id="historico"><img src="../assets/images/home/historico.svg" alt="" width="15" height="15">Histórico</button>
+            </nav>
+            <div class="home-account">
+                <button class="home-profile" type="button" id="perfil-botao" aria-expanded="false" aria-controls="perfil-menu" disabled>
+                    <span class="home-avatar" id="usuario-inicial" aria-hidden="true">…</span><span id="usuario-menu">Minha conta</span>
+                    <img src="../assets/images/home/menu.svg" alt="" width="14" height="14">
+                </button>
+                <div class="home-profile-panel" id="perfil-menu" hidden><strong id="perfil-nome"></strong><span id="perfil-email"></span></div>
+                <button type="button" class="home-exit" id="sair" aria-label="Sair da conta" title="Sair da conta"><img src="../assets/images/home/sair.svg" alt="" width="16" height="16"></button>
+            </div>
+        </div>
+    </header>
+    <main class="fluxo-conteudo" id="conteudo" aria-busy="true">
+        <ol class="fluxo-etapas" aria-label="Etapas da análise após contextualizar a decisão">
+            <li class="concluida"><span class="etapa-circulo" aria-label="Concluído">✓</span><span>Brainstorm</span></li>
+            <li class="atual" aria-current="step"><span class="etapa-circulo">2</span><span>Opções</span></li>
+            <li><span class="etapa-circulo">3</span><span>Critérios</span></li>
+            <li><span class="etapa-circulo">4</span><span>Pesos</span></li>
+            <li><span class="etapa-circulo">5</span><span>Análise</span></li>
+        </ol>
+        <div class="fluxo-intro">
+            <span class="fluxo-badge" title="Segunda etapa da análise, após contextualização e brainstorming"><img src="../assets/images/opcoes/etapa.svg" alt="" width="13" height="13">Etapa 2 de 5</span>
+            <h1>Defina suas opções</h1>
+            <p>Dê um nome a cada alternativa e descreva o que ela envolve. Isso vai ajudar você a comparar os dois caminhos nas próximas etapas.</p>
+        </div>
+        <form id="opcoes-form" novalidate>
+            <fieldset id="opcoes-campos" disabled>
+                <legend class="fluxo-sr-only">Nome da decisão e alternativas</legend>
+                <div class="opcoes-decisao">
+                    <div class="opcoes-decisao-label"><span>Sua decisão</span><p>Nome definido na contextualização.</p></div>
+                    <p id="titulo" class="opcoes-decisao-titulo"></p>
+                </div>
+                <div class="opcoes-grid">
+                    <section class="opcao-card opcao-a" aria-labelledby="opcao-a-titulo">
+                        <h2 id="opcao-a-titulo"><span class="opcao-letra" aria-hidden="true">A</span>Opção A</h2>
+                        <label for="opcao-a-nome">Nome da opção</label>
+                        <input id="opcao-a-nome" name="opcaoA" required maxlength="200" placeholder="Ex.: aceitar o estágio" autocomplete="off" aria-describedby="opcao-a-erro">
+                        <p class="fluxo-erro-campo" id="opcao-a-erro"></p>
+                        <label for="opcao-a-descricao">O que essa opção envolve? <span class="opcao-opcional">(opcional)</span></label>
+                        <textarea id="opcao-a-descricao" name="descricaoA" rows="5" maxlength="16000" placeholder="Pense nas mudanças, compromissos e possibilidades desse caminho." aria-describedby="descricao-a-erro"></textarea>
+                        <p class="fluxo-erro-campo" id="descricao-a-erro"></p>
+                    </section>
+                    <section class="opcao-card opcao-b" aria-labelledby="opcao-b-titulo">
+                        <h2 id="opcao-b-titulo"><span class="opcao-letra" aria-hidden="true">B</span>Opção B</h2>
+                        <label for="opcao-b-nome">Nome da opção</label>
+                        <input id="opcao-b-nome" name="opcaoB" required maxlength="200" placeholder="Ex.: focar na faculdade" autocomplete="off" aria-describedby="opcao-b-erro">
+                        <p class="fluxo-erro-campo" id="opcao-b-erro"></p>
+                        <label for="opcao-b-descricao">O que essa opção envolve? <span class="opcao-opcional">(opcional)</span></label>
+                        <textarea id="opcao-b-descricao" name="descricaoB" rows="5" maxlength="16000" placeholder="Pense nas mudanças, compromissos e possibilidades desse caminho." aria-describedby="descricao-b-erro"></textarea>
+                        <p class="fluxo-erro-campo" id="descricao-b-erro"></p>
+                    </section>
+                </div>
+                <p class="opcoes-dica"><strong>Para comparar melhor</strong><span>Prefira nomes específicos, como “Aceitar o estágio” e “Focar na faculdade”, em vez de apenas “Sim” e “Não”.</span></p>
+                <div class="fluxo-acoes" id="acoes-edicao">
+                    <button type="submit" id="salvar-opcoes" class="fluxo-salvar">Salvar para depois</button>
+                    <button type="submit" id="avancar" class="fluxo-proxima"><span>Próxima etapa</span><img src="../assets/images/opcoes/proxima.svg" alt="" width="17" height="17"></button>
+                </div>
+            </fieldset>
+        </form>
+        <div class="fluxo-feedback" id="feedback" role="status" aria-live="polite" tabindex="-1">
+            <p id="mensagem">Carregando sua decisão…</p>
+            <button type="button" id="recarregar" class="fluxo-salvar" hidden>Recarregar dados</button>
+            <button type="button" id="ir-criterios" class="fluxo-salvar" hidden>Continuar para critérios</button>
+        </div>
+    </main>
+    <dialog class="home-dialog" id="aviso" aria-labelledby="aviso-titulo" aria-describedby="aviso-texto">
+        <h2 id="aviso-titulo"></h2><p id="aviso-texto"></p>
+        <form method="dialog"><button class="home-primary" autofocus>Entendi</button></form>
+    </dialog>
+    <noscript><p class="home-noscript">Ative o JavaScript para carregar e salvar suas opções.</p></noscript>
+</body>
+</html>

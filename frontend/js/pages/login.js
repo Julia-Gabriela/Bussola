@@ -10,6 +10,7 @@ const ORIGEM_API = window.BUSSOLA_API_BASE || "http://localhost:8080";
  * O valor é JSON. Não contém senha, hash nem segredo do backend.
  */
 const CHAVE_SESSAO = "bussola.sessao";
+const TEMPO_LIMITE_LOGIN_MS = 15000;
 
 let enviando = false;
 
@@ -228,6 +229,8 @@ async function enviarLogin(evento) {
     const payload = montarPayload(formulario);
     enviando = true;
     definirEnviando(formulario, true);
+    const controlador = new AbortController();
+    const temporizador = setTimeout(() => controlador.abort(), TEMPO_LIMITE_LOGIN_MS);
     let autenticado = false;
     try {
         const resposta = await fetch(`${ORIGEM_API}/auth/login`, {
@@ -236,7 +239,8 @@ async function enviarLogin(evento) {
                 "Content-Type": "application/json",
                 "Accept": "application/json"
             },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
+            signal: controlador.signal
         });
         const corpo = await lerCorpo(resposta);
         if (resposta.status === 200 && guardarSessao(corpo)) {
@@ -250,8 +254,12 @@ async function enviarLogin(evento) {
         }
         tratarErroHttp(formulario, resposta.status, corpo);
     } catch (erro) {
-        mostrarMensagemGlobal(formulario, "Não foi possível entrar. Tente novamente.");
+        const mensagem = controlador.signal.aborted
+            ? "O servidor demorou para responder. Tente novamente em instantes."
+            : "Não foi possível entrar. Verifique sua conexão e tente novamente.";
+        mostrarMensagemGlobal(formulario, mensagem);
     } finally {
+        clearTimeout(temporizador);
         enviando = false;
         if (!autenticado) {
             definirEnviando(formulario, false);

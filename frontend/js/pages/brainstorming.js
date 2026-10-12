@@ -104,6 +104,7 @@
         formulario.hidden = somenteConsulta;
         el("concluir").hidden = somenteConsulta;
         el("proxima-etapa").hidden = !somenteConsulta;
+        el("continuar-decisao").href = "nova-decisao.html?decisaoId=" + encodeURIComponent(id);
         if (somenteConsulta && (decisao.status === "CONCLUIDA" || decisao.etapaAtual > 3)) {
             el("proxima-descricao").textContent = "Essas são as ideias salvas da sua decisão. A consulta não altera seu progresso.";
         }
@@ -158,10 +159,12 @@
             if (editando === ideiaId) limparFormulario();
         }, "Ideia excluída.");
     });
-    el("concluir").addEventListener("click", () => {
-        if (editando !== null || conteudo.value.trim()) return;
+    el("concluir").addEventListener("click", async () => {
+        if (ocupado || bloqueado || !editavel() || window.BussolaEtapas.aberta || editando !== null || conteudo.value.trim()) return;
+        if (!await window.BussolaEtapas.confirmarAvanco()) return;
         executar(async () => {
             decisao = await api.requisitar(`/decisoes/${id}/brainstorming/concluir`, "POST");
+            window.location.assign("opcoes.html?decisaoId=" + encodeURIComponent(id));
         }, "Brainstorming concluído. Suas ideias foram preservadas.");
     });
 
