@@ -18,9 +18,11 @@
 
     formulario.addEventListener("submit", async evento => {
         evento.preventDefault();
-        if (ocupado || bloqueado) return;
+        if (ocupado || bloqueado || window.BussolaEtapas.aberta) return;
         titulo.setCustomValidity(titulo.value.trim() ? "" : "Descreva sua decisão.");
         if (!formulario.reportValidity()) return;
+        const avancar = evento.submitter?.id !== "salvar-depois";
+        if (avancar && !await window.BussolaEtapas.confirmarAvanco()) return;
         ocupado = true;
         campos.disabled = true;
         mensagem.textContent = "Salvando…";
@@ -33,7 +35,7 @@
             window.history.replaceState(null, "", url);
             elemento("exemplos").hidden = true;
             elemento("ver-decisao").hidden = false;
-            if (evento.submitter?.id === "salvar-depois") {
+            if (!avancar) {
                 mensagem.textContent = "Título e contexto salvos. Você pode continuar depois pela Home.";
             } else {
                 await api.requisitar(`/decisoes/${id}/contexto/concluir`, "POST");
@@ -65,7 +67,13 @@
             elemento("usuario-nome").textContent = usuario.nomeCompleto;
             if (id) {
                 const decisao = await api.requisitar(`/decisoes/${id}`);
-                if (decisao.etapaAtual >= 2) { abrirBrainstorming(); return; }
+                if (decisao.etapaAtual >= 3) {
+                    const pagina = decisao.etapaAtual >= 4 ? "criterios.html" : "opcoes.html";
+                    bloqueado = true;
+                    window.location.replace(pagina + "?decisaoId=" + encodeURIComponent(id));
+                    return;
+                }
+                if (decisao.etapaAtual === 2) { abrirBrainstorming(); return; }
                 titulo.value = decisao.titulo;
                 contexto.value = decisao.contexto || "";
                 bloqueado = decisao.status !== "EM_ANDAMENTO";
