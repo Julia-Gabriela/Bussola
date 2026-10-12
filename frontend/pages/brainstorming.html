@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Brainstorming — Bússola</title>
+    <link rel="stylesheet" href="../style/landing-page.css">
+    <link rel="stylesheet" href="../style/home.css">
+    <link rel="stylesheet" href="../style/brainstorming.css">
+    <script src="../js/pages/decisao-api.js" defer></script>
+    <script src="../js/pages/brainstorming.js" defer></script>
+</head>
+<body class="home-page">
+    <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
+    <div class="home-scene" aria-hidden="true"><img src="../assets/images/fundo-cadastro.png" alt="" class="home-map"><div class="home-ring"></div></div>
+    <header class="home-header">
+        <div class="home-header-inner">
+            <a href="home.html" class="home-brand"><span class="home-brand-mark"><img src="../assets/images/home/marca.png" alt=""></span><span>Bússola</span></a>
+            <nav class="home-nav" aria-label="Navegação principal"><a href="home.html" class="home-nav-link">Início</a></nav>
+            <div class="home-account"><span id="usuario-nome">Minha conta</span></div>
+        </div>
+    </header>
+    <main id="conteudo" class="brainstorming">
+        <p class="etapa" id="etapa">Brainstorming</p>
+        <h1>Brainstorming</h1>
+        <p class="introducao">Lance aqui seus pensamentos sobre a decisão: <strong id="decisao-titulo"></strong></p>
+        <details id="contexto-painel" hidden><summary>Contexto da decisão</summary><p id="decisao-contexto"></p></details>
+        <p id="mensagem" role="status" aria-live="polite">Carregando sua decisão…</p>
+        <button id="recarregar" class="home-secondary" type="button" hidden>Recarregar dados</button>
+        <section id="proxima-etapa" class="brain-card" hidden>
+            <h2>Brainstorming concluído</h2>
+            <p id="proxima-descricao">Suas ideias estão salvas. A próxima etapa é definir as duas opções da decisão. Essa tela ainda está em desenvolvimento.</p>
+            <a href="home.html" class="home-secondary">Ir para a Home</a>
+        </section>
+        <form id="ideia-form" class="brain-card">
+            <fieldset id="campos" disabled>
+                <legend id="form-titulo">Adicionar ideia</legend>
+                <div class="categorias" role="group" aria-label="Categoria da ideia">
+                    <label class="favoravel"><input type="radio" name="categoria" value="FAVORAVEL" checked> Favorável</label>
+                    <label class="desfavoravel"><input type="radio" name="categoria" value="DESFAVORAVEL"> Desfavorável</label>
+                    <label class="duvida"><input type="radio" name="categoria" value="DUVIDA"> Dúvida</label>
+                </div>
+                <label for="conteudo-ideia" class="texto-label">Seu pensamento</label>
+                <div class="entrada-ideia">
+                    <textarea id="conteudo-ideia" name="conteudo" rows="2" required maxlength="16000" placeholder="Ex.: Posso aprender na prática o que vejo em teoria…"></textarea>
+                    <button class="home-primary" type="submit" id="salvar-ideia">+ Adicionar</button>
+                </div>
+                <button class="home-secondary" id="cancelar-edicao" type="button" hidden>Cancelar edição</button>
+            </fieldset>
+        </form>
+        <section aria-label="Ideias organizadas por categoria" id="ideias"></section>
+        <div class="acoes-etapa"><button id="concluir" type="button" class="home-primary" disabled>Próxima etapa →</button></div>
+    </main>
+    <dialog id="confirmar-exclusao" class="home-dialog" aria-labelledby="exclusao-titulo">
+        <h2 id="exclusao-titulo">Excluir esta ideia?</h2>
+        <p id="ideia-excluir"></p>
+        <div class="dialog-acoes"><button id="cancelar-exclusao" class="home-secondary" type="button">Cancelar</button><button id="excluir" class="home-primary" type="button">Excluir ideia</button></div>
+    </dialog>
+</body>
+</html>

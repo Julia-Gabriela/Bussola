@@ -1,0 +1,39 @@
+.brainstorming { position: relative; max-width: 850px; margin: 48px auto; padding: 0 24px; }
+.brainstorming h1 { font-size: 24px; color: var(--home-text); margin: 12px 0; }
+.etapa { display: inline-block; border: 1px solid #d4ad6833; border-radius: 24px; padding: 8px 14px; color: var(--home-accent); font-size: 13px; }
+.introducao { color: var(--muted); line-height: 1.7; overflow-wrap: anywhere; }
+.introducao strong { color: #d6c09a; }
+.brain-card { margin: 24px 0; padding: 24px; background: #211b14ed; border: 1px solid #d4ad6833; border-radius: 12px; }
+.brain-card h2 { font-size: 20px; }
+.brain-card p { line-height: 1.7; color: var(--muted); }
+.brain-card fieldset { margin: 0; padding: 0; min-width: 0; border: 0; }
+.brain-card legend { font-size: 14px; margin-bottom: 16px; color: var(--muted); }
+.categorias { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+.categorias label { padding: 9px 12px; border: 1px solid currentColor; border-radius: 6px; cursor: pointer; font-size: 14px; }
+.categorias label:has(input:checked) { background: #ffffff10; outline: 1px solid currentColor; }
+.categorias input { accent-color: var(--home-accent); }
+.favoravel { color: #a5c48e; }
+.desfavoravel { color: #eea080; }
+.duvida { color: #e1bb65; }
+.texto-label { display: block; color: var(--muted); font-size: 13px; margin-bottom: 8px; }
+.entrada-ideia { display: flex; align-items: stretch; gap: 12px; }
+.entrada-ideia .home-primary, .acoes-etapa .home-primary { width: auto; flex-shrink: 0; padding-inline: 24px; }
+.entrada-ideia textarea { box-sizing: border-box; flex: 1; min-width: 0; resize: vertical; padding: 12px; font: inherit; color: var(--home-text); background: #2b2218; border: 1px solid #d4ad6833; border-radius: 8px; }
+.brainstorming :focus-visible { outline: 2px solid var(--home-accent); outline-offset: 3px; }
+.grupo-ideias { margin: 28px 0; }
+.grupo-ideias h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+.grupo-ideias ul { list-style: none; padding: 0; display: flex; gap: 10px; flex-wrap: wrap; }
+.ideia { max-width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 8px; background: #ffffff05; border: 1px solid currentColor; border-radius: 8px; padding: 8px 12px; }
+.ideia p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; min-width: 0; line-height: 1.6; }
+.ideia button { flex-shrink: 0; font: inherit; font-size: 12px; color: inherit; background: transparent; border: 0; padding: 8px; cursor: pointer; text-decoration: underline; }
+.acoes-etapa { display: flex; justify-content: flex-end; margin: 32px 0; }
+#mensagem { line-height: 1.6; }
+#mensagem:empty { display: none; }
+#contexto-painel { color: var(--muted); }
+#decisao-contexto, #ideia-excluir { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 250px; overflow: auto; }
+#cancelar-edicao { margin-top: 12px; }
+.dialog-acoes { display: flex; flex-wrap: wrap; gap: 12px; }
+.dialog-acoes button { width: auto; flex: 1; }
+#usuario-nome { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.brainstorming button:disabled { opacity: .5; cursor: not-allowed; }
+@media (max-width: 600px) { .brainstorming { margin: 28px auto; padding: 0 16px; } .brain-card { padding: 16px; } .entrada-ideia { flex-direction: column; } .ideia { flex-wrap: wrap; } .ideia p { flex-basis: 100%; } #usuario-nome { max-width: 150px; } }

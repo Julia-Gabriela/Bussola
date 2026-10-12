@@ -1,0 +1,203 @@
+(() => {
+    "use strict";
+    const api = window.BussolaDecisaoApi;
+    const el = id => document.getElementById(id);
+    const formulario = el("ideia-form");
+    const conteudo = el("conteudo-ideia");
+    const dialogo = el("confirmar-exclusao");
+    const categorias = [
+        { codigo: "FAVORAVEL", nome: "Favorável", classe: "favoravel" },
+        { codigo: "DESFAVORAVEL", nome: "Desfavorável", classe: "desfavoravel" },
+        { codigo: "DUVIDA", nome: "Dúvida", classe: "duvida" },
+        { codigo: null, nome: "Sem categoria", classe: "" }
+    ];
+    let id;
+    let decisao;
+    let ideias = [];
+    let editando = null;
+    let excluindo = null;
+    let ocupado = true;
+    let bloqueado = false;
+
+    const editavel = () => decisao?.status === "EM_ANDAMENTO" && decisao.etapaAtual === 2;
+
+    function atualizarControles() {
+        const desabilitado = ocupado || bloqueado || !editavel();
+        el("campos").disabled = desabilitado;
+        el("concluir").disabled = desabilitado || editando !== null || conteudo.value.trim() !== "";
+        el("concluir").title = editando !== null || conteudo.value.trim() !== "" ? "Salve ou cancele sua ideia antes de avançar." : "";
+        document.querySelectorAll("#ideias button").forEach(botao => { botao.disabled = desabilitado; });
+        el("excluir").disabled = desabilitado;
+        el("recarregar").disabled = ocupado;
+    }
+
+    function limparFormulario() {
+        editando = null;
+        formulario.reset();
+        conteudo.setCustomValidity("");
+        el("form-titulo").textContent = "Adicionar ideia";
+        el("salvar-ideia").textContent = "+ Adicionar";
+        el("cancelar-edicao").hidden = true;
+        atualizarControles();
+    }
+
+    function renderizar() {
+        const destino = el("ideias");
+        destino.replaceChildren();
+        if (!ideias.length) {
+            const vazio = document.createElement("p");
+            vazio.textContent = "Nenhuma ideia registrada. Escreva o que vem à mente sobre essa decisão.";
+            destino.append(vazio);
+        }
+        categorias.forEach(categoria => {
+            const itens = ideias.filter(ideia => categoria.codigo === null
+                ? !categorias.some(c => c.codigo !== null && c.codigo === ideia.categoria)
+                : ideia.categoria === categoria.codigo);
+            if (!itens.length) return;
+            const grupo = document.createElement("section");
+            grupo.className = `grupo-ideias ${categoria.classe}`;
+            const titulo = document.createElement("h2");
+            titulo.textContent = `${categoria.nome} (${itens.length})`;
+            const lista = document.createElement("ul");
+            itens.forEach(ideia => {
+                const item = document.createElement("li");
+                item.className = "ideia";
+                const texto = document.createElement("p");
+                texto.textContent = ideia.conteudo;
+                item.append(texto);
+                if (editavel()) {
+                    const editar = document.createElement("button");
+                    editar.type = "button";
+                    editar.textContent = "Editar";
+                    editar.setAttribute("aria-label", `Editar ideia: ${ideia.conteudo}`);
+                    editar.addEventListener("click", () => {
+                        if (ocupado || bloqueado) return;
+                        if ((editando !== null || conteudo.value.trim()) && !window.confirm("Descartar o texto ainda não salvo para editar esta ideia?")) return;
+                        editando = ideia.id;
+                        conteudo.value = ideia.conteudo;
+                        formulario.elements.categoria.value = categorias.some(c => c.codigo === ideia.categoria && c.codigo !== null) ? ideia.categoria : "FAVORAVEL";
+                        el("form-titulo").textContent = "Editar ideia e categoria";
+                        el("salvar-ideia").textContent = "Salvar alteração";
+                        el("cancelar-edicao").hidden = false;
+                        conteudo.setCustomValidity("");
+                        atualizarControles();
+                        conteudo.focus();
+                    });
+                    const excluir = document.createElement("button");
+                    excluir.type = "button";
+                    excluir.textContent = "Excluir";
+                    excluir.setAttribute("aria-label", `Excluir ideia: ${ideia.conteudo}`);
+                    excluir.addEventListener("click", () => {
+                        if (ocupado || bloqueado) return;
+                        excluindo = ideia.id;
+                        el("ideia-excluir").textContent = ideia.conteudo;
+                        dialogo.showModal();
+                    });
+                    item.append(editar, excluir);
+                }
+                lista.append(item);
+            });
+            grupo.append(titulo, lista);
+            destino.append(grupo);
+        });
+        const somenteConsulta = !editavel();
+        formulario.hidden = somenteConsulta;
+        el("concluir").hidden = somenteConsulta;
+        el("proxima-etapa").hidden = !somenteConsulta;
+        if (somenteConsulta && (decisao.status === "CONCLUIDA" || decisao.etapaAtual > 3)) {
+            el("proxima-descricao").textContent = "Essas são as ideias salvas da sua decisão. A consulta não altera seu progresso.";
+        }
+        el("etapa").textContent = `Etapa ${decisao.etapaAtual} de 6 · ${editavel() ? "Brainstorming" : "Ideias salvas"}`;
+        atualizarControles();
+    }
+
+    async function executar(acao, sucesso) {
+        if (ocupado || bloqueado || !editavel()) return;
+        ocupado = true;
+        el("mensagem").textContent = "Salvando…";
+        atualizarControles();
+        try {
+            await acao();
+            el("mensagem").textContent = sucesso;
+            renderizar();
+        } catch (erro) {
+            bloqueado = Boolean(erro.incerto || erro.status === 409 || erro.status === 404 || api.encerrada);
+            el("mensagem").textContent = erro.message;
+            el("recarregar").hidden = false;
+        } finally {
+            ocupado = false;
+            atualizarControles();
+        }
+    }
+
+    formulario.addEventListener("submit", evento => {
+        evento.preventDefault();
+        conteudo.setCustomValidity(conteudo.value.trim() ? "" : "Escreva uma ideia antes de salvar.");
+        if (!formulario.reportValidity()) return;
+        const dados = { conteudo: conteudo.value.trim(), categoria: formulario.elements.categoria.value };
+        executar(async () => {
+            const ideia = await api.requisitar(`/decisoes/${id}/ideias${editando === null ? "" : `/${editando}`}`, editando === null ? "POST" : "PUT", dados);
+            if (editando === null) ideias.push(ideia);
+            else ideias = ideias.map(item => item.id === editando ? ideia : item);
+            limparFormulario();
+        }, "Ideia salva.");
+    });
+    conteudo.addEventListener("input", () => {
+        conteudo.setCustomValidity("");
+        el("cancelar-edicao").hidden = editando === null && conteudo.value === "";
+        atualizarControles();
+    });
+    el("cancelar-edicao").addEventListener("click", limparFormulario);
+    el("cancelar-exclusao").addEventListener("click", () => dialogo.close());
+    el("excluir").addEventListener("click", () => {
+        const ideiaId = excluindo;
+        dialogo.close();
+        executar(async () => {
+            await api.requisitar(`/decisoes/${id}/ideias/${ideiaId}`, "DELETE");
+            ideias = ideias.filter(ideia => ideia.id !== ideiaId);
+            if (editando === ideiaId) limparFormulario();
+        }, "Ideia excluída.");
+    });
+    el("concluir").addEventListener("click", () => {
+        if (editando !== null || conteudo.value.trim()) return;
+        executar(async () => {
+            decisao = await api.requisitar(`/decisoes/${id}/brainstorming/concluir`, "POST");
+        }, "Brainstorming concluído. Suas ideias foram preservadas.");
+    });
+
+    async function carregar() {
+        ocupado = true;
+        atualizarControles();
+        try {
+            id = api.idDaUrl();
+            if (!id) throw new Error("Selecione uma decisão na Home para começar.");
+            const usuario = await api.requisitar("/auth/me");
+            el("usuario-nome").textContent = usuario.nomeCompleto;
+            decisao = await api.requisitar(`/decisoes/${id}`);
+            if (decisao.etapaAtual < 2) {
+                bloqueado = true;
+                window.location.replace(`nova-decisao.html?decisaoId=${encodeURIComponent(id)}`);
+                return;
+            }
+            ideias = await api.requisitar(`/decisoes/${id}/ideias`);
+            el("decisao-titulo").textContent = decisao.titulo;
+            el("decisao-contexto").textContent = decisao.contexto || "";
+            el("contexto-painel").hidden = !decisao.contexto;
+            bloqueado = false;
+            limparFormulario();
+            renderizar();
+            el("mensagem").textContent = "";
+            el("recarregar").hidden = true;
+        } catch (erro) {
+            bloqueado = true;
+            el("mensagem").textContent = erro.message;
+            el("recarregar").hidden = false;
+        } finally {
+            ocupado = false;
+            atualizarControles();
+        }
+    }
+    el("recarregar").addEventListener("click", carregar);
+    window.addEventListener("pageshow", evento => { if (evento.persisted) window.location.reload(); });
+    carregar();
+})();
