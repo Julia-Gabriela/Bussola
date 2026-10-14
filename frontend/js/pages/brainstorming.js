@@ -18,8 +18,45 @@
     let excluindo = null;
     let ocupado = true;
     let bloqueado = false;
+    let referenciaForm = null;
 
-    const editavel = () => decisao?.status === "EM_ANDAMENTO" && decisao.etapaAtual === 2;
+    /**
+     * Fotografa o rascunho da ideia, inclusive a edição ainda aberta.
+     *
+     * @returns {string} texto, categoria e ideia em edição
+     */
+    function fotoFormulario() {
+        return JSON.stringify({
+            editando,
+            conteudo: conteudo.value,
+            categoria: formulario.elements.categoria.value
+        });
+    }
+
+    /**
+     * Indica rascunho diferente do último estado estável ou exclusão ainda não confirmada.
+     * Ideias já gravadas pelo botão Adicionar, Salvar ou Excluir não entram aqui.
+     *
+     * @returns {boolean} true quando sair perderia o que está no formulário ou na exclusão aberta
+     */
+    function sujo() {
+        return excluindo !== null || (referenciaForm !== null && fotoFormulario() !== referenciaForm);
+    }
+
+    /**
+     * Considera o formulário atual como já compatível com o que está salvo.
+     *
+     * @returns {void}
+     */
+    function gravarReferencia() {
+        referenciaForm = fotoFormulario();
+        window.BussolaAlteracoes.refletir(el("mensagem"), false);
+    }
+
+    window.BussolaAlteracoes.registrar({ sujo, ocupado: () => ocupado });
+
+    const emRevisao = () => window.BussolaRevisao.emRevisao(decisao?.etapaAtual, 2) && decisao?.status === "EM_ANDAMENTO";
+    const editavel = () => decisao?.status === "EM_ANDAMENTO" && (decisao.etapaAtual === 2 || emRevisao());
 
     function atualizarControles() {
         const desabilitado = ocupado || bloqueado || !editavel();
@@ -39,6 +76,7 @@
         el("salvar-ideia").textContent = "+ Adicionar";
         el("cancelar-edicao").hidden = true;
         atualizarControles();
+        gravarReferencia();
     }
 
     function renderizar() {
@@ -81,6 +119,7 @@
                         el("cancelar-edicao").hidden = false;
                         conteudo.setCustomValidity("");
                         atualizarControles();
+                        gravarReferencia();
                         conteudo.focus();
                     });
                     const excluir = document.createElement("button");
@@ -91,6 +130,7 @@
                         if (ocupado || bloqueado) return;
                         excluindo = ideia.id;
                         el("ideia-excluir").textContent = ideia.conteudo;
+                        window.BussolaAlteracoes.refletir(el("mensagem"), true);
                         dialogo.showModal();
                     });
                     item.append(editar, excluir);
@@ -102,8 +142,11 @@
         });
         const somenteConsulta = !editavel();
         formulario.hidden = somenteConsulta;
-        el("concluir").hidden = somenteConsulta;
+        el("concluir").hidden = somenteConsulta || emRevisao();
         el("proxima-etapa").hidden = !somenteConsulta;
+        window.BussolaRevisao.sincronizar({
+            etapaAtual: decisao.etapaAtual, status: decisao.status, etapaPagina: 2, decisaoId: id
+        });
         el("continuar-decisao").href = "nova-decisao.html?decisaoId=" + encodeURIComponent(id);
         if (somenteConsulta && (decisao.status === "CONCLUIDA" || decisao.etapaAtual > 3)) {
             el("proxima-descricao").textContent = "Essas são as ideias salvas da sua decisão. A consulta não altera seu progresso.";
@@ -122,7 +165,7 @@
             el("mensagem").textContent = sucesso;
             renderizar();
         } catch (erro) {
-            bloqueado = Boolean(erro.incerto || erro.status === 409 || erro.status === 404 || api.encerrada);
+            bloqueado = Boolean(erro.status === 404 || api.encerrada);
             el("mensagem").textContent = erro.message;
             el("recarregar").hidden = false;
         } finally {
@@ -147,11 +190,25 @@
         conteudo.setCustomValidity("");
         el("cancelar-edicao").hidden = editando === null && conteudo.value === "";
         atualizarControles();
+        window.BussolaAlteracoes.refletir(el("mensagem"), sujo());
+    });
+    formulario.addEventListener("change", () => {
+        window.BussolaAlteracoes.refletir(el("mensagem"), sujo());
     });
     el("cancelar-edicao").addEventListener("click", limparFormulario);
-    el("cancelar-exclusao").addEventListener("click", () => dialogo.close());
+    el("cancelar-exclusao").addEventListener("click", () => {
+        excluindo = null;
+        dialogo.close();
+        window.BussolaAlteracoes.refletir(el("mensagem"), sujo());
+    });
+    dialogo.addEventListener("close", () => {
+        if (excluindo === null) return;
+        excluindo = null;
+        window.BussolaAlteracoes.refletir(el("mensagem"), sujo());
+    });
     el("excluir").addEventListener("click", () => {
         const ideiaId = excluindo;
+        excluindo = null;
         dialogo.close();
         executar(async () => {
             await api.requisitar(`/decisoes/${id}/ideias/${ideiaId}`, "DELETE");
@@ -172,10 +229,10 @@
         ocupado = true;
         atualizarControles();
         try {
+            const usuario = await api.requisitar("/auth/me");
+            window.BussolaCabecalho.preencherUsuario(usuario);
             id = api.idDaUrl();
             if (!id) throw new Error("Selecione uma decisão na Home para começar.");
-            const usuario = await api.requisitar("/auth/me");
-            el("usuario-nome").textContent = usuario.nomeCompleto;
             decisao = await api.requisitar(`/decisoes/${id}`);
             if (decisao.etapaAtual < 2) {
                 bloqueado = true;

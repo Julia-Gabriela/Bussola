@@ -41,6 +41,9 @@ public class Opcao {
     @Column(name = "descricao", columnDefinition = "TEXT")
     private String descricao;
 
+    @Column(name = "avaliacao_pendente", nullable = false)
+    private boolean avaliacaoPendente;
+
     @OneToMany(mappedBy = "opcao", fetch = FetchType.LAZY)
     private List<Avaliacao> avaliacoes = new ArrayList<>();
 

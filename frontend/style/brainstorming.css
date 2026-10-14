@@ -34,6 +34,7 @@
 #cancelar-edicao { margin-top: 12px; }
 .dialog-acoes { display: flex; flex-wrap: wrap; gap: 12px; }
 .dialog-acoes button { width: auto; flex: 1; }
-#usuario-nome { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.brainstorming .fluxo-etapas { margin-bottom: 28px; }
 .brainstorming button:disabled { opacity: .5; cursor: not-allowed; }
-@media (max-width: 600px) { .brainstorming { margin: 28px auto; padding: 0 16px; } .brain-card { padding: 16px; } .entrada-ideia { flex-direction: column; } .ideia { flex-wrap: wrap; } .ideia p { flex-basis: 100%; } #usuario-nome { max-width: 150px; } }
+.brainstorming .fluxo-etapas button:disabled { opacity: 1; cursor: pointer; }
+@media (max-width: 600px) { .brainstorming { margin: 28px auto; padding: 0 16px; } .brain-card { padding: 16px; } .entrada-ideia { flex-direction: column; } .ideia { flex-wrap: wrap; } .ideia p { flex-basis: 100%; } }

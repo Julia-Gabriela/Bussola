@@ -4,12 +4,13 @@ import { configurarConta } from "../shared/conta.js";
 const el = id => document.getElementById(id);
 const id = new URLSearchParams(window.location.search).get("decisaoId");
 const rotas = window.BUSSOLA_CRITERIOS_ROTAS || {};
-let decisao = null, itens = [], ocupado = false, alterado = false, encerrada = false;
+let decisao = null, itens = [], ocupado = false, encerrada = false, referencia = null;
 const api = criarApi(() => {
-    encerrada = true; alterado = false;
+    encerrada = true; referencia = null;
     window.location.replace("login.html?motivo=sessao-expirada");
 });
-const editavel = () => decisao?.etapaAtual === 4 && decisao.status === "EM_ANDAMENTO";
+const editavel = () => decisao?.status === "EM_ANDAMENTO"
+    && (decisao.etapaAtual === 4 || window.BussolaRevisao.emRevisao(decisao.etapaAtual, 4));
 const chaveNome = nome => nome.trim().toLocaleLowerCase("pt-BR");
 
 function aviso(titulo, mensagem) {
@@ -20,12 +21,14 @@ function aviso(titulo, mensagem) {
 function estado(valor) {
     ocupado = valor;
     el("conteudo").setAttribute("aria-busy", String(valor));
-    el("criterios-campos").disabled = valor || !editavel() || encerrada;
-    for (const nome of ["recarregar", "ir-pesos", "sair"]) el(nome).disabled = valor;
+    const formularioBloqueado = valor || !editavel() || encerrada;
+    el("criterios-campos").disabled = formularioBloqueado;
+    el("salvar-criterios").disabled = formularioBloqueado;
+    el("avancar").disabled = formularioBloqueado;
+    for (const nome of ["recarregar", "ir-pesos", "sair", "confirmar-a", "confirmar-b"]) el(nome).disabled = valor;
 }
 const preencherConta = configurarConta({ requisitar: api.requisitar, aviso, rotas,
-    podeSair: () => !ocupado && (!alterado || window.confirm("Há avaliações não salvas. Deseja sair mesmo assim?")),
-    aoSair: () => { alterado = false; }, ocupado: estado });
+    podeSair: () => !ocupado, aoSair: () => { referencia = null; }, ocupado: estado });
 
 function criar(tag, classe, texto) {
     const elemento = document.createElement(tag);
@@ -105,7 +108,101 @@ function totais() {
     el("total-rotulo").textContent = completa ? "Total (sem pesos)" : "Total parcial (sem pesos)";
     el("progresso").textContent = preenchidas + " de " + itens.length * 2 + " avaliações preenchidas";
 }
-function marcarAlterado() { alterado = true; el("mensagem").textContent = "Alterações ainda não salvas."; }
+/**
+ * Fotografa nomes, descrições e notas, inclusive critérios adicionados ou removidos.
+ *
+ * @returns {string} estado comparável da avaliação
+ */
+function foto() {
+    return JSON.stringify(itens.map(item => ({
+        id: item.id ?? null,
+        nome: item.nome,
+        descricao: item.descricao ?? null,
+        notaA: item.notaA,
+        notaB: item.notaB
+    })));
+}
+
+/**
+ * Compara a avaliação visível com o último carregamento ou salvamento.
+ *
+ * @returns {boolean} true quando há nota, critério ou texto ainda não gravado
+ */
+function sujo() {
+    return referencia !== null && foto() !== referencia;
+}
+
+function marcarAlterado() {
+    window.BussolaAlteracoes.refletir(el("mensagem"), sujo());
+}
+
+window.BussolaAlteracoes.registrar({ sujo, ocupado: () => ocupado });
+
+/**
+ * Mostra quais alternativas precisam de confirmação das notas.
+ * Os dados vêm do backend. Abrir a página ou salvar não remove a pendência.
+ *
+ * @param {object} dados resposta de critérios, com avaliacaoPendenteA, avaliacaoPendenteB, versaoAvaliacao e os nomes das opções
+ * @returns {void}
+ */
+function atualizarPendencia(dados) {
+    const pendenteA = dados.avaliacaoPendenteA === true;
+    const pendenteB = dados.avaliacaoPendenteB === true;
+    const aviso = el("aviso-pendencia");
+    aviso.hidden = !pendenteA && !pendenteB;
+    const nomes = [];
+    if (pendenteA) nomes.push("A (" + dados.opcaoA.nome + ")");
+    if (pendenteB) nomes.push("B (" + dados.opcaoB.nome + ")");
+    el("pendencia-alternativas").textContent = nomes.length
+        ? "Alternativa" + (nomes.length > 1 ? "s" : "") + " para revisar: " + nomes.join(" e ") + "."
+        : "";
+    const botaoA = el("confirmar-a");
+    const botaoB = el("confirmar-b");
+    botaoA.hidden = !pendenteA;
+    botaoB.hidden = !pendenteB;
+    botaoA.textContent = "Confirmar notas de " + dados.opcaoA.nome;
+    botaoB.textContent = "Confirmar notas de " + dados.opcaoB.nome;
+    el("avancar").hidden = window.BussolaRevisao.emRevisao(dados.etapaAtual, 4) || pendenteA || pendenteB;
+}
+
+/**
+ * Confirma explicitamente as notas de uma alternativa, sem alterá-las.
+ * Envia a versão carregada. Se as avaliações mudaram depois, o backend recusa.
+ *
+ * @param {"A"|"B"} alternativa lado cujas notas o usuário declara que continuam válidas
+ * @returns {Promise<void>}
+ */
+async function confirmarAvaliacao(alternativa) {
+    if (ocupado || encerrada || decisao?.status !== "EM_ANDAMENTO") return;
+    if (sujo()) {
+        el("mensagem").textContent = "Salve as notas antes de confirmar. Salvar não confirma a avaliação.";
+        el("salvar-criterios").focus();
+        return;
+    }
+    const botao = el(alternativa === "A" ? "confirmar-a" : "confirmar-b");
+    estado(true);
+    el("mensagem").textContent = "Confirmando as notas…";
+    el("recarregar").hidden = true;
+    try {
+        const resposta = await api.requisitar("/decisoes/" + id + "/criterios/confirmacao", "POST", {
+            alternativa, versaoAvaliacao: decisao.versaoAvaliacao
+        });
+        decisao.avaliacaoPendenteA = resposta.avaliacaoPendenteA;
+        decisao.avaliacaoPendenteB = resposta.avaliacaoPendenteB;
+        decisao.versaoAvaliacao = resposta.versaoAvaliacao;
+        atualizarPendencia(decisao);
+        const outraPendente = alternativa === "A" ? resposta.avaliacaoPendenteB : resposta.avaliacaoPendenteA;
+        el("mensagem").textContent = outraPendente
+            ? "Notas desta alternativa confirmadas. A outra ainda precisa ser confirmada."
+            : "Notas confirmadas. Você pode continuar a análise.";
+        const proximo = !el("confirmar-a").hidden ? el("confirmar-a") : !el("confirmar-b").hidden ? el("confirmar-b") : el("salvar-criterios");
+        if (proximo && !proximo.hidden) proximo.focus();
+    } catch (erro) {
+        el("mensagem").textContent = erro.message;
+        if (erro.status === 409) el("recarregar").hidden = false;
+        botao.focus();
+    } finally { estado(false); }
+}
 function renderizar(dados) {
     if (String(dados.decisaoId) !== id || !Array.isArray(dados.criterios) || !dados.opcaoA?.id || !dados.opcaoB?.id
             || dados.criterios.some(i => typeof i.nome !== "string" || [i.notaA, i.notaB].some(n => n !== null && (!Number.isInteger(n) || n < 1 || n > 5))))
@@ -113,10 +210,16 @@ function renderizar(dados) {
     decisao = dados; itens = dados.criterios.map(i => ({ ...i }));
     el("decisao-resumo").textContent = dados.titulo;
     el("nome-a").textContent = dados.opcaoA.nome; el("nome-b").textContent = dados.opcaoB.nome;
+    const revisao = window.BussolaRevisao.sincronizar({
+        etapaAtual: dados.etapaAtual, status: dados.status, etapaPagina: 4, decisaoId: id
+    }).revisao;
     el("acoes-edicao").hidden = !editavel();
+    el("salvar-criterios").textContent = revisao ? "Salvar alterações" : "Salvar para depois";
+    atualizarPendencia(dados);
     el("ir-pesos").hidden = dados.etapaAtual !== 5 || dados.status !== "EM_ANDAMENTO";
-    tabela(); alterado = false;
-    el("mensagem").textContent = editavel() ? "" : "Avaliações salvas. Esta etapa está disponível para consulta.";
+    tabela(); referencia = foto();
+    el("mensagem").textContent = editavel() || dados.avaliacaoPendenteA || dados.avaliacaoPendenteB
+        ? "" : "Avaliações salvas. Esta etapa está disponível para consulta.";
 }
 async function carregar() {
     if (ocupado || !api.autenticada || encerrada) return;
@@ -153,7 +256,7 @@ function validarCompleta() {
 el("criterios-form").addEventListener("submit", async evento => {
     evento.preventDefault();
     if (ocupado || !editavel() || window.BussolaEtapas.aberta) return;
-    const avancar = evento.submitter?.id === "avancar";
+    const avancar = !window.BussolaRevisao.emRevisao(decisao.etapaAtual, 4) && evento.submitter?.id === "avancar";
     if (avancar && !validarCompleta()) return;
     if (avancar && !await window.BussolaEtapas.confirmarAvanco()) return;
     const dados = { criterios: itens.map(({ nome, descricao, notaA, notaB }) => ({ nome, descricao, notaA, notaB })) };
@@ -164,7 +267,7 @@ el("criterios-form").addEventListener("submit", async evento => {
         if (avancar) irParaPesos();
     } catch (erro) {
         el("mensagem").textContent = erro.message;
-        if (erro.incerto || [404, 409].includes(erro.status)) { decisao = null; el("recarregar").hidden = false; }
+        if (erro.incerto || [404, 409].includes(erro.status)) el("recarregar").hidden = false;
     } finally { estado(false); }
 });
 el("adicionar").addEventListener("click", () => {
@@ -187,10 +290,12 @@ el("novo-form").addEventListener("submit", evento => {
     el("criterios-lista").lastElementChild.querySelector("input").focus();
 });
 el("recarregar").addEventListener("click", () => {
-    if (alterado && !window.confirm("Recarregar substitui as alterações atuais pelos dados salvos. Deseja continuar?")) return;
-    carregar();
+    window.BussolaAlteracoes.permitir(el("recarregar"), carregar);
 });
-el("ir-pesos").addEventListener("click", irParaPesos);
-window.addEventListener("beforeunload", evento => { if (alterado) { evento.preventDefault(); evento.returnValue = ""; } });
+el("ir-pesos").addEventListener("click", () => {
+    window.BussolaAlteracoes.permitir(el("ir-pesos"), irParaPesos);
+});
+el("confirmar-a").addEventListener("click", () => confirmarAvaliacao("A"));
+el("confirmar-b").addEventListener("click", () => confirmarAvaliacao("B"));
 window.addEventListener("pageshow", evento => { if (evento.persisted) window.location.reload(); });
 carregar();

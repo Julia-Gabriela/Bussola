@@ -11,7 +11,7 @@
         dialogo.setAttribute("aria-describedby", "confirmacao-etapa-texto");
         dialogo.innerHTML = `
             <h2 id="confirmacao-etapa-titulo">Concluir esta etapa?</h2>
-            <p id="confirmacao-etapa-texto">Ao avançar, esta etapa será concluída e ficará disponível apenas para consulta. Você não poderá editar as informações desta etapa. Deseja continuar?</p>
+            <p id="confirmacao-etapa-texto">Ao avançar, esta etapa será concluída. Enquanto a decisão estiver em andamento, você poderá revisá-la depois, com uma confirmação. Deseja continuar?</p>
             <form method="dialog" class="confirmacao-etapa-acoes">
                 <button type="submit" value="cancelar" autofocus>Continuar revisando</button>
                 <button type="submit" value="confirmar" class="confirmacao-etapa-avancar">Confirmar e avançar</button>

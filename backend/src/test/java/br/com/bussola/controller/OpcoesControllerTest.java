@@ -10,8 +10,10 @@ import br.com.bussola.dto.response.UsuarioResponse;
 import br.com.bussola.exception.CadastroExceptionHandler;
 import br.com.bussola.model.entity.Decisao;
 import br.com.bussola.model.entity.Opcao;
+import br.com.bussola.repository.AvaliacaoRepository;
 import br.com.bussola.repository.DecisaoRepository;
 import br.com.bussola.repository.OpcaoRepository;
+import br.com.bussola.repository.ResultadoRepository;
 import br.com.bussola.security.SecurityConfig;
 import br.com.bussola.service.AutenticacaoService;
 import br.com.bussola.service.OpcoesService;
@@ -39,6 +41,8 @@ class OpcoesControllerTest {
     @MockitoBean private AutenticacaoService autenticacao;
     @MockitoBean private DecisaoRepository decisoes;
     @MockitoBean private OpcaoRepository opcoes;
+    @MockitoBean private AvaliacaoRepository avaliacoes;
+    @MockitoBean private ResultadoRepository resultados;
     private Decisao decisao;
 
     @BeforeEach

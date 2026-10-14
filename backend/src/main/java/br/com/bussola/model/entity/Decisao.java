@@ -70,6 +70,9 @@ public class Decisao {
     @Column(name = "data_atualizacao", nullable = false)
     private LocalDateTime dataAtualizacao;
 
+    @Column(name = "versao_avaliacao", nullable = false)
+    private long versaoAvaliacao;
+
     @OneToMany(mappedBy = "decisao", fetch = FetchType.LAZY)
     private List<Opcao> opcoes = new ArrayList<>();
 

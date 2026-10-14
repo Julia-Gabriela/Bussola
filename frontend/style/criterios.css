@@ -17,6 +17,10 @@
 .criterios-escala p:first-child span[aria-hidden] { margin-inline:6px; }
 .criterios-escala .criterios-escala-risco { flex-wrap:nowrap; gap:10px; }
 #criterios-campos { padding:0; margin:0; min-width:0; border:0; }
+.criterios-rodape { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:28px; padding-top:24px; border-top:1px solid var(--home-line); }
+.criterios-rodape:not(:has(:not([hidden]))) { display:none; }
+.criterios-rodape #acoes-edicao { flex:1 1 auto; min-width:0; margin:0; padding:0; border:0; }
+.criterios-rodape #ir-pesos { flex:0 0 auto; }
 .criterios-tabela { border:1px solid #c4933f30; border-radius:8px; background:#211b14; }
 .criterios-grade { display:grid; grid-template-columns:minmax(0,1.08fr) repeat(2,minmax(0,1fr)); align-items:center; gap:28px; padding-inline:28px; }
 .criterios-cabecalho { position:sticky; top:0; z-index:2; min-height:100px; padding-block:24px; border-bottom:1px solid #c4933f30; border-radius:8px 8px 0 0; background:#2a2219; font-size:16px; font-weight:500; color:var(--fluxo-texto); }
@@ -111,5 +115,7 @@
     .criterios-totais { grid-template-columns:repeat(2,minmax(0,1fr)); }
     .criterios-dialog { padding:24px; }
     .criterios-dialog .fluxo-acoes { gap:12px; }
+    .criterios-rodape { flex-direction:column; align-items:stretch; gap:12px; }
+    .criterios-rodape #ir-pesos { width:100%; }
 }
 @media(prefers-reduced-motion:reduce) { .nota-item span { transition:none; } }

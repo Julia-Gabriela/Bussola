@@ -9,12 +9,7 @@
     --alternativa-b-texto: #b5cbbb;
     --alternativa-b-rgb: 145 172 154;
 }
-.fluxo-page .home-header-inner { max-width:1440px; min-height:90px; }
-.fluxo-page .home-brand { gap:12px; letter-spacing:1.6px; }
-.fluxo-page .home-nav { gap:4px; align-items:center; }
-.fluxo-page .home-nav-link { padding:7px 15px; font-size:14px; gap:6px; }
-.fluxo-page .home-profile { background:var(--auth-bg); border-color:var(--auth-line); padding:7px 13px; gap:8px; font-size:14px; }
-.fluxo-page .home-avatar { width:26px; height:26px; background:linear-gradient(135deg,#8b4a1c,#c4933f); color:#f0cfa0; font-weight:600; }
+.fluxo-page .home-header { --muted: #aba397; }
 .fluxo-conteudo { position:relative; width:min(100%,1320px); margin:0 auto; padding:32px 40px 64px; color:var(--fluxo-texto); }
 .fluxo-etapas { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); list-style:none; margin:0; padding:0 0 28px; border-bottom:1px solid var(--home-line); }
 .fluxo-etapas li { display:flex; position:relative; align-items:center; gap:10px; font-size:13px; line-height:20px; color:#9e8d72; }
@@ -58,9 +53,4 @@
     .fluxo-intro p { font-size:15px; line-height:24px; }
     .fluxo-page #acoes-edicao { flex-direction:column-reverse; align-items:stretch; gap:12px; }
     .fluxo-page #acoes-edicao button { width:100%; }
-}
-@media(max-width:600px) {
-    .fluxo-page .home-header-inner { min-height:112px; }
-    .fluxo-page .home-profile { padding:6px; }
-    .fluxo-page .home-nav-link { padding:7px 4px; }
 }

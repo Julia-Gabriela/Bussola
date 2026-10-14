@@ -1,0 +1,8 @@
+ALTER TABLE decisoes
+    ADD COLUMN versao_avaliacao BIGINT NOT NULL DEFAULT 0;
+
+ALTER TABLE opcoes
+    ADD COLUMN avaliacao_pendente BOOLEAN NOT NULL DEFAULT FALSE;
+
+ALTER TABLE resultados
+    ADD COLUMN requer_atualizacao BOOLEAN NOT NULL DEFAULT FALSE;

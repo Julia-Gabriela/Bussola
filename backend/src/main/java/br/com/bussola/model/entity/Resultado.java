@@ -38,6 +38,9 @@ public class Resultado {
     @Column(name = "data_calculo")
     private LocalDateTime dataCalculo;
 
+    @Column(name = "requer_atualizacao", nullable = false)
+    private boolean requerAtualizacao;
+
     /**
      * Compara este resultado com outro objeto usando somente a identidade persistente.
      * <p>

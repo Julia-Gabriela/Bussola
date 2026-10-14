@@ -6,12 +6,12 @@
     const id = new URLSearchParams(window.location.search).get("decisaoId");
     const formulario = el("opcoes-form");
     const campos = el("opcoes-campos");
-    let sessao, decisao, ocupado = false, alterado = false, encerrada = false;
+    let sessao, decisao, ocupado = false, encerrada = false, referencia = null;
     const inputs = [...formulario.querySelectorAll("input, textarea")];
 
     function encerrar() {
         encerrada = true;
-        alterado = false;
+        referencia = null;
         sessionStorage.removeItem(chave);
         window.location.replace("login.html?motivo=sessao-expirada");
     }
@@ -79,14 +79,67 @@
         el("opcao-a-descricao").value = dados.opcaoA?.descricao || "";
         el("opcao-b-nome").value = dados.opcaoB?.nome || "";
         el("opcao-b-descricao").value = dados.opcaoB?.descricao || "";
-        const editavel = dados.status === "EM_ANDAMENTO" && dados.etapaAtual === 3;
+        const revisao = window.BussolaRevisao.sincronizar({
+            etapaAtual: dados.etapaAtual, status: dados.status, etapaPagina: 3, decisaoId: id
+        }).revisao;
+        const editavel = dados.status === "EM_ANDAMENTO" && (dados.etapaAtual === 3 || revisao);
         inputs.forEach(input => { input.readOnly = !editavel; });
         el("acoes-edicao").hidden = !editavel;
+        el("avancar").hidden = revisao;
+        el("salvar-opcoes").textContent = revisao ? "Salvar alterações" : "Salvar para depois";
         el("ir-criterios").hidden = dados.status !== "EM_ANDAMENTO" || dados.etapaAtual !== 4;
         el("mensagem").textContent = editavel ? "" : dados.status === "CONCLUIDA"
             ? "Esta decisão está concluída. Suas opções estão disponíveis para consulta."
             : "Opções salvas. Esta etapa está disponível para consulta.";
-        alterado = false;
+        mostrarRecomendacao(dados);
+        referencia = foto();
+    }
+
+    /**
+     * Fotografa os nomes e as descrições das duas alternativas.
+     *
+     * @returns {string} estado comparável dos campos editáveis
+     */
+    function foto() {
+        return JSON.stringify({
+            aNome: el("opcao-a-nome").value,
+            aDesc: el("opcao-a-descricao").value,
+            bNome: el("opcao-b-nome").value,
+            bDesc: el("opcao-b-descricao").value
+        });
+    }
+
+    /**
+     * Compara os campos com o último carregamento ou salvamento bem-sucedido.
+     *
+     * @returns {boolean} true quando a tela difere do que está salvo
+     */
+    function sujo() {
+        return referencia !== null && foto() !== referencia;
+    }
+
+    window.BussolaAlteracoes.registrar({ sujo, ocupado: () => ocupado });
+
+    /**
+     * Mostra a recomendação não obrigatória quando só a descrição de uma alternativa avaliada mudou.
+     * O aviso vem da resposta do salvamento e não fica gravado: uma consulta seguinte o omite.
+     *
+     * @param {object} dados resposta de opções, com recomendacaoRevisarA, recomendacaoRevisarB e os nomes
+     * @returns {void}
+     */
+    function mostrarRecomendacao(dados) {
+        const nomes = [];
+        if (dados.recomendacaoRevisarA === true) nomes.push(dados.opcaoA?.nome || "A");
+        if (dados.recomendacaoRevisarB === true) nomes.push(dados.opcaoB?.nome || "B");
+        const aviso = el("aviso-recomendacao");
+        if (!nomes.length) {
+            aviso.hidden = true;
+            aviso.textContent = "";
+            return;
+        }
+        aviso.hidden = false;
+        aviso.textContent = "A descrição de " + nomes.join(" e ")
+            + " foi alterada. Se quiser, confira as notas dessa alternativa. Essa revisão não é obrigatória.";
     }
 
     async function carregar() {
@@ -163,8 +216,10 @@
 
     formulario.addEventListener("submit", async evento => {
         evento.preventDefault();
-        if (ocupado || window.BussolaEtapas.aberta || !decisao || decisao.etapaAtual !== 3 || decisao.status !== "EM_ANDAMENTO" || !validar()) return;
-        const avancar = evento.submitter?.id !== "salvar-opcoes";
+        const revisao = window.BussolaRevisao.emRevisao(decisao?.etapaAtual, 3);
+        const editavel = decisao?.status === "EM_ANDAMENTO" && (decisao.etapaAtual === 3 || revisao);
+        if (ocupado || window.BussolaEtapas.aberta || !editavel || !validar()) return;
+        const avancar = !revisao && evento.submitter?.id !== "salvar-opcoes";
         if (avancar && !await window.BussolaEtapas.confirmarAvanco()) return;
         const dados = payload();
         estado(true);
@@ -178,21 +233,20 @@
         } catch (erro) {
             el("mensagem").textContent = erro.message;
             if (erro.incerto || erro.status === 409 || erro.status === 404) {
-                decisao = null;
                 el("recarregar").hidden = false;
             }
         } finally { estado(false); }
     });
     formulario.addEventListener("input", evento => {
-        alterado = true;
         evento.target.removeAttribute("aria-invalid");
+        window.BussolaAlteracoes.refletir(el("mensagem"), sujo());
     });
     el("recarregar").addEventListener("click", () => {
-        if (alterado && !window.confirm("Recarregar substitui o que está no formulário pelos dados salvos. Deseja continuar?")) return;
-        carregar();
+        window.BussolaAlteracoes.permitir(el("recarregar"), carregar);
     });
-    el("ir-criterios").addEventListener("click", irParaCriterios);
-    window.addEventListener("beforeunload", evento => { if (alterado) { evento.preventDefault(); evento.returnValue = ""; } });
+    el("ir-criterios").addEventListener("click", () => {
+        window.BussolaAlteracoes.permitir(el("ir-criterios"), irParaCriterios);
+    });
     window.addEventListener("pageshow", evento => { if (evento.persisted) window.location.reload(); });
     el("perfil-botao").addEventListener("click", () => {
         el("perfil-menu").hidden = !el("perfil-menu").hidden;
@@ -200,24 +254,42 @@
     });
     function fecharPerfil() { el("perfil-menu").hidden = true; el("perfil-botao").setAttribute("aria-expanded", "false"); }
     document.addEventListener("click", evento => { if (!evento.target.closest(".home-account")) fecharPerfil(); });
-    document.addEventListener("keydown", evento => { if (evento.key === "Escape") fecharPerfil(); });
+    document.addEventListener("keydown", evento => {
+        if (evento.key === "Escape" && !el("perfil-menu").hidden) { fecharPerfil(); el("perfil-botao").focus(); }
+    });
     el("historico").addEventListener("click", () => {
         const rota = window.BUSSOLA_OPCOES_ROTAS?.historico;
-        if (rota) window.location.assign(rota);
-        else aviso("Histórico", "O histórico estará disponível em breve. Suas decisões recentes podem ser consultadas na Home.");
+        const seguir = () => {
+            if (rota) window.location.assign(rota);
+            else aviso("Em breve", "O Histórico estará disponível em breve. Suas decisões recentes continuam disponíveis na Home.");
+        };
+        if (rota) window.BussolaAlteracoes.permitir(el("historico"), seguir);
+        else seguir();
     });
-    el("sair").addEventListener("click", async () => {
-        if (ocupado || (alterado && !window.confirm("Há alterações que ainda não foram salvas. Deseja sair mesmo assim?"))) return;
-        if (!lerSessao()) return;
+    el("perfil-menu").querySelector("[data-destino='perfil']").addEventListener("click", () => {
+        const rota = window.BUSSOLA_OPCOES_ROTAS?.perfil;
+        const seguir = () => {
+            fecharPerfil();
+            if (rota) window.location.assign(rota);
+            else aviso("Em breve", "A edição do perfil estará disponível em breve.");
+        };
+        if (rota) window.BussolaAlteracoes.permitir(el("perfil-botao"), seguir);
+        else seguir();
+    });
+    async function encerrarSessao() {
+        if (ocupado || !lerSessao()) return;
         estado(true);
         try {
             await requisitar("/auth/logout", "POST");
-            alterado = false;
+            referencia = null;
             sessionStorage.removeItem(chave);
             window.location.assign("login.html");
         } catch (erro) {
             if (!encerrada) aviso("Não foi possível sair", "Confira sua conexão e tente sair novamente.");
         } finally { estado(false); }
+    }
+    el("sair").addEventListener("click", () => {
+        window.BussolaAlteracoes.permitir(el("sair"), encerrarSessao);
     });
     carregar();
 })();

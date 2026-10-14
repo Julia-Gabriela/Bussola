@@ -4,7 +4,8 @@ import br.com.bussola.model.entity.Opcao;
 import br.com.bussola.model.enums.StatusDecisao;
 
 public record OpcoesResponse(Long decisaoId, String titulo, int etapaAtual, StatusDecisao status,
-        DadosOpcao opcaoA, DadosOpcao opcaoB) {
+        DadosOpcao opcaoA, DadosOpcao opcaoB, boolean avaliacaoPendenteA, boolean avaliacaoPendenteB,
+        boolean recomendacaoRevisarA, boolean recomendacaoRevisarB, long versaoAvaliacao) {
     public record DadosOpcao(Long id, String nome, String descricao) {
         public static DadosOpcao de(Opcao opcao) {
             return new DadosOpcao(opcao.getId(), opcao.getNome(), opcao.getDescricao());

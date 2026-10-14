@@ -107,7 +107,7 @@ O dono da decisão vem do token; não envie `usuarioId`, status ou etapa. A Home
 
 ## Confirmar o avanço entre etapas
 
-Nas telas de Contextualização, Brainstorming, Opções e Critérios, **Salvar e continuar** ou **Próxima etapa** abre a pergunta **Concluir esta etapa?**, depois da validação dos campos. A mensagem informa que a etapa concluída ficará apenas para consulta e não poderá mais ser editada.
+Nas telas de Contextualização, Brainstorming, Opções e Critérios, **Salvar e continuar** ou **Próxima etapa** abre a pergunta **Concluir esta etapa?**, depois da validação dos campos. A mensagem informa que a etapa será concluída e que, enquanto a decisão estiver em andamento, ela poderá ser revisada depois, com uma confirmação.
 
 Para testar no navegador, mantenha **MySQL + backend + frontend** ligados e use uma decisão de teste:
 
@@ -117,6 +117,52 @@ Para testar no navegador, mantenha **MySQL + backend + frontend** ligados e use 
 4. **Salvar para depois** continua salvando sem abrir essa confirmação e sem encerrar a etapa. No Brainstorming, salvar ideias também não conclui a etapa.
 
 Essa confirmação pertence à interface. No Swagger, as rotas de conclusão continuam avançando diretamente quando a requisição é válida. Não houve mudança nos comandos de inicialização; após atualizar, reinicie o backend e use **Ctrl + F5** nas páginas.
+
+## Revisar uma etapa anterior
+
+Enquanto a decisão está **em andamento**, uma etapa já concluída do indicador (Brainstorm, Opções ou Critérios) pode ser reaberta. Pesos e Análise ainda não têm página: aparecem no indicador, mas não abrem tela. A contextualização continua editável só na etapa 1. Uma decisão com status **concluída** permanece só para consulta.
+
+Mantenha MySQL, backend e frontend ligados. Use uma decisão sua que já tenha passado da etapa que você quer revisar.
+
+1. Na etapa atual, clique no nome de uma etapa anterior no indicador. A página não muda. Abre o aviso **Revisar esta etapa?**, com o texto de que as respostas podem ser alteradas e de que informações e resultados seguintes poderão ser atualizados.
+2. Clique em **Cancelar** ou pressione **Esc**. O aviso fecha, o endereço continua o mesmo e a decisão não é gravada de novo. O foco volta ao passo clicado.
+3. Abra de novo e clique em **Continuar revisão**. A etapa escolhida abre com `revisao=1` na URL e mostra o aviso **Suas alterações podem atualizar o resultado desta análise.** No indicador, essa página fica em destaque. A etapa já salva no backend continua marcada como alcançada, com o círculo só contornado, sem o mesmo preenchimento da página aberta. O botão de concluir a etapa fica oculto. Em Opções e Critérios, o salvamento aparece como **Salvar alterações**. Em Critérios, se a decisão já chegou em Pesos, **Continuar para pesos** fica à esquerda e **Salvar alterações** à direita, na mesma linha.
+4. Altere uma resposta e salve. Recarregue a página: a alteração continua, os identificadores das opções, critérios ou ideias já existentes continuam os mesmos e `etapaAtual` não volta nem avança. Os dados das etapas seguintes não são apagados.
+5. No indicador, o passo da etapa atual (quando essa etapa tem página) volta para ela sem o aviso de revisão. Pesos e Análise, e qualquer etapa ainda não alcançada, não são clicáveis. Abrir Critérios ou Opções direto na URL antes da hora continua respondendo **409** e a tela não libera a edição.
+6. Sem `revisao=1`, uma etapa já passada abre só para consulta, sem o aviso de revisão. Se a decisão já passou de Critérios e a tela aberta é a própria avaliação, clique de novo em **Critérios** no indicador: o popup **Revisar esta etapa?** aparece e **Continuar revisão** acrescenta `revisao=1`. A decisão de outra conta responde **404**.
+
+## Sair sem perder o que foi digitado
+
+Nas telas de Contextualização, Brainstorming, Opções e Critérios, a página compara os campos com o último dado carregado ou salvo. Digitar e depois apagar até voltar ao mesmo texto libera a saída. Carregar a página não conta como alteração.
+
+Se houver diferença e você clicar no indicador, em Início, em Sair ou em outro link interno, abre o aviso **Alterações não salvas**, com o botão **Continuar editando**. Esc fecha o aviso e mantém o que foi digitado. Não há botão para descartar. **Salvar para depois** ou **Salvar alterações** grava e, se der certo, libera a navegação. Se o salvamento falhar, o texto permanece e a saída continua bloqueada.
+
+No Brainstorming, cada ideia adicionada, editada ou excluída já é gravada na hora. O bloqueio vale para o texto ainda no formulário e para uma exclusão que ainda não foi confirmada. Em Critérios, incluir ou remover um critério, ou mudar uma nota, bloqueia a saída até salvar. Confirmar notas pendentes não grava essas mudanças: a tela pede para salvar antes.
+
+Atualizar ou fechar a aba usa o aviso do próprio navegador. O botão Voltar também é interceptado quando a página consegue. O navegador pode ignorar essa proteção em alguns fechamentos.
+
+Abrir ou cancelar o aviso não grava nada. Não existe, por enquanto, recálculo automático de pesos ou do resultado da análise quando uma resposta anterior muda. Quando o nome de uma alternativa já avaliada muda, as notas ficam pendentes de confirmação, como explica a seção seguinte.
+
+## Confirmar avaliações pendentes
+
+Mudar ideias no brainstorming não cria pendência e não apaga opções, critérios nem notas. A pendência aparece só quando o **nome** de uma alternativa que já tem nota é alterado de verdade. Espaços nas pontas do nome não contam. A e B são independentes: alterar só A deixa B como estava.
+
+Mudar apenas a descrição não cria pendência obrigatória. Depois de salvar, a tela de Opções pode mostrar a recomendação **A descrição de … foi alterada. Se quiser, confira as notas dessa alternativa. Essa revisão não é obrigatória.** Essa frase não fica gravada: ao recarregar a página, ela some. Se o nome e a descrição mudam juntos, vale a regra do nome.
+
+A pendência fica na coluna `avaliacao_pendente` de cada opção, no MySQL. Continua depois de atualizar a página, sair, entrar de novo ou reiniciar o backend. A decisão também guarda `versao_avaliacao`, usada para impedir que uma tela antiga confirme notas que já mudaram.
+
+Para testar, mantenha MySQL, backend e frontend ligados. Use uma decisão sua que já tenha notas nas duas alternativas e ainda esteja em andamento. Depois de atualizar o projeto, reinicie o backend para aplicar a nova migration e use **Ctrl + F5**.
+
+1. Revise Opções e troque o nome só de A. Salve. Volte a Critérios. O aviso **Revise sua avaliação** deve citar a alternativa A e manter as notas visíveis. B não entra no aviso.
+2. Clique em **Salvar para depois** ou **Salvar alterações** sem mudar as notas. A pendência continua.
+3. Clique em **Confirmar notas de …** da alternativa A. A pendência de A some. Se B também estiver pendente, o aviso de B permanece.
+4. Confirme sem alterar nenhuma nota: isso é permitido. A confirmação é o clique no botão, não o ato de abrir a página.
+5. Troque o nome de A de novo e salve. A pendência de A volta.
+6. Troque só a descrição, salve e recarregue Opções: a recomendação some e Critérios não exige confirmação.
+7. Com pendência aberta, **Próxima etapa** fica oculta. O backend também recusa concluir Critérios enquanto A ou B estiver pendente (**409**). `etapaAtual` não muda.
+8. Se a mensagem pedir para recarregar antes de confirmar, use **Recarregar dados**. Uma confirmação enviada com a versão antiga não apaga a pendência.
+
+Enquanto existir pendência, um resultado futuro não deve ser tratado como válido. Se já houver uma linha em `resultados` para aquela alternativa, ela permanece e fica marcada para atualização. Pesos e Análise ainda não têm tela nem cálculo.
 
 ## Testar contextualização e brainstorming
 
@@ -132,7 +178,7 @@ Depois de atualizar o projeto, **reinicie o backend no IntelliJ** e atualize o n
 6. Atualize a página ou retorne pela Home: as ideias devem continuar lá. Tanto o cartão da decisão quanto **Continuar** retomam o fluxo salvo.
 7. Clique em **Próxima etapa** depois de salvar ou cancelar o texto em edição e escolha **Confirmar e avançar**. A decisão passa para **Opções (etapa 3)**, preservando as ideias e o status **Em andamento**.
 
-A tela de Opções já está implementada em `opcoes.html`. A conclusão do brainstorming abre `opcoes.html?decisaoId=ID_DA_DECISAO` após salvar `etapaAtual: 3`. Depois de avançar, as etapas anteriores ficam apenas para consulta até a entrega da revisão de etapas. Não há quantidade mínima de ideias exigida pela documentação. Texto de ideia é obrigatório ao adicionar/editar; limite técnico: 16.000 caracteres, compatível com a coluna TEXT.
+A tela de Opções já está implementada em `opcoes.html`. A conclusão do brainstorming abre `opcoes.html?decisaoId=ID_DA_DECISAO` após salvar `etapaAtual: 3`. Sem pedir revisão, as etapas anteriores ficam para consulta. A revisão com confirmação está descrita em **Revisar uma etapa anterior**. Não há quantidade mínima de ideias exigida pela documentação. Texto de ideia é obrigatório ao adicionar/editar; limite técnico: 16.000 caracteres, compatível com a coluna TEXT.
 
 Se o envio falhar sem confirmação, recarregue os dados antes de reenviar. No brainstorming, use **Recarregar dados**. Na criação, confira a Home para evitar duplicação. O que ainda não foi salvo no formulário não é recuperado ao sair.
 
@@ -156,7 +202,7 @@ Corpo de adicionar/editar ideia:
 {"conteudo": "Ganhar experiência profissional", "categoria": "FAVORAVEL"}
 ```
 
-Categorias aceitas: `FAVORAVEL`, `DESFAVORAVEL`, `DUVIDA`. Sem login: **401**. Dados inválidos: **400**. Decisão de outra pessoa ou ideia fora da decisão informada: **404**. Etapa incorreta ou decisão concluída: **409**. Repetir a conclusão da etapa imediatamente anterior não avança uma segunda vez.
+Categorias aceitas: `FAVORAVEL`, `DESFAVORAVEL`, `DUVIDA`. Sem login: **401**. Dados inválidos: **400**. Decisão de outra pessoa ou ideia fora da decisão informada: **404**. Incluir, editar ou excluir ideia em uma decisão em andamento que já passou do brainstorming responde **201**, **200** ou **204** e não altera `etapaAtual`. A contextualização e a conclusão do brainstorming fora da etapa exata, o acesso antes do brainstorming e qualquer alteração em decisão concluída respondem **409**. Repetir a conclusão quando a decisão já está na etapa 3 não avança uma segunda vez.
 
 
 
@@ -193,7 +239,7 @@ Esse SQL é uma fixture manual para desenvolvimento: cria somente uma nova decis
 4. Clique em **Salvar para depois**. Aguarde a confirmação. Recarregue a página: os valores devem continuar preenchidos e a decisão deve permanecer na etapa 3. Você pode editar e salvar novamente sem criar outro par de opções.
 5. Clique em **Próxima etapa** e teste **Continuar revisando**: os valores devem permanecer na tela sem avançar. Abra novamente e escolha **Confirmar e avançar**. O backend salva os dados e avança para a etapa 4 na mesma transação, mantendo o status **EM_ANDAMENTO**. O título original da decisão é preservado.
 6. A página `criterios.html?decisaoId=ID` abre com as duas opções salvas. Ao retomar pela Home, a decisão na etapa 4 ou posterior abre Critérios; as opções anteriores continuam disponíveis para consulta.
-7. Depois do avanço, edição/revisão de etapas anteriores depende da futura integração do fluxo de revisão com confirmação. Uma decisão concluída fica somente para consulta.
+7. Para alterar as opções depois do avanço, use o indicador conforme **Revisar uma etapa anterior**. Sem essa confirmação, a tela fica para consulta. Uma decisão concluída fica somente para consulta.
 
 Se uma falha de rede impedir a confirmação do salvamento, a tela preserva os valores digitados e bloqueia novos envios. Use **Recarregar dados** para consultar o que o servidor salvou; a tela pede confirmação antes de substituir o formulário. Alterações ainda não salvas não são recuperadas depois de fechar a aba. A página avisa ao tentar sair com alterações pendentes.
 
@@ -206,7 +252,7 @@ Com MySQL e backend ligados, abra **http://localhost:8080/swagger-ui/index.html*
 | Operação | Rota | Resultado esperado |
 | --- | --- | --- |
 | Carregar | GET /decisoes/{decisaoId}/opcoes | 200; título, etapa, status e opções; A/B são null quando ainda não foram salvas |
-| Salvar sem avançar | PUT /decisoes/{decisaoId}/opcoes | 200; mantém etapa 3 e IDs existentes |
+| Salvar sem avançar | PUT /decisoes/{decisaoId}/opcoes | 200; na etapa 3 mantém a etapa e os IDs; numa etapa posterior em andamento também salva sem mudar `etapaAtual` nem duplicar opções |
 | Salvar e avançar | POST /decisoes/{decisaoId}/opcoes/concluir | 200; etapa 4, ainda EM_ANDAMENTO |
 
 Use este corpo no PUT e no POST, copiando em `titulo` o nome exato retornado pelo GET. Esse campo permanece no contrato da API para compatibilidade; não permite renomear a decisão. Enviar outro título retorna **409**, sem salvar as opções nem avançar:
@@ -227,7 +273,7 @@ Use este corpo no PUT e no POST, copiando em `titulo` o nome exato retornado pel
 
 A resposta contém `decisaoId`, `titulo`, `etapaAtual`, `status`, `opcaoA` e `opcaoB`. Cada opção salva tem `id`, `nome` e `descricao`. Descrição vazia é armazenada como null. Para manter A/B estáveis, A corresponde ao menor ID e B ao próximo ID daquela decisão; as edições preservam esses IDs.
 
-Sem autenticação: **401**. Decisão inexistente ou de outra conta: **404**. Campos obrigatórios ausentes, limites excedidos ou nomes iguais (desconsiderando caixa e espaços nas pontas): **400**. Etapa incorreta ou alteração de decisão concluída: **409**. Reenviar a mesma conclusão na etapa 4 retorna os dados salvos sem duplicar opções nem avançar novamente; enviar dados diferentes retorna 409.
+Sem autenticação: **401**. Decisão inexistente ou de outra conta: **404**. Campos obrigatórios ausentes, limites excedidos ou nomes iguais (desconsiderando caixa e espaços nas pontas): **400**. Salvar ou concluir antes da etapa 3, concluir com dados diferentes depois do avanço, ou alterar uma decisão concluída: **409**. O PUT de revisão, com a decisão ainda em andamento e já na etapa 4 ou posterior, salva sem avançar. Reenviar a mesma conclusão na etapa 4 retorna os dados salvos sem duplicar opções nem avançar novamente. Se a alternativa já tiver nota e o nome mudar, a resposta traz `avaliacaoPendenteA` ou `avaliacaoPendenteB` como verdadeiro e incrementa `versaoAvaliacao`. Reenviar o mesmo nome não liga a pendência. Mudar só a descrição pode trazer `recomendacaoRevisarA` ou `recomendacaoRevisarB` nessa resposta; o GET seguinte volta esses dois campos como falso.
 
 **Integração entre as etapas:** `frontend/js/pages/opcoes-integracoes.js` já aponta para `criterios.html`; a navegação acrescenta `decisaoId`. O evento cancelável `bussola:opcoes-concluidas` continua disponível. Brainstorming abre `opcoes.html?decisaoId=ID` depois de concluir sua etapa. A retomada da Home passa por `nova-decisao.html`, consulta o estado real da decisão e encaminha a etapa 3 para Opções e as etapas 4 ou posteriores para Critérios. Pesos ainda depende da integração descrita abaixo.
 
@@ -254,7 +300,7 @@ A página está em `frontend/pages/criterios.html`. **Continue usando os mesmos 
 5. Preencha apenas algumas notas e clique em **Salvar para depois**. Espere a confirmação, recarregue e confira que as notas continuam lá. A decisão permanece em `etapaAtual: 4`.
 6. Use **Adicionar critério** para um aspecto pessoal. Nome obrigatório (até 200 caracteres), descrição opcional (até 1.000). Os nomes não podem se repetir; o limite é de **20 critérios no total** (5 fixos + até 15 personalizados). Formule o personalizado de modo que 5 seja mais favorável. Ele começa com peso 1, como os fixos. Adicionar e remover só são persistidos quando você salva ou avança. Remover pede confirmação e exclui também as notas daquele personalizado ao salvar. Os cinco fixos não podem ser removidos.
 7. Tente **Próxima etapa** com uma nota faltando: a tela deve focar o primeiro grupo incompleto e continuar na etapa atual. Depois, preencha A/B em todos os critérios, clique para avançar e escolha **Confirmar e avançar**. O backend salva e passa de **4 para 5**, mantendo a decisão **EM_ANDAMENTO**.
-8. Como **Pesos ainda não está implementada**, aparece a confirmação de que a avaliação foi salva. Nenhuma página inexistente é aberta. Ao retomar pela Home, Critérios fica disponível para consulta. A revisão de etapas anteriores ainda depende da futura integração de revisão com confirmação.
+8. Como **Pesos ainda não está implementada**, aparece a confirmação de que a avaliação foi salva. Nenhuma página inexistente é aberta. Ao retomar pela Home, Critérios abre para consulta. Para editar as notas de novo, siga **Revisar uma etapa anterior**: **Salvar alterações** grava sem voltar a etapa nem apagar as notas das outras etapas. Se o aviso **Revise sua avaliação** estiver visível, confirme cada alternativa citada antes de tentar avançar, como em **Confirmar avaliações pendentes**.
 
 O indicador **Etapa 3 de 5** segue o Figma e conta as etapas da análise; o banco/Home contam também a contextualização, por isso Critérios é a etapa 4 de 6.
 
@@ -290,7 +336,16 @@ Exemplo de corpo completo para PUT e POST:
 
 No PUT, pode trocar uma nota por `null` para testar o salvamento parcial. Envie sempre a **lista completa**: omitir um personalizado o remove com suas notas; omitir um fixo é inválido. Para adicionar, inclua outro objeto com `nome`, `descricao` opcional, `notaA` e `notaB`. Os nomes identificam os critérios dentro da decisão; reenvios preservam IDs. A interface não oferece renomeação de critérios.
 
-Sem autenticação: **401**. Decisão inexistente/de outra conta: **404**. Nota fora de 1–5, fracionária ou em texto, nome repetido, fixo ausente ou conclusão incompleta: **400**. Etapa incorreta/decisão concluída: **409**. Repetir a mesma conclusão na etapa 5 retorna os dados salvos sem avançar novamente; dados diferentes retornam 409. Para evidências, capture a rota, o código de resposta e o corpo, ocultando o token do trecho Curl.
+Sem autenticação: **401**. Decisão inexistente/de outra conta: **404**. Nota fora de 1–5, fracionária ou em texto, nome repetido, fixo ausente ou conclusão incompleta: **400**. Salvar ou concluir antes da etapa 4, concluir com dados diferentes depois do avanço, concluir com avaliação pendente, confirmar com `versaoAvaliacao` antiga, ou alterar uma decisão concluída: **409**. O PUT de revisão, com a decisão em andamento e já na etapa 5 ou posterior, salva sem mudar `etapaAtual` e sem confirmar a pendência. Repetir a mesma conclusão na etapa 5 retorna os dados salvos sem avançar novamente. Para evidências, capture a rota, o código de resposta e o corpo, ocultando o token do trecho Curl.
+
+Confirmar uma alternativa:
+
+```json
+POST /decisoes/{decisaoId}/criterios/confirmacao
+{"alternativa": "A", "versaoAvaliacao": 1}
+```
+
+`alternativa` aceita somente `A` ou `B`. Use o `versaoAvaliacao` do último GET ou salvamento. A resposta **200** desliga só a pendência indicada, preserva notas, pesos, IDs e `etapaAtual`. Salvar com PUT não faz isso.
 
 ### Integração com as próximas telas
 
