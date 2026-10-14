@@ -10,6 +10,39 @@
     let id;
     let ocupado = true;
     let bloqueado = false;
+    let referencia = null;
+
+    /**
+     * Fotografa título e contexto exatamente como estão nos campos.
+     *
+     * @returns {string} estado comparável da contextualização
+     */
+    function foto() {
+        return JSON.stringify({ titulo: titulo.value, contexto: contexto.value });
+    }
+
+    /**
+     * Indica se o texto atual difere do último carregamento ou salvamento.
+     *
+     * @returns {boolean} true quando ainda há texto não gravado
+     */
+    function sujo() {
+        return referencia !== null && foto() !== referencia;
+    }
+
+    /**
+     * Grava o estado visível como referência de “já salvo”.
+     *
+     * @returns {void}
+     */
+    function gravarReferencia() {
+        referencia = foto();
+        window.BussolaAlteracoes.refletir(mensagem, false);
+    }
+
+    window.BussolaAlteracoes.registrar({ sujo, ocupado: () => ocupado });
+    titulo.addEventListener("input", () => window.BussolaAlteracoes.refletir(mensagem, sujo()));
+    contexto.addEventListener("input", () => window.BussolaAlteracoes.refletir(mensagem, sujo()));
 
     function abrirBrainstorming() {
         bloqueado = true;
@@ -35,6 +68,7 @@
             window.history.replaceState(null, "", url);
             elemento("exemplos").hidden = true;
             elemento("ver-decisao").hidden = false;
+            gravarReferencia();
             if (!avancar) {
                 mensagem.textContent = "Título e contexto salvos. Você pode continuar depois pela Home.";
             } else {
@@ -42,7 +76,7 @@
                 abrirBrainstorming();
             }
         } catch (erro) {
-            bloqueado = Boolean(erro.incerto || erro.status === 409 || api.encerrada);
+            bloqueado = Boolean(api.encerrada);
             mensagem.textContent = erro.message;
             elemento("ver-decisao").hidden = false;
         } finally {
@@ -55,6 +89,7 @@
         if (ocupado || bloqueado) return;
         titulo.value = botao.textContent;
         titulo.setCustomValidity("");
+        window.BussolaAlteracoes.refletir(mensagem, sujo());
         titulo.focus();
     }));
 
@@ -64,7 +99,7 @@
         try {
             id = api.idDaUrl();
             const usuario = await api.requisitar("/auth/me");
-            elemento("usuario-nome").textContent = usuario.nomeCompleto;
+            window.BussolaCabecalho.preencherUsuario(usuario);
             if (id) {
                 const decisao = await api.requisitar(`/decisoes/${id}`);
                 if (decisao.etapaAtual >= 3) {
@@ -80,6 +115,7 @@
                 elemento("exemplos").hidden = true;
             }
             mensagem.textContent = bloqueado ? "Esta decisão está disponível apenas para consulta." : "";
+            gravarReferencia();
         } catch (erro) {
             bloqueado = true;
             mensagem.textContent = erro.message;

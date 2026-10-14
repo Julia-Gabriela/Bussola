@@ -2,6 +2,7 @@ package br.com.bussola.service;
 
 import br.com.bussola.dto.request.AvaliarCriteriosRequest;
 import br.com.bussola.dto.request.AvaliarCriteriosRequest.NotaCriterio;
+import br.com.bussola.dto.request.ConfirmarAvaliacaoRequest;
 import br.com.bussola.dto.response.CriteriosResponse;
 import br.com.bussola.dto.response.CriteriosResponse.Item;
 import br.com.bussola.dto.response.OpcoesResponse;
@@ -22,11 +23,13 @@ public class CriteriosService {
     private final OpcaoRepository opcoes;
     private final CriterioRepository criterios;
     private final AvaliacaoRepository avaliacoes;
+    private final ResultadoRepository resultados;
 
     public CriteriosService(DecisaoRepository decisoes, OpcaoRepository opcoes,
-            CriterioRepository criterios, AvaliacaoRepository avaliacoes) {
+            CriterioRepository criterios, AvaliacaoRepository avaliacoes, ResultadoRepository resultados) {
         this.decisoes = decisoes; this.opcoes = opcoes;
         this.criterios = criterios; this.avaliacoes = avaliacoes;
+        this.resultados = resultados;
     }
 
     @Transactional(readOnly = true)
@@ -49,6 +52,40 @@ public class CriteriosService {
         return gravar(usuarioId, decisaoId, request, true);
     }
 
+    /**
+     * Confirma as notas de uma alternativa sem alterá-las e sem avançar a etapa.
+     * <p>
+     * Só o dono da decisão em andamento, a partir da etapa de critérios, pode
+     * confirmar. A versão enviada precisa ser a última vista pela tela: se as
+     * notas ou o nome da alternativa mudaram depois, a confirmação é recusada.
+     * Confirmar A não mexe na pendência de B. Salvar notas não passa por este
+     * método. A confirmação não apaga um resultado já calculado.
+     *
+     * @param usuarioId dono exigido da decisão
+     * @param decisaoId decisão cujas notas serão confirmadas
+     * @param request alternativa {@code A} ou {@code B} e a versão carregada
+     * @return estado atual das notas, com a pendência daquela alternativa desligada
+     */
+    @Transactional
+    public CriteriosResponse confirmar(Long usuarioId, Long decisaoId, ConfirmarAvaliacaoRequest request) {
+        var decisao = decisoes.buscarParaAtualizar(decisaoId, usuarioId)
+                .orElseThrow(DecisaoNaoEncontradaException::new);
+        if (decisao.getStatus() != StatusDecisao.EM_ANDAMENTO)
+            throw new EtapaInvalidaException("Esta decisão está concluída e disponível apenas para consulta.");
+        if (decisao.getEtapaAtual() < ETAPA_CRITERIOS)
+            throw new EtapaInvalidaException("Conclua a definição das opções antes de confirmar as avaliações.");
+        if (decisao.getVersaoAvaliacao() != request.versaoAvaliacao())
+            throw new EtapaInvalidaException("As avaliações foram atualizadas. Recarregue a tela antes de confirmar.");
+        var par = par(decisaoId);
+        var opcao = "A".equals(request.alternativa()) ? par.get(0) : par.get(1);
+        if (opcao.isAvaliacaoPendente()) {
+            opcao.setAvaliacaoPendente(false);
+            opcoes.save(opcao);
+        }
+        return resposta(decisao, par, criterios.findByDecisaoIdOrderByIdAsc(decisaoId),
+                avaliacoes.findByCriterioDecisaoId(decisaoId));
+    }
+
     private CriteriosResponse gravar(Long usuarioId, Long decisaoId, AvaliarCriteriosRequest request, boolean avancar) {
         // Todas as escritas deste fluxo bloqueiam a decisão; reenvios preservam critérios, notas e IDs.
         var decisao = decisoes.buscarParaAtualizar(decisaoId, usuarioId)
@@ -59,14 +96,20 @@ public class CriteriosService {
         var existentes = criterios.findByDecisaoIdOrderByIdAsc(decisaoId);
         var notas = avaliacoes.findByCriterioDecisaoId(decisaoId);
         var solicitados = validar(request, avancar);
+        if (decisao.getEtapaAtual() < ETAPA_CRITERIOS)
+            throw new EtapaInvalidaException("Conclua a definição das opções antes de avaliar os critérios.");
         if (avancar && decisao.getEtapaAtual() == ETAPA_PESOS
                 && mesmosDados(resposta(decisao, par, existentes, notas), solicitados))
             return resposta(decisao, par, existentes, notas);
-        if (decisao.getEtapaAtual() != ETAPA_CRITERIOS)
+        boolean revisao = !avancar && decisao.getEtapaAtual() > ETAPA_CRITERIOS;
+        if (decisao.getEtapaAtual() != ETAPA_CRITERIOS && !revisao)
             throw new EtapaInvalidaException("Os critérios só podem ser alterados na etapa de avaliação dos critérios.");
+        if (avancar && (par.get(0).isAvaliacaoPendente() || par.get(1).isAvaliacaoPendente()))
+            throw new EtapaInvalidaException("Confirme as notas da alternativa alterada antes de continuar a análise.");
         var porNome = porNome(existentes);
         var salvos = new ArrayList<Criterio>();
         var mantidas = new ArrayList<Avaliacao>();
+        boolean notasAlteradas = false;
         // Nomes identificam critérios dentro da decisão. Não há renomeação nesta etapa;
         // editar notas ou repetir um envio não recria critérios usados pela etapa de Pesos.
         for (var entrada : solicitados.entrySet()) {
@@ -82,12 +125,19 @@ public class CriteriosService {
         criterios.saveAll(salvos);
         for (var criterio : salvos) {
             var dados = solicitados.get(CatalogoCriterios.chave(criterio.getNome()));
-            guardarNota(criterio, par.get(0), dados.notaA(), notas, mantidas);
-            guardarNota(criterio, par.get(1), dados.notaB(), notas, mantidas);
+            notasAlteradas |= guardarNota(criterio, par.get(0), dados.notaA(), notas, mantidas);
+            notasAlteradas |= guardarNota(criterio, par.get(1), dados.notaB(), notas, mantidas);
         }
         // Excluir apenas as notas retiradas/limpas, preservando IDs das que continuam.
-        avaliacoes.deleteAll(notas.stream().filter(n -> !mantidas.contains(n)).toList());
+        var removidas = notas.stream().filter(n -> !mantidas.contains(n)).toList();
+        if (!removidas.isEmpty()) notasAlteradas = true;
+        avaliacoes.deleteAll(removidas);
         avaliacoes.saveAll(mantidas);
+        if (notasAlteradas) {
+            decisao.setVersaoAvaliacao(decisao.getVersaoAvaliacao() + 1);
+            mantidas.stream().map(Avaliacao::getOpcao).distinct().forEach(this::sinalizarResultado);
+            removidas.stream().map(Avaliacao::getOpcao).distinct().forEach(this::sinalizarResultado);
+        }
         criterios.deleteAll(existentes.stream().filter(c -> !solicitados.containsKey(CatalogoCriterios.chave(c.getNome()))).toList());
         decisao.setDataAtualizacao(LocalDateTime.now());
         if (avancar) decisao.setEtapaAtual(ETAPA_PESOS);
@@ -131,12 +181,24 @@ public class CriteriosService {
         return mapa;
     }
 
-    private void guardarNota(Criterio criterio, Opcao opcao, Integer valor,
+    private boolean guardarNota(Criterio criterio, Opcao opcao, Integer valor,
             List<Avaliacao> existentes, List<Avaliacao> mantidas) {
-        if (valor == null) return;
+        if (valor == null) return false;
         var nota = existentes.stream().filter(n -> Objects.equals(n.getCriterio().getId(), criterio.getId())
                 && Objects.equals(n.getOpcao().getId(), opcao.getId())).findFirst().orElseGet(Avaliacao::new);
+        boolean mudou = nota.getId() == null || !Objects.equals(nota.getValor(), valor);
         nota.setCriterio(criterio); nota.setOpcao(opcao); nota.setValor(valor); mantidas.add(nota);
+        return mudou;
+    }
+
+    private void sinalizarResultado(Opcao opcao) {
+        if (opcao.getId() == null) return;
+        resultados.findByOpcaoId(opcao.getId()).ifPresent(resultado -> {
+            if (!resultado.isRequerAtualizacao()) {
+                resultado.setRequerAtualizacao(true);
+                resultados.save(resultado);
+            }
+        });
     }
 
     private CriteriosResponse resposta(Decisao decisao, List<Opcao> par, List<Criterio> lista, List<Avaliacao> notas) {
@@ -148,7 +210,8 @@ public class CriteriosService {
         }
         for (var salvo : mapa.values()) itens.add(item(salvo, null, par, notas));
         return new CriteriosResponse(decisao.getId(), decisao.getTitulo(), decisao.getEtapaAtual(), decisao.getStatus(),
-                OpcoesResponse.DadosOpcao.de(par.get(0)), OpcoesResponse.DadosOpcao.de(par.get(1)), List.copyOf(itens));
+                OpcoesResponse.DadosOpcao.de(par.get(0)), OpcoesResponse.DadosOpcao.de(par.get(1)), List.copyOf(itens),
+                par.get(0).isAvaliacaoPendente(), par.get(1).isAvaliacaoPendente(), decisao.getVersaoAvaliacao());
     }
 
     private Item item(Criterio salvo, CatalogoCriterios.Padrao padrao, List<Opcao> par, List<Avaliacao> notas) {

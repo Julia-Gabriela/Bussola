@@ -39,10 +39,12 @@ class CriteriosControllerTest {
         when(autenticacao.autenticar("token-teste")).thenReturn(new UsuarioResponse(7L,"Pessoa","pessoa@example.com"));
         var resposta = new CriteriosResponse(12L,"Minha decisão",4,StatusDecisao.EM_ANDAMENTO,
                 new OpcoesResponse.DadosOpcao(21L,"Trabalhar",null), new OpcoesResponse.DadosOpcao(22L,"Estudar",null),
-                List.of(new CriteriosResponse.Item(30L,"risco","Risco","Incerteza",false,"MENOR_MELHOR",1,5,null)));
+                List.of(new CriteriosResponse.Item(30L,"risco","Risco","Incerteza",false,"MENOR_MELHOR",1,5,null)),
+                false, false, 0L);
         when(criterios.consultar(7L,12L)).thenReturn(resposta);
         when(criterios.salvar(eq(7L),eq(12L),any())).thenReturn(resposta);
         when(criterios.concluir(eq(7L),eq(12L),any())).thenReturn(resposta);
+        when(criterios.confirmar(eq(7L),eq(12L),any())).thenReturn(resposta);
     }
     @Test
     void consultaContratoComDirecaoDoRiscoSemCache() throws Exception {
@@ -89,8 +91,24 @@ class CriteriosControllerTest {
         mvc.perform(get(ROTA)).andExpect(status().isUnauthorized());
         mvc.perform(put(ROTA).contentType(MediaType.APPLICATION_JSON).content(corpo("3"))).andExpect(status().isUnauthorized());
         mvc.perform(post(ROTA+"/concluir").contentType(MediaType.APPLICATION_JSON).content(corpo("3"))).andExpect(status().isUnauthorized());
+        mvc.perform(post(ROTA+"/confirmacao").contentType(MediaType.APPLICATION_JSON).content("{\"alternativa\":\"A\",\"versaoAvaliacao\":0}"))
+                .andExpect(status().isUnauthorized());
         verifyNoInteractions(criterios);
     }
+    @Test
+    void confirmacaoExigeAlternativaEVersaoDoDono() throws Exception {
+        mvc.perform(post(ROTA+"/confirmacao").header("Authorization","Bearer token-teste")
+                .contentType(MediaType.APPLICATION_JSON).content("{\"alternativa\":\"A\",\"versaoAvaliacao\":0}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.versaoAvaliacao").value(0));
+        verify(criterios).confirmar(eq(7L), eq(12L), any());
+        mvc.perform(post(ROTA+"/confirmacao").header("Authorization","Bearer token-teste")
+                .contentType(MediaType.APPLICATION_JSON).content("{\"alternativa\":\"C\",\"versaoAvaliacao\":0}"))
+                .andExpect(status().isBadRequest());
+        mvc.perform(post(ROTA+"/confirmacao").header("Authorization","Bearer token-teste")
+                .contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isBadRequest());
+    }
+
     @Test
     void traduzErrosDeTitularidadeEtapaERegra() throws Exception {
         when(criterios.consultar(7L,12L)).thenThrow(new DecisaoNaoEncontradaException());

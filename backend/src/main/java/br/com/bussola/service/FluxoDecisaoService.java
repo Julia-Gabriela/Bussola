@@ -68,7 +68,7 @@ public class FluxoDecisaoService {
     @Transactional
     public IdeiaResponse adicionar(Long usuarioId, Long id, IdeiaRequest request) {
         var decisao = bloquear(usuarioId, id);
-        exigirEtapa(decisao, BRAINSTORMING);
+        exigirEtapaAlcancada(decisao, BRAINSTORMING);
         var ideia = new IdeiaBrainstorming();
         ideia.setDecisao(decisao);
         preencher(ideia, request);
@@ -79,7 +79,7 @@ public class FluxoDecisaoService {
     @Transactional
     public IdeiaResponse editar(Long usuarioId, Long id, Long ideiaId, IdeiaRequest request) {
         var decisao = bloquear(usuarioId, id);
-        exigirEtapa(decisao, BRAINSTORMING);
+        exigirEtapaAlcancada(decisao, BRAINSTORMING);
         var ideia = buscarIdeia(id, ideiaId);
         preencher(ideia, request);
         atualizarData(decisao);
@@ -89,7 +89,7 @@ public class FluxoDecisaoService {
     @Transactional
     public void excluir(Long usuarioId, Long id, Long ideiaId) {
         var decisao = bloquear(usuarioId, id);
-        exigirEtapa(decisao, BRAINSTORMING);
+        exigirEtapaAlcancada(decisao, BRAINSTORMING);
         ideias.delete(buscarIdeia(id, ideiaId));
         atualizarData(decisao);
     }
@@ -128,6 +128,20 @@ public class FluxoDecisaoService {
     private void exigirEtapa(Decisao decisao, int etapa) {
         exigirEmAndamento(decisao);
         if (decisao.getEtapaAtual() != etapa) {
+            throw new EtapaInvalidaException("Esta operação não está disponível na etapa atual. Reabra a decisão pela Home.");
+        }
+    }
+
+    /**
+     * Permite editar a etapa atual ou uma etapa anterior já alcançada, sem
+     * mudar {@code etapaAtual}. Etapas futuras e decisões concluídas continuam bloqueadas.
+     *
+     * @param decisao decisão já carregada do usuário autenticado
+     * @param etapa número da etapa que está sendo editada
+     */
+    private void exigirEtapaAlcancada(Decisao decisao, int etapa) {
+        exigirEmAndamento(decisao);
+        if (decisao.getEtapaAtual() < etapa) {
             throw new EtapaInvalidaException("Esta operação não está disponível na etapa atual. Reabra a decisão pela Home.");
         }
     }

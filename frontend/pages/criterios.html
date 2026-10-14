@@ -11,8 +11,11 @@
     <link rel="stylesheet" href="../style/home.css">
     <link rel="stylesheet" href="../style/fluxo-decisao.css">
     <link rel="stylesheet" href="../style/criterios.css">
+    <link rel="stylesheet" href="../style/revisao-etapa.css">
     <link rel="stylesheet" href="../style/confirmacao-etapa.css">
+    <script src="../js/shared/alteracoes-nao-salvas.js" defer></script>
     <script src="../js/shared/confirmacao-etapa.js" defer></script>
+    <script src="../js/shared/revisao-etapa.js" defer></script>
     <script src="../js/pages/criterios-integracoes.js" defer></script>
     <script src="../js/pages/criterios.js" type="module"></script>
 </head>
@@ -26,7 +29,7 @@
         <div class="home-header-inner">
             <a href="home.html" class="home-brand" aria-label="Bússola — Início"><span class="home-brand-mark"><img src="../assets/images/home/marca.png" alt=""></span><span>Bússola</span></a>
             <nav class="home-nav" aria-label="Navegação principal">
-                <a href="home.html" class="home-nav-link"><img src="../assets/images/opcoes/inicio.svg" alt="" width="15" height="15">Início</a>
+                <a href="home.html" class="home-nav-link"><img src="../assets/images/home/inicio.svg" alt="" width="15" height="15">Início</a>
                 <button type="button" class="home-nav-link" id="historico"><img src="../assets/images/home/historico.svg" alt="" width="15" height="15">Histórico</button>
             </nav>
             <div class="home-account">
@@ -34,19 +37,16 @@
                     <span class="home-avatar" id="usuario-inicial" aria-hidden="true">…</span><span id="usuario-menu">Minha conta</span>
                     <img src="../assets/images/home/menu.svg" alt="" width="14" height="14">
                 </button>
-                <div class="home-profile-panel" id="perfil-menu" hidden><strong id="perfil-nome"></strong><span id="perfil-email"></span></div>
+                <div class="home-profile-panel" id="perfil-menu" hidden>
+                    <strong id="perfil-nome"></strong><span id="perfil-email"></span>
+                    <button type="button" data-destino="perfil">Meu perfil</button>
+                </div>
                 <button type="button" class="home-exit" id="sair" aria-label="Sair da conta" title="Sair da conta"><img src="../assets/images/home/sair.svg" alt="" width="16" height="16"></button>
             </div>
         </div>
     </header>
     <main class="fluxo-conteudo criterios-conteudo" id="conteudo" aria-busy="true">
-        <ol class="fluxo-etapas" aria-label="Etapas da análise após contextualizar a decisão">
-            <li class="concluida"><span class="etapa-circulo" aria-label="Concluído">✓</span><span>Brainstorm</span></li>
-            <li class="concluida"><span class="etapa-circulo" aria-label="Concluído">✓</span><span>Opções</span></li>
-            <li class="atual" aria-current="step"><span class="etapa-circulo">3</span><span>Critérios</span></li>
-            <li><span class="etapa-circulo">4</span><span>Pesos</span></li>
-            <li><span class="etapa-circulo">5</span><span>Análise</span></li>
-        </ol>
+        <ol class="fluxo-etapas" id="indicador-etapas" aria-label="Etapas da análise após contextualizar a decisão"></ol>
         <div class="criterios-abertura">
             <div class="fluxo-intro">
                 <span class="fluxo-badge"><img src="../assets/images/criterios/etapa.svg" alt="" width="13" height="13">Etapa 3 de 5</span>
@@ -62,6 +62,16 @@
             <p><strong>Como avaliar</strong><span>1 = menos favorável <span aria-hidden="true">→</span> 5 = mais favorável</span></p>
             <p class="criterios-escala-risco"><img src="../assets/images/criterios/risco.svg" alt="" width="16" height="16"><span><strong>Em Risco, a escala muda:</strong> 1 = menor risco · 5 = maior risco.</span></p>
         </div>
+        <section class="aviso-pendencia" id="aviso-pendencia" hidden aria-labelledby="pendencia-titulo">
+            <h2 id="pendencia-titulo">Revise sua avaliação</h2>
+            <p>Você alterou uma alternativa que já havia sido avaliada. Confira se as notas atribuídas a ela continuam representando sua escolha.</p>
+            <p>Suas notas foram preservadas, mas precisam ser confirmadas antes de continuar a análise.</p>
+            <p id="pendencia-alternativas"></p>
+            <div class="aviso-pendencia-acoes">
+                <button type="button" id="confirmar-a" hidden>Confirmar notas</button>
+                <button type="button" id="confirmar-b" hidden>Confirmar notas</button>
+            </div>
+        </section>
         <form id="criterios-form" novalidate>
             <fieldset id="criterios-campos" disabled aria-describedby="escala">
                 <legend class="fluxo-sr-only">Notas dos critérios para as opções A e B</legend>
@@ -80,15 +90,18 @@
                     </div>
                 </section>
                 <div class="criterios-resumo"><p id="progresso">Carregando avaliações…</p><p>As somas mostram as notas dadas, sem ajuste de risco ou pesos. Ainda não indicam a melhor opção.</p></div>
+                <p class="aviso-revisao" id="aviso-revisao" hidden><img src="../assets/images/revisao/aviso.svg" alt="" width="15" height="15">Suas alterações podem atualizar o resultado desta análise.</p>
+            </fieldset>
+            <div class="criterios-rodape">
+                <button type="button" id="ir-pesos" class="fluxo-salvar" hidden>Continuar para pesos</button>
                 <div class="fluxo-acoes" id="acoes-edicao">
                     <button type="submit" class="fluxo-salvar" id="salvar-criterios">Salvar para depois</button>
                     <button type="submit" class="fluxo-proxima" id="avancar"><span>Próxima etapa</span><img src="../assets/images/opcoes/proxima.svg" alt="" width="17" height="17"></button>
                 </div>
-            </fieldset>
+            </div>
         </form>
         <div class="fluxo-feedback" id="feedback" role="status" tabindex="-1"><p id="mensagem">Carregando sua avaliação…</p>
             <button type="button" id="recarregar" class="fluxo-salvar" hidden>Recarregar dados</button>
-            <button type="button" id="ir-pesos" class="fluxo-salvar" hidden>Continuar para pesos</button>
         </div>
     </main>
     <dialog class="home-dialog criterios-dialog" id="novo-criterio" aria-labelledby="novo-titulo">

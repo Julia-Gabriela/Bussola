@@ -119,6 +119,18 @@ class FluxoDecisaoControllerTest {
     }
 
     @Test
+    void revisaoDeIdeiaNaoRetrocedeAEtapaAtual() throws Exception {
+        decisao.setEtapaAtual(4);
+        mvc.perform(post("/decisoes/12/ideias").header("Authorization", TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON).content(IDEIA))
+                .andExpect(status().isCreated());
+        assertEquals(4, decisao.getEtapaAtual());
+        mvc.perform(post("/decisoes/12/brainstorming/concluir").header("Authorization", TOKEN))
+                .andExpect(status().isConflict());
+        assertEquals(4, decisao.getEtapaAtual());
+    }
+
+    @Test
     void consultaIdeiasEditaCategoriaEExclui() throws Exception {
         decisao.setEtapaAtual(2);
         var ideia = new IdeiaBrainstorming();
@@ -198,17 +210,25 @@ class FluxoDecisaoControllerTest {
 
     @ParameterizedTest
     @ValueSource(ints = {3, 4, 5, 6})
-    void naoAlteraEtapasAnterioresSemRevisao(int etapa) throws Exception {
+    void revisaoDeBrainstormingNaoMudaEtapaNemReconclui(int etapa) throws Exception {
         decisao.setEtapaAtual(etapa);
+        var ideia = new IdeiaBrainstorming();
+        ideia.setId(20L);
+        ideia.setDecisao(decisao);
+        ideia.setConteudo("Ganhar experiência");
+        ideia.setCategoria("FAVORAVEL");
+        when(ideias.findByIdAndDecisaoId(20L, 12L)).thenReturn(Optional.of(ideia));
         mvc.perform(put("/decisoes/12/contexto").header("Authorization", TOKEN)
                 .contentType(MediaType.APPLICATION_JSON).content("{\"titulo\":\"Projeto\"}")).andExpect(status().isConflict());
         mvc.perform(post("/decisoes/12/contexto/concluir").header("Authorization", TOKEN)).andExpect(status().isConflict());
+        mvc.perform(post("/decisoes/12/brainstorming/concluir").header("Authorization", TOKEN))
+                .andExpect(etapa == 3 ? status().isOk() : status().isConflict());
         mvc.perform(post("/decisoes/12/ideias").header("Authorization", TOKEN)
-                .contentType(MediaType.APPLICATION_JSON).content(IDEIA)).andExpect(status().isConflict());
+                .contentType(MediaType.APPLICATION_JSON).content(IDEIA)).andExpect(status().isCreated());
         mvc.perform(put("/decisoes/12/ideias/20").header("Authorization", TOKEN)
-                .contentType(MediaType.APPLICATION_JSON).content(IDEIA)).andExpect(status().isConflict());
-        mvc.perform(delete("/decisoes/12/ideias/20").header("Authorization", TOKEN)).andExpect(status().isConflict());
-        verifyNoInteractions(ideias);
+                .contentType(MediaType.APPLICATION_JSON).content(IDEIA)).andExpect(status().isOk());
+        mvc.perform(delete("/decisoes/12/ideias/20").header("Authorization", TOKEN)).andExpect(status().isNoContent());
+        assertEquals(etapa, decisao.getEtapaAtual());
     }
 
     @Test

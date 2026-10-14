@@ -6,4 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface OpcaoRepository extends JpaRepository<Opcao, Long> {
     List<Opcao> findByDecisaoIdOrderByIdAsc(Long decisaoId);
+
+    boolean existsByDecisaoIdAndAvaliacaoPendenteTrue(Long decisaoId);
 }

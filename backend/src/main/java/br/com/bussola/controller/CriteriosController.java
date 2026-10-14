@@ -1,6 +1,7 @@
 package br.com.bussola.controller;
 
 import br.com.bussola.dto.request.AvaliarCriteriosRequest;
+import br.com.bussola.dto.request.ConfirmarAvaliacaoRequest;
 import br.com.bussola.dto.response.CriteriosResponse;
 import br.com.bussola.dto.response.UsuarioResponse;
 import br.com.bussola.service.CriteriosService;
@@ -30,6 +31,13 @@ public class CriteriosController {
     public ResponseEntity<CriteriosResponse> salvar(@AuthenticationPrincipal UsuarioResponse usuario, @PathVariable Long decisaoId,
             @Valid @RequestBody AvaliarCriteriosRequest request) {
         return resposta(criterios.salvar(usuario.id(), decisaoId, request));
+    }
+
+    @PostMapping("/confirmacao")
+    @Operation(summary = "Confirmar as notas de uma alternativa", description = "Remove só a pendência de A ou de B. Exige a versão carregada na tela. Não altera notas, pesos nem etapaAtual. Salvar para depois não confirma.")
+    public ResponseEntity<CriteriosResponse> confirmar(@AuthenticationPrincipal UsuarioResponse usuario, @PathVariable Long decisaoId,
+            @Valid @RequestBody ConfirmarAvaliacaoRequest request) {
+        return resposta(criterios.confirmar(usuario.id(), decisaoId, request));
     }
 
     @PostMapping("/concluir")

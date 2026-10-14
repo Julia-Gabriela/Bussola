@@ -4,12 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Nova decisão — Bússola</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../style/landing-page.css">
     <link rel="stylesheet" href="../style/home.css">
     <link rel="stylesheet" href="../style/nova-decisao.css">
     <link rel="stylesheet" href="../style/confirmacao-etapa.css">
     <script src="../js/shared/confirmacao-etapa.js" defer></script>
+    <script src="../js/shared/alteracoes-nao-salvas.js" defer></script>
     <script src="../js/pages/decisao-api.js" defer></script>
+    <script src="../js/shared/cabecalho.js" defer></script>
     <script src="../js/pages/nova-decisao.js" defer></script>
 </head>
 <body class="home-page">
@@ -20,9 +25,24 @@
     </div>
     <header class="home-header">
         <div class="home-header-inner">
-            <a href="home.html" class="home-brand"><span class="home-brand-mark"><img src="../assets/images/home/marca.png" alt=""></span><span>Bússola</span></a>
-            <nav class="home-nav" aria-label="Navegação principal"><a href="home.html" class="home-nav-link">Início</a></nav>
-            <div class="home-account"><span id="usuario-nome">Minha conta</span></div>
+            <a href="home.html" class="home-brand" aria-label="Bússola — Início">
+                <span class="home-brand-mark"><img src="../assets/images/home/marca.png" alt=""></span><span>Bússola</span>
+            </a>
+            <nav class="home-nav" aria-label="Navegação principal">
+                <a href="home.html" class="home-nav-link"><img src="../assets/images/home/inicio.svg" alt="" width="15" height="15">Início</a>
+                <button type="button" class="home-nav-link" id="historico"><img src="../assets/images/home/historico.svg" alt="" width="15" height="15">Histórico</button>
+            </nav>
+            <div class="home-account">
+                <button class="home-profile" type="button" id="perfil-botao" aria-expanded="false" aria-controls="perfil-menu" disabled>
+                    <span class="home-avatar" id="usuario-inicial" aria-hidden="true">…</span><span id="usuario-menu">Minha conta</span>
+                    <img src="../assets/images/home/menu.svg" alt="" width="14" height="14">
+                </button>
+                <div class="home-profile-panel" id="perfil-menu" hidden>
+                    <strong id="perfil-nome"></strong><span id="perfil-email"></span>
+                    <button type="button" data-destino="perfil">Meu perfil</button>
+                </div>
+                <button type="button" class="home-exit" id="sair" aria-label="Sair da conta" title="Sair da conta"><img src="../assets/images/home/sair.svg" alt="" width="16" height="16"></button>
+            </div>
         </div>
     </header>
     <main id="conteudo" class="nova-decisao">
@@ -52,5 +72,9 @@
         </section>
         <a class="voltar" href="home.html">Ir para a Home</a>
     </main>
+    <dialog class="home-dialog" id="aviso-integracao" aria-labelledby="aviso-titulo" aria-describedby="aviso-texto">
+        <h2 id="aviso-titulo">Em breve</h2><p id="aviso-texto"></p>
+        <form method="dialog"><button class="home-primary" autofocus>Entendi</button></form>
+    </dialog>
 </body>
 </html>
