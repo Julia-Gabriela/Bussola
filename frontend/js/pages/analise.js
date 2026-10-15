@@ -60,6 +60,7 @@ function acoes(item, tipo) {
 }
 function renderizar() {
     el("decisao-titulo").textContent = dados.titulo;
+    el("abrir-101010").href = "metodo-101010.html?decisaoId=" + encodeURIComponent(id);
     el("argumento-form").hidden = el("gut-form").hidden = dados.status !== "EM_ANDAMENTO";
     window.BussolaRevisao.sincronizar({ etapaAtual: dados.etapaAtual, status: dados.status, etapaPagina: 6, decisaoId: id });
     const selecionada = el("alternativa").value;
@@ -97,6 +98,7 @@ async function carregar() {
         el("mensagem").textContent = dados.status === "CONCLUIDA" ? "Decisão concluída: somente consulta." : "";
     } catch (erro) { bloqueado = true; el("analise").hidden = true; el("recarregar").hidden = false; el("mensagem").textContent = erro.message; }
     finally { estado(false); }
+    if (dados && !bloqueado && new URLSearchParams(location.search).get("tecnica") === "gut") abrirAba("gut");
 }
 async function salvar(caminho, metodo, corpo) {
     if (ocupado || !editavel()) return;
@@ -138,12 +140,11 @@ el("alternativa").addEventListener("change", () => {
 });
 function abrirAba(tipo) {
     if (ocupado || sujo()) { aviso("Alterações não salvas", "Salve ou cancele o rascunho antes de trocar de técnica."); return; }
-    for (const nome of ["pros", "gut"]) { el("painel-" + nome).hidden = nome !== tipo; el("aba-" + nome).setAttribute("aria-selected", String(nome === tipo)); el("aba-" + nome).tabIndex = nome === tipo ? 0 : -1; }
+    for (const nome of ["pros", "gut"]) { el("painel-" + nome).hidden = nome !== tipo; if (nome === tipo) el("aba-" + nome).setAttribute("aria-current", "true"); else el("aba-" + nome).removeAttribute("aria-current"); }
     el("aba-" + tipo).focus();
 }
 for (const tipo of ["pros", "gut"]) {
     el("aba-" + tipo).addEventListener("click", () => abrirAba(tipo));
-    el("aba-" + tipo).addEventListener("keydown", evento => { if (["ArrowLeft", "ArrowRight", "Home", "End"].includes(evento.key)) { evento.preventDefault(); abrirAba(evento.key === "Home" ? "pros" : evento.key === "End" ? "gut" : tipo === "pros" ? "gut" : "pros"); } });
 }
 el("cancelar-exclusao").addEventListener("click", () => el("exclusao").close());
 el("exclusao").addEventListener("close", () => { exclusao = null; });
