@@ -162,6 +162,7 @@
         let rota = window.BUSSOLA_HOME_ROTAS?.[destino];
         if (destino === "continuarDecisao" && rota === "nova-decisao.html" && decisao) {
             rota = decisao.etapaAtual === 6 ? "analise.html"
+                : decisao.etapaAtual === 5 ? "pesos.html"
                 : decisao.etapaAtual >= 4 ? "criterios.html"
                 : decisao.etapaAtual === 3 ? "opcoes.html"
                 : decisao.etapaAtual === 2 ? "brainstorming.html" : rota;

@@ -104,6 +104,7 @@
                 const decisao = await api.requisitar(`/decisoes/${id}`);
                 if (decisao.etapaAtual >= 3) {
                     const pagina = decisao.etapaAtual === 6 ? "analise.html"
+                        : decisao.etapaAtual === 5 ? "pesos.html"
                         : decisao.etapaAtual >= 4 ? "criterios.html" : "opcoes.html";
                     bloqueado = true;
                     window.location.replace(pagina + "?decisaoId=" + encodeURIComponent(id));

@@ -15,7 +15,7 @@
         { etapa: 2, numero: "1", nome: "Brainstorm", pagina: "brainstorming.html" },
         { etapa: 3, numero: "2", nome: "Opções", pagina: "opcoes.html" },
         { etapa: 4, numero: "3", nome: "Critérios", pagina: "criterios.html" },
-        { etapa: 5, numero: "4", nome: "Pesos", pagina: null },
+        { etapa: 5, numero: "4", nome: "Pesos", pagina: "pesos.html" },
         { etapa: 6, numero: "5", nome: "Análise", pagina: "analise.html" }
     ];
 

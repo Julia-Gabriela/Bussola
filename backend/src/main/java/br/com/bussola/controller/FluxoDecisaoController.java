@@ -79,7 +79,7 @@ public class FluxoDecisaoController {
 
     @PostMapping("/brainstorming/concluir")
     @Operation(summary = "Concluir brainstorming e liberar definição das opções (etapa 3)",
-            description = "Preserva as ideias e mantém a decisão em andamento. Não há quantidade mínima de ideias.")
+            description = "Exige ao menos uma ideia, preserva as ideias e mantém a decisão em andamento.")
     public ResponseEntity<DecisaoResponse> concluirBrainstorming(@AuthenticationPrincipal UsuarioResponse usuario,
             @PathVariable Long id) {
         return resposta(fluxo.concluirBrainstorming(usuario.id(), id));

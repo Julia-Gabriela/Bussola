@@ -1,8 +1,8 @@
-/** A equipe de Pesos configura a rota quando a página existir.
- * Recebe decisaoId na URL. O evento cancelável permite integração sem acoplar as telas.
+/** A navegação para Pesos preserva o identificador da decisão.
+ * O evento cancelável permite que outra tela acompanhe a conclusão dos critérios.
  */
 window.BUSSOLA_CRITERIOS_ROTAS = {
-    pesos: null,
+    pesos: "pesos.html",
     historico: "historico.html",
     ...window.BUSSOLA_CRITERIOS_ROTAS
 };

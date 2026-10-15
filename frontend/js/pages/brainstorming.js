@@ -61,8 +61,10 @@
     function atualizarControles() {
         const desabilitado = ocupado || bloqueado || !editavel();
         el("campos").disabled = desabilitado;
-        el("concluir").disabled = desabilitado || editando !== null || conteudo.value.trim() !== "";
-        el("concluir").title = editando !== null || conteudo.value.trim() !== "" ? "Salve ou cancele sua ideia antes de avançar." : "";
+        const semIdeias = ideias.length === 0 && !emRevisao();
+        el("concluir").disabled = desabilitado || semIdeias || editando !== null || conteudo.value.trim() !== "";
+        el("concluir").title = semIdeias ? "Adicione pelo menos uma ideia para avançar."
+            : editando !== null || conteudo.value.trim() !== "" ? "Salve ou cancele sua ideia antes de avançar." : "";
         document.querySelectorAll("#ideias button").forEach(botao => { botao.disabled = desabilitado; });
         el("excluir").disabled = desabilitado;
         el("recarregar").disabled = ocupado;
@@ -141,6 +143,9 @@
             destino.append(grupo);
         });
         const somenteConsulta = !editavel();
+        if (editavel() && ideias.length === 0 && !emRevisao()) {
+            el("mensagem").textContent = "Adicione pelo menos uma ideia para liberar a próxima etapa.";
+        }
         formulario.hidden = somenteConsulta;
         el("concluir").hidden = somenteConsulta;
         el("proxima-etapa").hidden = !somenteConsulta;
@@ -218,6 +223,11 @@
     });
     el("concluir").addEventListener("click", async () => {
         if (ocupado || bloqueado || !editavel() || window.BussolaEtapas.aberta || editando !== null || conteudo.value.trim()) return;
+        if (!emRevisao() && ideias.length === 0) {
+            el("mensagem").textContent = "Adicione pelo menos uma ideia antes de avançar.";
+            conteudo.focus();
+            return;
+        }
         if (emRevisao()) {
             window.location.assign("opcoes.html?decisaoId=" + encodeURIComponent(id)
                 + (decisao.etapaAtual > 3 ? "&revisao=1" : ""));
