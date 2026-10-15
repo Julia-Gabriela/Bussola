@@ -28,7 +28,8 @@ function abrir(item) {
         if(!window.dispatchEvent(evento)) return;
         rota=window.BUSSOLA_HISTORICO_ROTAS?.resultadoDecisao;
         if(!rota) { aviso("Análise concluída","Sua decisão está registrada. A tela do resultado consolidado estará disponível em uma próxima entrega."); return; }
-    } else rota=item.etapaAtual===6?"analise.html":item.etapaAtual>=4?"criterios.html":item.etapaAtual===3?"opcoes.html":item.etapaAtual===2?"brainstorming.html":"nova-decisao.html";
+    } else rota=item.etapaAtual===6?"analise.html":item.etapaAtual===5?"pesos.html"
+        :item.etapaAtual>=4?"criterios.html":item.etapaAtual===3?"opcoes.html":item.etapaAtual===2?"brainstorming.html":"nova-decisao.html";
     const url=new URL(rota,location.href);
     if(url.origin!==location.origin || !["http:","https:"].includes(url.protocol)) { aviso("Página indisponível","Não foi possível abrir esta página."); return; }
     url.searchParams.set("decisaoId",item.id); location.assign(url.href);

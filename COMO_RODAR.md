@@ -30,7 +30,7 @@ python -m http.server 8765 --directory frontend
 
 ## Links úteis
 
-Após atualizar o frontend, pressione **Ctrl + F5** no navegador. Na Home, **Continuar** abre diretamente a tela disponível correspondente à etapa salva. Ao revisar Brainstorming, Opções ou Critérios pelo indicador superior, use **Próxima etapa** para seguir: salve ou cancele o rascunho de ideia; em Opções e Critérios, o botão salva as alterações antes de navegar, sem reiniciar o progresso. Notas pendentes ainda precisam de confirmação. A tela de Pesos continua aguardando implementação.
+Após atualizar o frontend, pressione Ctrl + F5 no navegador. Na Home, Continuar abre a tela correspondente à etapa salva. Ao revisar Brainstorming, Opções, Critérios ou Pesos pelo indicador superior, use o botão de avanço; a revisão salva alterações sem reiniciar o progresso. Notas pendentes ainda precisam de confirmação.
 
 Para conferir o layout, teste uma janela de computador e uma tela estreita. Os campos e espaços estão mais compactos; listas longas e telas de celular mantêm rolagem para não cortar conteúdo.
 
@@ -43,6 +43,7 @@ Para conferir o layout, teste uma janela de computador e uma tela estreita. Os c
 | Nova decisão | http://127.0.0.1:8765/pages/nova-decisao.html |
 | Brainstorming | `http://127.0.0.1:8765/pages/brainstorming.html?decisaoId=ID_DA_DECISAO` (após concluir a contextualização) |
 | Avaliação por critérios | `http://127.0.0.1:8765/pages/criterios.html?decisaoId=ID_DA_DECISAO` (após concluir Opções) |
+| Priorização de pesos | http://127.0.0.1:8765/pages/pesos.html?decisaoId=ID_DA_DECISAO (após concluir Critérios) |
 | Definição das opções | `http://127.0.0.1:8765/pages/opcoes.html?decisaoId=ID_DA_DECISAO` (use uma decisão sua na etapa 3 ou posterior) |
 | Sobre o projeto | http://127.0.0.1:8765/pages/sobre.html |
 | Swagger: testar a API | http://localhost:8080/swagger-ui/index.html |
@@ -118,14 +119,14 @@ Para testar no navegador, mantenha **MySQL + backend + frontend** ligados e use 
 
 1. Preencha os campos obrigatórios e clique para avançar. Antes de confirmar, nenhum salvamento ou avanço é enviado por esse clique.
 2. Clique em **Continuar revisando** ou pressione **Esc**. A tela deve manter os dados digitados, a etapa atual e o foco no botão que abriu a confirmação.
-3. Abra novamente e clique em **Confirmar e avançar**. Só então a tela envia a conclusão ao backend e segue o fluxo. Em Critérios, Pesos continua pendente e aparece o aviso de avaliações salvas.
+3. Abra novamente e clique em Confirmar e avançar. Só então a tela envia a conclusão ao backend e segue o fluxo. Em Critérios, avalie todas as alternativas; depois, escolha os pesos e avance para Análise.
 4. **Salvar para depois** continua salvando sem abrir essa confirmação e sem encerrar a etapa. No Brainstorming, salvar ideias também não conclui a etapa.
 
 Essa confirmação pertence à interface. No Swagger, as rotas de conclusão continuam avançando diretamente quando a requisição é válida. Não houve mudança nos comandos de inicialização; após atualizar, reinicie o backend e use **Ctrl + F5** nas páginas.
 
 ## Revisar uma etapa anterior
 
-Enquanto a decisão está **em andamento**, uma etapa já concluída do indicador (Brainstorm, Opções ou Critérios) pode ser reaberta. Pesos e Análise ainda não têm página: aparecem no indicador, mas não abrem tela. A contextualização continua editável só na etapa 1. Uma decisão com status **concluída** permanece só para consulta.
+Enquanto a decisão está em andamento, Brainstorming, Opções, Critérios e Pesos podem ser reabertos pelo indicador. A Análise abre depois de concluir Pesos. A contextualização continua editável só na etapa 1. Uma decisão concluída permanece somente para consulta.
 
 Mantenha MySQL, backend e frontend ligados. Use uma decisão sua que já tenha passado da etapa que você quer revisar.
 
@@ -146,7 +147,7 @@ No Brainstorming, cada ideia adicionada, editada ou excluída já é gravada na 
 
 Atualizar ou fechar a aba usa o aviso do próprio navegador. O botão Voltar também é interceptado quando a página consegue. O navegador pode ignorar essa proteção em alguns fechamentos.
 
-Abrir ou cancelar o aviso não grava nada. Não existe, por enquanto, recálculo automático de pesos ou do resultado da análise quando uma resposta anterior muda. Quando o nome de uma alternativa já avaliada muda, as notas ficam pendentes de confirmação, como explica a seção seguinte.
+A alteração de informações anteriores não recalcula automaticamente os pesos nem o resultado da análise. Quando o nome de uma alternativa já avaliada muda, as notas ficam pendentes de confirmação, como explica a seção seguinte.
 
 ## Confirmar avaliações pendentes
 
@@ -167,11 +168,11 @@ Para testar, mantenha MySQL, backend e frontend ligados. Use uma decisão sua qu
 7. Com pendência aberta, **Próxima etapa** fica oculta. O backend também recusa concluir Critérios enquanto A ou B estiver pendente (**409**). `etapaAtual` não muda.
 8. Se a mensagem pedir para recarregar antes de confirmar, use **Recarregar dados**. Uma confirmação enviada com a versão antiga não apaga a pendência.
 
-Enquanto existir pendência, um resultado futuro não deve ser tratado como válido. Se já houver uma linha em `resultados` para aquela alternativa, ela permanece e fica marcada para atualização. Pesos e Análise ainda não têm tela nem cálculo.
+Alterar notas ou pesos sinaliza resultados existentes para atualização. Esta entrega não cria um novo cálculo de recomendação.
 
 ## Testar contextualização e brainstorming
 
-A integração agora inclui a página de Brainstorming, o cliente `decisao-api.js`, as rotas de contexto/ideias e `FluxoDecisaoControllerTest`. O fluxo disponível é **Home → Contextualização → Brainstorming → Opções → Critérios**. Pesos e Análise permanecem pendentes.
+O fluxo disponível é Home → Contextualização → Brainstorming → Opções → Critérios → Pesos → Análise. O resultado consolidado e outras técnicas continuam pendentes.
 
 Depois de atualizar o projeto, **reinicie o backend no IntelliJ** e atualize o navegador com **Ctrl + F5**. Não precisa criar tabelas nem mudar variáveis ou portas.
 
@@ -181,9 +182,9 @@ Depois de atualizar o projeto, **reinicie o backend no IntelliJ** e atualize o n
 4. Selecione **Favorável**, **Desfavorável** ou **Dúvida**, escreva uma ideia e clique em **Adicionar**.
 5. Use **Editar** para mudar texto ou categoria. **Excluir** pede confirmação. Cada ação é salva no banco.
 6. Atualize a página ou retorne pela Home: as ideias devem continuar lá. Tanto o cartão da decisão quanto **Continuar** retomam o fluxo salvo.
-7. Clique em **Próxima etapa** depois de salvar ou cancelar o texto em edição e escolha **Confirmar e avançar**. A decisão passa para **Opções (etapa 3)**, preservando as ideias e o status **Em andamento**.
+7. Adicione pelo menos uma ideia. Sem nenhuma ideia salva, **Próxima etapa** fica bloqueada. Depois, clique em **Próxima etapa** e escolha **Confirmar e avançar**. A decisão passa para **Opções (etapa 3)**, preservando as ideias e o status **Em andamento**.
 
-A tela de Opções já está implementada em `opcoes.html`. A conclusão do brainstorming abre `opcoes.html?decisaoId=ID_DA_DECISAO` após salvar `etapaAtual: 3`. Sem pedir revisão, as etapas anteriores ficam para consulta. A revisão com confirmação está descrita em **Revisar uma etapa anterior**. Não há quantidade mínima de ideias exigida pela documentação. Texto de ideia é obrigatório ao adicionar/editar; limite técnico: 16.000 caracteres, compatível com a coluna TEXT.
+A tela de Opções já está implementada em `opcoes.html`. A conclusão do brainstorming abre `opcoes.html?decisaoId=ID_DA_DECISAO` após salvar `etapaAtual: 3`. Sem pedir revisão, as etapas anteriores ficam para consulta. A revisão com confirmação está descrita em **Revisar uma etapa anterior**. É obrigatório manter pelo menos uma ideia salva para concluir o brainstorming. Texto de ideia é obrigatório ao adicionar/editar; limite técnico: 16.000 caracteres, compatível com a coluna TEXT.
 
 Se o envio falhar sem confirmação, recarregue os dados antes de reenviar. No brainstorming, use **Recarregar dados**. Na criação, confira a Home para evitar duplicação. O que ainda não foi salvo no formulário não é recuperado ao sair.
 
@@ -207,7 +208,7 @@ Corpo de adicionar/editar ideia:
 {"conteudo": "Ganhar experiência profissional", "categoria": "FAVORAVEL"}
 ```
 
-Categorias aceitas: `FAVORAVEL`, `DESFAVORAVEL`, `DUVIDA`. Sem login: **401**. Dados inválidos: **400**. Decisão de outra pessoa ou ideia fora da decisão informada: **404**. Incluir, editar ou excluir ideia em uma decisão em andamento que já passou do brainstorming responde **201**, **200** ou **204** e não altera `etapaAtual`. A contextualização e a conclusão do brainstorming fora da etapa exata, o acesso antes do brainstorming e qualquer alteração em decisão concluída respondem **409**. Repetir a conclusão quando a decisão já está na etapa 3 não avança uma segunda vez.
+Categorias aceitas: `FAVORAVEL`, `DESFAVORAVEL`, `DUVIDA`. Sem login: **401**. Dados inválidos: **400**. Decisão de outra pessoa ou ideia fora da decisão informada: **404**. Incluir, editar ou excluir ideia em uma decisão em andamento que já passou do brainstorming responde **201**, **200** ou **204** e não altera `etapaAtual`. A contextualização e a conclusão do brainstorming fora da etapa exata, o acesso antes do brainstorming e qualquer alteração em decisão concluída respondem **409**. Concluir sem nenhuma ideia responde **409**. Repetir a conclusão quando a decisão já está na etapa 3 não avança uma segunda vez.
 
 
 
@@ -280,7 +281,7 @@ A resposta contém `decisaoId`, `titulo`, `etapaAtual`, `status`, `opcaoA` e `op
 
 Sem autenticação: **401**. Decisão inexistente ou de outra conta: **404**. Campos obrigatórios ausentes, limites excedidos ou nomes iguais (desconsiderando caixa e espaços nas pontas): **400**. Salvar ou concluir antes da etapa 3, concluir com dados diferentes depois do avanço, ou alterar uma decisão concluída: **409**. O PUT de revisão, com a decisão ainda em andamento e já na etapa 4 ou posterior, salva sem avançar. Reenviar a mesma conclusão na etapa 4 retorna os dados salvos sem duplicar opções nem avançar novamente. Se a alternativa já tiver nota e o nome mudar, a resposta traz `avaliacaoPendenteA` ou `avaliacaoPendenteB` como verdadeiro e incrementa `versaoAvaliacao`. Reenviar o mesmo nome não liga a pendência. Mudar só a descrição pode trazer `recomendacaoRevisarA` ou `recomendacaoRevisarB` nessa resposta; o GET seguinte volta esses dois campos como falso.
 
-**Integração entre as etapas:** `frontend/js/pages/opcoes-integracoes.js` já aponta para `criterios.html`; a navegação acrescenta `decisaoId`. O evento cancelável `bussola:opcoes-concluidas` continua disponível. Brainstorming abre `opcoes.html?decisaoId=ID` depois de concluir sua etapa. A retomada da Home passa por `nova-decisao.html`, consulta o estado real da decisão e encaminha a etapa 3 para Opções e as etapas 4 ou posteriores para Critérios. Pesos ainda depende da integração descrita abaixo.
+Integração entre as etapas: Opções abre Critérios depois de concluir. Critérios abre Pesos e envia o identificador da decisão. O evento cancelável bussola:opcoes-concluidas continua disponível. A retomada encaminha a etapa 5 para Pesos e a etapa 6 para Análise.
 
 ### Testes automatizados de Opções
 
@@ -305,7 +306,7 @@ A página está em `frontend/pages/criterios.html`. **Continue usando os mesmos 
 5. Preencha apenas algumas notas e clique em **Salvar para depois**. Espere a confirmação, recarregue e confira que as notas continuam lá. A decisão permanece em `etapaAtual: 4`.
 6. Use **Adicionar critério** para um aspecto pessoal. Nome obrigatório (até 200 caracteres), descrição opcional (até 1.000). Os nomes não podem se repetir; o limite é de **20 critérios no total** (5 fixos + até 15 personalizados). Formule o personalizado de modo que 5 seja mais favorável. Ele começa com peso 1, como os fixos. Adicionar e remover só são persistidos quando você salva ou avança. Remover pede confirmação e exclui também as notas daquele personalizado ao salvar. Os cinco fixos não podem ser removidos.
 7. Tente **Próxima etapa** com uma nota faltando: a tela deve focar o primeiro grupo incompleto e continuar na etapa atual. Depois, preencha A/B em todos os critérios, clique para avançar e escolha **Confirmar e avançar**. O backend salva e passa de **4 para 5**, mantendo a decisão **EM_ANDAMENTO**.
-8. Como **Pesos ainda não está implementada**, aparece a confirmação de que a avaliação foi salva. Nenhuma página inexistente é aberta. Ao retomar pela Home, Critérios abre para consulta. Para editar as notas de novo, siga **Revisar uma etapa anterior**: **Salvar alterações** grava sem voltar a etapa nem apagar as notas das outras etapas. Se o aviso **Revise sua avaliação** estiver visível, confirme cada alternativa citada antes de tentar avançar, como em **Confirmar avaliações pendentes**.
+8. Após concluir a avaliação, a tela abre Pesos. Ajuste cada critério de 1 a 5; a soma e a barra atualizam enquanto você move os controles. Próxima etapa salva os pesos e abre Análise. Para editar notas ou pesos depois, use Revisar uma etapa anterior; as alterações são salvas sem reiniciar o progresso.
 
 O indicador **Etapa 3 de 5** segue o Figma e conta as etapas da análise; o banco/Home contam também a contextualização, por isso Critérios é a etapa 4 de 6.
 
@@ -355,10 +356,11 @@ Confirmar uma alternativa: `POST /decisoes/{decisaoId}/criterios/confirmacao`.
 
 - Brainstorming está integrada: sua conclusão persiste a etapa 3 e abre `opcoes.html?decisaoId=ID`. Ao consultar ideias de uma etapa já concluída, **Continuar decisão** retoma o estágio salvo pela API.
 - Opções já abre Critérios. Os IDs de A/B são preservados: A é a opção de menor ID, B é a seguinte.
-- Quando Pesos existir, configure `pesos` em `frontend/js/pages/criterios-integracoes.js`. A navegação acrescenta `decisaoId`. Outra integração pode interceptar o evento cancelável `bussola:criterios-concluidos`, com `detail: { decisaoId, etapa: 5 }`.
+- Critérios abre a página de Pesos após concluir a avaliação; o evento cancelável bussola:criterios-concluidos continua disponível.
 - A API retorna `criterios[].id`, `codigo`, `nome`, `descricao`, `personalizado`, `peso`, `sentido`, `notaA` e `notaB`. IDs são null somente para os cinco critérios ainda não gravados; depois de salvar, são os IDs reais para Pesos/Avaliações. O GET não cria registros.
 - `sentido` é `MENOR_MELHOR` em Risco e `MAIOR_MELHOR` nos demais. Na futura comparação em que uma pontuação maior significa preferência, normalize Risco como `6 - nota` antes de aplicar seu peso. O total bruto desta tela não deve ser reutilizado como resultado final.
-- Enquanto Pesos não existe, a retomada da Home permanece em Critérios para consulta a partir da etapa 5. Ao entregar Pesos/Análise, atualize também o encaminhamento em `nova-decisao.js` para o estágio real do backend.
+- GET /decisoes/{id}/pesos consulta os valores; PUT salva sem avançar; POST /decisoes/{id}/pesos/concluir salva e avança da etapa 5 para 6. Envie uma entrada por critério, com id e peso inteiro de 1 a 5. Critérios ausentes, repetidos ou de outra decisão são rejeitados.
+- Mudanças nos pesos sinalizam resultados anteriores como desatualizados. A tela não calcula nem recomenda uma alternativa.
 
 ### Testes automatizados de Critérios
 
@@ -422,9 +424,9 @@ Faça antes a primeira configuração da chave JWT. Deixe esse terminal aberto. 
 
 Reinicie o backend e use **Ctrl + F5** no frontend. Não há dependências, variáveis ou migrations novas.
 
-**Pré-requisito:** a decisão precisa ter duas alternativas e estar na etapa interna **6 — Análise** (visual 5 de 5). A etapa Pesos ainda não está implementada, então o fluxo normal de uma decisão nova ainda não chega aqui. Não altere o banco pessoal para pular etapas. Os testes automatizados usam decisões simuladas nessa etapa, sem MySQL.
+Pré-requisito: a decisão deve ter duas alternativas e estar na etapa interna 6 — Análise (visual 5 de 5). Conclua Critérios, defina os pesos e avance. Não altere o banco pessoal para pular etapas.
 
-Quando Pesos estiver integrada, sua conclusão deve liberar a etapa 6 e abrir `analise.html?decisaoId=ID`. A Home e o indicador superior já apontam para essa tela quando a API informa a etapa 6.
+Ao concluir Pesos, o backend libera a etapa 6 e a tela abre a página de Análise. A Home e o indicador retomam essa tela quando a API informa a etapa 6.
 
 ### Conferir pela tela, com uma decisão já liberada
 
@@ -479,7 +481,7 @@ Reinicie o backend e atualize o navegador com **Ctrl + F5**. Na Home, clique em 
 
 - Pesquise pelo título e combine com Todas, Concluídas ou Em andamento. A busca trata `%` e `_` como texto, não como curingas.
 - Ordene por última atualização (mais recente ou mais antiga) ou título. A lista mostra 10 decisões por página; use Anterior/Próxima. Os totais do topo representam sua conta inteira, mesmo com filtros.
-- **Continuar decisão** abre a tela correspondente à etapa salva. Na etapa5, Pesos ainda pendente, mantém a consulta de Critérios; na etapa6, abre Análise.
+- Continuar decisão abre a tela correspondente: Critérios na etapa 4, Pesos na etapa 5 e Análise na etapa 6.
 - **Ver análise** de decisões concluídas está preparado para a tela de resultado da Dupla B. Enquanto ela não existir, mostra um aviso, sem inventar um resultado. Configure `resultadoDecisao` em `frontend/js/pages/historico-integracoes.js` quando a tela for entregue; receberá `decisaoId`. Também existe o evento cancelável `bussola:ver-resultado`.
 - **Excluir** abre uma confirmação com o título e explica que a operação é irreversível. Cancelar não altera nada. Confirmar apaga a decisão e todos os seus registros relacionados. Após excluir, a Home recalcula seus totais usando os registros restantes.
 - Em falha de rede durante exclusão, use Recarregar histórico para conferir o estado antes de tentar novamente.
@@ -504,4 +506,4 @@ Para conferir a revisão de etapas existente:
 .\mvnw.cmd '-Dtest=FluxoDecisaoControllerTest,OpcoesServiceTest,CriteriosServiceTest' test
 ```
 
-A rodada4 está implementada nas telas disponíveis: confirmação da revisão, preservação de dados/progresso, controle de etapas e confirmação de notas afetadas. A integração com Pesos e o recálculo/retorno a partir do Resultado aguardam essas funcionalidades da Dupla B. A contextualização continua editável somente antes de avançar, conforme implementação atual; o indicador de revisão começa em Brainstorming.
+A revisão de Critérios e Pesos preserva os dados e o progresso e sinaliza resultados anteriores quando notas ou pesos mudam. O cálculo do resultado consolidado continua pendente. A contextualização permanece editável somente antes de avançar; o indicador de revisão começa em Brainstorming.

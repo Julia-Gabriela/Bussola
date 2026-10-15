@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Priorização de pesos — Bússola</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style/landing-page.css">
+<link rel="stylesheet" href="../style/home.css">
+<link rel="stylesheet" href="../style/fluxo-decisao.css">
+<link rel="stylesheet" href="../style/revisao-etapa.css">
+<link rel="stylesheet" href="../style/confirmacao-etapa.css">
+<link rel="stylesheet" href="../style/pesos.css">
+<link rel="stylesheet" href="../style/fluxo-compacto.css">
+<script src="../js/shared/alteracoes-nao-salvas.js" defer></script>
+<script src="../js/shared/confirmacao-etapa.js" defer></script>
+<script src="../js/shared/revisao-etapa.js" defer></script>
+<script type="module" src="../js/pages/pesos.js"></script>
+</head>
+<body class="home-page fluxo-page pesos-page">
+<a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
+<div class="home-scene" aria-hidden="true"><img src="../assets/images/fundo-cadastro.png" alt="" class="home-map"><div class="home-ring"></div></div>
+<header class="home-header"><div class="home-header-inner">
+<a href="home.html" class="home-brand" aria-label="Bússola — Início"><span class="home-brand-mark"><img src="../assets/images/home/marca.png" alt=""></span><span>Bússola</span></a>
+<nav class="home-nav" aria-label="Navegação principal">
+<a href="home.html" class="home-nav-link"><img src="../assets/images/home/inicio.svg" alt="" width="15" height="15">Início</a>
+<button type="button" class="home-nav-link" id="historico"><img src="../assets/images/home/historico.svg" alt="" width="15" height="15">Histórico</button>
+</nav>
+<div class="home-account">
+<button class="home-profile" type="button" id="perfil-botao" aria-expanded="false" aria-controls="perfil-menu" disabled><span class="home-avatar" id="usuario-inicial" aria-hidden="true">…</span><span id="usuario-menu">Minha conta</span><img src="../assets/images/home/menu.svg" alt="" width="14" height="14"></button>
+<div class="home-profile-panel" id="perfil-menu" hidden><strong id="perfil-nome"></strong><span id="perfil-email"></span><button type="button" data-destino="perfil">Meu perfil</button></div>
+<button type="button" class="home-exit" id="sair" aria-label="Sair da conta" title="Sair da conta"><img src="../assets/images/home/sair.svg" alt="" width="16" height="16"></button>
+</div>
+</div></header>
+<main class="fluxo-conteudo pesos-conteudo" id="conteudo" aria-busy="true">
+<ol class="fluxo-etapas" id="indicador-etapas" aria-label="Etapas da análise"></ol>
+<div class="fluxo-intro pesos-intro"><span class="fluxo-badge"><img src="../assets/images/criterios/etapa.svg" alt="" width="13" height="13">Etapa 4 de 5</span><h1>Priorização de pesos</h1><p>Quanto cada critério importa para você? Ajuste os sliders conforme suas prioridades pessoais.</p></div>
+<p id="mensagem" class="pesos-mensagem" role="status" aria-live="polite">Carregando seus critérios…</p>
+<button type="button" class="fluxo-salvar" id="recarregar" hidden>Recarregar dados</button>
+<div id="painel-pesos" hidden>
+<section class="pesos-total" aria-label="Soma dos pesos"><div class="pesos-total-legenda"><span>Soma dos pesos:</span><strong id="soma-pesos">0</strong></div><div class="pesos-total-barra" role="progressbar" id="barra-total" aria-label="Soma dos pesos" aria-valuemin="0" aria-valuemax="25" aria-valuenow="0"><span id="barra-total-valor"></span></div><span class="pesos-total-maximo" id="maximo-pesos">/ 25 máx.</span></section>
+<section class="pesos-lista" id="criterios-lista" aria-label="Pesos dos critérios"></section>
+<aside class="pesos-dica"><p><strong>Lembre-se:</strong> Os pesos refletem sua escala de valores neste momento. Não há resposta certa ou errada.</p></aside>
+<div class="pesos-acoes"><button type="button" class="fluxo-proxima" id="avancar">Próxima etapa <span aria-hidden="true">→</span></button></div>
+</div>
+<noscript><p class="home-noscript">Ative o JavaScript para carregar e salvar os pesos.</p></noscript>
+</main>
+<dialog class="home-dialog" id="aviso" aria-labelledby="aviso-titulo"><h2 id="aviso-titulo"></h2><p id="aviso-texto"></p><form method="dialog"><button class="home-primary" autofocus>Entendi</button></form></dialog>
+</body></html>

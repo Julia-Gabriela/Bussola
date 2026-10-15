@@ -100,6 +100,9 @@ public class FluxoDecisaoService {
         exigirEmAndamento(decisao);
         if (decisao.getEtapaAtual() == OPCOES) return DecisaoResponse.de(decisao);
         exigirEtapa(decisao, BRAINSTORMING);
+        if (ideias.findByDecisaoIdOrderByIdAsc(id).isEmpty()) {
+            throw new EtapaInvalidaException("Adicione pelo menos uma ideia antes de concluir o brainstorming.");
+        }
         decisao.setEtapaAtual(OPCOES);
         atualizarData(decisao);
         return DecisaoResponse.de(decisoes.saveAndFlush(decisao));
