@@ -159,7 +159,12 @@
         const detalhe = { destino, decisaoId: decisao?.id ?? null, etapa: decisao?.etapaAtual ?? null,
             status: decisao?.status ?? null };
         if (!window.dispatchEvent(new CustomEvent("bussola:navegar", { detail: detalhe, cancelable: true }))) return;
-        const rota = window.BUSSOLA_HOME_ROTAS?.[destino];
+        let rota = window.BUSSOLA_HOME_ROTAS?.[destino];
+        if (destino === "continuarDecisao" && rota === "nova-decisao.html" && decisao) {
+            rota = decisao.etapaAtual >= 4 ? "criterios.html"
+                : decisao.etapaAtual === 3 ? "opcoes.html"
+                : decisao.etapaAtual === 2 ? "brainstorming.html" : rota;
+        }
         if (typeof rota === "string" && rota.trim()) {
             try {
                 const url = new URL(rota, window.location.href);

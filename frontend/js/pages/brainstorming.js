@@ -142,7 +142,7 @@
         });
         const somenteConsulta = !editavel();
         formulario.hidden = somenteConsulta;
-        el("concluir").hidden = somenteConsulta || emRevisao();
+        el("concluir").hidden = somenteConsulta;
         el("proxima-etapa").hidden = !somenteConsulta;
         window.BussolaRevisao.sincronizar({
             etapaAtual: decisao.etapaAtual, status: decisao.status, etapaPagina: 2, decisaoId: id
@@ -151,7 +151,7 @@
         if (somenteConsulta && (decisao.status === "CONCLUIDA" || decisao.etapaAtual > 3)) {
             el("proxima-descricao").textContent = "Essas são as ideias salvas da sua decisão. A consulta não altera seu progresso.";
         }
-        el("etapa").textContent = `Etapa ${decisao.etapaAtual} de 6 · ${editavel() ? "Brainstorming" : "Ideias salvas"}`;
+        el("etapa").textContent = "Etapa 1 de 5 · Brainstorming";
         atualizarControles();
     }
 
@@ -218,6 +218,11 @@
     });
     el("concluir").addEventListener("click", async () => {
         if (ocupado || bloqueado || !editavel() || window.BussolaEtapas.aberta || editando !== null || conteudo.value.trim()) return;
+        if (emRevisao()) {
+            window.location.assign("opcoes.html?decisaoId=" + encodeURIComponent(id)
+                + (decisao.etapaAtual > 3 ? "&revisao=1" : ""));
+            return;
+        }
         if (!await window.BussolaEtapas.confirmarAvanco()) return;
         executar(async () => {
             decisao = await api.requisitar(`/decisoes/${id}/brainstorming/concluir`, "POST");

@@ -162,7 +162,7 @@ function atualizarPendencia(dados) {
     botaoB.hidden = !pendenteB;
     botaoA.textContent = "Confirmar notas de " + dados.opcaoA.nome;
     botaoB.textContent = "Confirmar notas de " + dados.opcaoB.nome;
-    el("avancar").hidden = window.BussolaRevisao.emRevisao(dados.etapaAtual, 4) || pendenteA || pendenteB;
+    el("avancar").hidden = pendenteA || pendenteB;
 }
 
 /**
@@ -216,7 +216,7 @@ function renderizar(dados) {
     el("acoes-edicao").hidden = !editavel();
     el("salvar-criterios").textContent = revisao ? "Salvar alterações" : "Salvar para depois";
     atualizarPendencia(dados);
-    el("ir-pesos").hidden = dados.etapaAtual !== 5 || dados.status !== "EM_ANDAMENTO";
+    el("ir-pesos").hidden = editavel() || dados.etapaAtual < 5 || dados.status !== "EM_ANDAMENTO";
     tabela(); referencia = foto();
     el("mensagem").textContent = editavel() || dados.avaliacaoPendenteA || dados.avaliacaoPendenteB
         ? "" : "Avaliações salvas. Esta etapa está disponível para consulta.";
@@ -256,15 +256,16 @@ function validarCompleta() {
 el("criterios-form").addEventListener("submit", async evento => {
     evento.preventDefault();
     if (ocupado || !editavel() || window.BussolaEtapas.aberta) return;
-    const avancar = !window.BussolaRevisao.emRevisao(decisao.etapaAtual, 4) && evento.submitter?.id === "avancar";
-    if (avancar && !validarCompleta()) return;
+    const seguir = evento.submitter?.id === "avancar";
+    const avancar = !window.BussolaRevisao.emRevisao(decisao.etapaAtual, 4) && seguir;
+    if (seguir && !validarCompleta()) return;
     if (avancar && !await window.BussolaEtapas.confirmarAvanco()) return;
     const dados = { criterios: itens.map(({ nome, descricao, notaA, notaB }) => ({ nome, descricao, notaA, notaB })) };
     estado(true); el("mensagem").textContent = "Salvando suas avaliações…"; el("recarregar").hidden = true;
     try {
         const resposta = await api.requisitar("/decisoes/" + id + "/criterios" + (avancar ? "/concluir" : ""), avancar ? "POST" : "PUT", dados);
         renderizar(resposta); el("mensagem").textContent = avancar ? "Avaliação salva. Você concluiu esta etapa." : "Avaliações salvas. Você pode retomar pela Home.";
-        if (avancar) irParaPesos();
+        if (seguir && !resposta.avaliacaoPendenteA && !resposta.avaliacaoPendenteB) irParaPesos();
     } catch (erro) {
         el("mensagem").textContent = erro.message;
         if (erro.incerto || [404, 409].includes(erro.status)) el("recarregar").hidden = false;

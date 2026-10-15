@@ -85,9 +85,9 @@
         const editavel = dados.status === "EM_ANDAMENTO" && (dados.etapaAtual === 3 || revisao);
         inputs.forEach(input => { input.readOnly = !editavel; });
         el("acoes-edicao").hidden = !editavel;
-        el("avancar").hidden = revisao;
+        el("avancar").hidden = false;
         el("salvar-opcoes").textContent = revisao ? "Salvar alterações" : "Salvar para depois";
-        el("ir-criterios").hidden = dados.status !== "EM_ANDAMENTO" || dados.etapaAtual !== 4;
+        el("ir-criterios").hidden = editavel || dados.status !== "EM_ANDAMENTO" || dados.etapaAtual < 4;
         el("mensagem").textContent = editavel ? "" : dados.status === "CONCLUIDA"
             ? "Esta decisão está concluída. Suas opções estão disponíveis para consulta."
             : "Opções salvas. Esta etapa está disponível para consulta.";
@@ -210,6 +210,7 @@
         if (rota) {
             const url = new URL(rota, window.location.href);
             url.searchParams.set("decisaoId", id);
+            if (decisao.etapaAtual > 4) url.searchParams.set("revisao", "1");
             window.location.assign(url.href);
         } else aviso("Opções salvas", "Suas alternativas estão guardadas. A etapa de critérios estará disponível em breve. Você pode sair e retomar pela Home.");
     }
@@ -219,7 +220,8 @@
         const revisao = window.BussolaRevisao.emRevisao(decisao?.etapaAtual, 3);
         const editavel = decisao?.status === "EM_ANDAMENTO" && (decisao.etapaAtual === 3 || revisao);
         if (ocupado || window.BussolaEtapas.aberta || !editavel || !validar()) return;
-        const avancar = !revisao && evento.submitter?.id !== "salvar-opcoes";
+        const seguir = evento.submitter?.id === "avancar";
+        const avancar = !revisao && seguir;
         if (avancar && !await window.BussolaEtapas.confirmarAvanco()) return;
         const dados = payload();
         estado(true);
@@ -229,7 +231,7 @@
             const resposta = await requisitar("/decisoes/" + id + "/opcoes" + (avancar ? "/concluir" : ""), avancar ? "POST" : "PUT", dados);
             renderizar(resposta);
             el("mensagem").textContent = avancar ? "Opções salvas. Você concluiu esta etapa." : "Opções salvas. Você pode continuar agora ou retomar pela Home.";
-            if (avancar) irParaCriterios();
+            if (seguir) irParaCriterios();
         } catch (erro) {
             el("mensagem").textContent = erro.message;
             if (erro.incerto || erro.status === 409 || erro.status === 404) {

@@ -30,6 +30,10 @@ python -m http.server 8765 --directory frontend
 
 ## Links úteis
 
+Após atualizar o frontend, pressione **Ctrl + F5** no navegador. Na Home, **Continuar** abre diretamente a tela disponível correspondente à etapa salva. Ao revisar Brainstorming, Opções ou Critérios pelo indicador superior, use **Próxima etapa** para seguir: salve ou cancele o rascunho de ideia; em Opções e Critérios, o botão salva as alterações antes de navegar, sem reiniciar o progresso. Notas pendentes ainda precisam de confirmação. A tela de Pesos continua aguardando implementação.
+
+Para conferir o layout, teste uma janela de computador e uma tela estreita. Os campos e espaços estão mais compactos; listas longas e telas de celular mantêm rolagem para não cortar conteúdo.
+
 | O que abrir | Endereço |
 | --- | --- |
 | Login | http://127.0.0.1:8765/pages/login.html |
