@@ -161,7 +161,8 @@
         if (!window.dispatchEvent(new CustomEvent("bussola:navegar", { detail: detalhe, cancelable: true }))) return;
         let rota = window.BUSSOLA_HOME_ROTAS?.[destino];
         if (destino === "continuarDecisao" && rota === "nova-decisao.html" && decisao) {
-            rota = decisao.etapaAtual >= 4 ? "criterios.html"
+            rota = decisao.etapaAtual === 6 ? "analise.html"
+                : decisao.etapaAtual >= 4 ? "criterios.html"
                 : decisao.etapaAtual === 3 ? "opcoes.html"
                 : decisao.etapaAtual === 2 ? "brainstorming.html" : rota;
         }

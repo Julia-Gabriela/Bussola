@@ -128,7 +128,7 @@ public class TecnicasAnaliseService {
 
     private void atualizar(Decisao decisao, List<Opcao> afetadas) {
         decisao.setDataAtualizacao(LocalDateTime.now());
-        // Preserva o resultado anterior e sinaliza a alteração, sem inventar uma fórmula comparativa.
+        // Mantém o resultado anterior disponível até a próxima atualização.
         afetadas.forEach(opcao -> resultados.findByOpcaoId(opcao.getId()).ifPresent(resultado -> {
             resultado.setRequerAtualizacao(true);
             resultados.save(resultado);
