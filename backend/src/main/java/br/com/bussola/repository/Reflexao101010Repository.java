@@ -4,4 +4,5 @@ import br.com.bussola.model.entity.Reflexao101010;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface Reflexao101010Repository extends JpaRepository<Reflexao101010, Long> {
+    java.util.List<Reflexao101010> findByOpcaoDecisaoId(Long decisaoId);
 }

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Método 10–10–10 — Bússola</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style/landing-page.css">
+    <link rel="stylesheet" href="../style/home.css">
+    <link rel="stylesheet" href="../style/fluxo-decisao.css">
+    <link rel="stylesheet" href="../style/metodo-101010.css">
+    <link rel="stylesheet" href="../style/revisao-etapa.css">
+    <link rel="stylesheet" href="../style/confirmacao-etapa.css">
+    <script src="../js/shared/alteracoes-nao-salvas.js" defer></script>
+    <script src="../js/shared/confirmacao-etapa.js" defer></script>
+    <script src="../js/shared/revisao-etapa.js" defer></script>
+    <script src="../js/pages/metodo-101010-integracoes.js" defer></script>
+    <script src="../js/pages/metodo-101010.js" type="module"></script>
+    <link rel="stylesheet" href="../style/fluxo-compacto.css">
+    <link rel="stylesheet" href="../style/tecnicas-nav.css">
+</head>
+<body class="home-page fluxo-page metodo-page">
+    <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
+    <div class="home-scene" aria-hidden="true">
+        <img src="../assets/images/fundo-cadastro.png" alt="" class="home-map">
+        <div class="home-ring"></div>
+    </div>
+    <header class="home-header">
+        <div class="home-header-inner">
+            <a href="home.html" class="home-brand" aria-label="Bússola — Início"><span class="home-brand-mark"><img src="../assets/images/home/marca.png" alt=""></span><span>Bússola</span></a>
+            <nav class="home-nav" aria-label="Navegação principal">
+                <a href="home.html" class="home-nav-link"><img src="../assets/images/opcoes/inicio.svg" alt="" width="15" height="15">Início</a>
+                <button type="button" class="home-nav-link" id="historico"><img src="../assets/images/home/historico.svg" alt="" width="15" height="15">Histórico</button>
+            </nav>
+            <div class="home-account">
+                <button class="home-profile" type="button" id="perfil-botao" aria-expanded="false" aria-controls="perfil-menu" disabled>
+                    <span class="home-avatar" id="usuario-inicial" aria-hidden="true">…</span><span id="usuario-menu">Minha conta</span>
+                    <img src="../assets/images/home/menu.svg" alt="" width="14" height="14">
+                </button>
+                <div class="home-profile-panel" id="perfil-menu" hidden>
+                    <strong id="perfil-nome"></strong><span id="perfil-email"></span>
+                    <button type="button" data-destino="perfil">Meu perfil</button>
+                </div>
+                <button type="button" class="home-exit" id="sair" aria-label="Sair da conta" title="Sair da conta"><img src="../assets/images/home/sair.svg" alt="" width="16" height="16"></button>
+            </div>
+        </div>
+    </header>
+<main class="fluxo-conteudo metodo-conteudo" id="conteudo" aria-busy="true">
+    <ol class="fluxo-etapas" id="indicador-etapas" aria-label="Etapas da análise"></ol>
+    <div class="fluxo-intro">
+        <span class="fluxo-badge"><img src="../assets/images/metodo-101010/etapa.svg" width="13" height="13" alt="">Etapa 5 de 5</span>
+        <h1>Técnicas de análise</h1>
+        <p>Explore diferentes perspectivas para aprofundar sua análise.</p>
+        <p id="decisao-titulo"></p>
+    </div>
+    <p id="mensagem" role="status" aria-live="polite">Carregando suas reflexões…</p>
+    <button type="button" class="fluxo-salvar" id="recarregar" hidden>Recarregar dados</button>
+    <div id="metodo" hidden>
+        <nav class="tecnicas-nav" aria-label="Técnicas de análise">
+            <a id="tecnica-pros" href="analise.html"><span>Prós e Contras</span><small>Clássico</small></a>
+            <a id="tecnica-gut" href="analise.html"><span>Matriz GUT</span><small>Prioridade</small></a>
+            <a href="#reflexoes-form" aria-current="page"><span>Técnica 10/10/10</span><small>Temporal</small></a>
+            <button type="button" id="tecnica-inversao" aria-disabled="true" title="Inversão estará disponível em breve"><span>Inversão</span><small>Em breve</small></button>
+        </nav>
+        <form id="reflexoes-form" novalidate>
+            <fieldset id="reflexoes-campos" disabled>
+                <legend class="fluxo-sr-only">Reflexões do método 10–10–10</legend>
+                <div class="reflexoes-painel">
+                    <p class="reflexoes-pergunta">Como você se sentirá em relação a cada opção daqui a <strong>10 minutos</strong>, <strong>10 meses</strong> e <strong>10 anos</strong>?</p>
+            <section class="reflexao-prazo" aria-labelledby="curtoPrazo-titulo">
+                <h2 id="curtoPrazo-titulo"><span aria-hidden="true">⏱️</span> Daqui a 10 minutos</h2>
+                <div class="reflexoes-par">
+                    <div class="reflexao-opcao opcao-a">
+                        <label for="curtoPrazo-a">Opção A — <span data-nome="a">…</span><span class="fluxo-sr-only">, daqui a 10 minutos</span></label>
+                        <textarea id="curtoPrazo-a" name="curtoPrazo-a" rows="3" maxlength="16000" placeholder="Como você se sentiria logo após escolher esse caminho?" aria-describedby="curtoPrazo-a-erro"></textarea>
+                        <p class="fluxo-erro-campo" id="curtoPrazo-a-erro"></p>
+                    </div>
+                    <div class="reflexao-opcao opcao-b">
+                        <label for="curtoPrazo-b">Opção B — <span data-nome="b">…</span><span class="fluxo-sr-only">, daqui a 10 minutos</span></label>
+                        <textarea id="curtoPrazo-b" name="curtoPrazo-b" rows="3" maxlength="16000" placeholder="Como você se sentiria logo após escolher esse caminho?" aria-describedby="curtoPrazo-b-erro"></textarea>
+                        <p class="fluxo-erro-campo" id="curtoPrazo-b-erro"></p>
+                    </div>
+                </div>
+            </section>
+            <section class="reflexao-prazo" aria-labelledby="medioPrazo-titulo">
+                <h2 id="medioPrazo-titulo"><span aria-hidden="true">📅</span> Daqui a 10 meses</h2>
+                <div class="reflexoes-par">
+                    <div class="reflexao-opcao opcao-a">
+                        <label for="medioPrazo-a">Opção A — <span data-nome="a">…</span><span class="fluxo-sr-only">, daqui a 10 meses</span></label>
+                        <textarea id="medioPrazo-a" name="medioPrazo-a" rows="3" maxlength="16000" placeholder="O que poderia mudar na sua rotina nos próximos meses?" aria-describedby="medioPrazo-a-erro"></textarea>
+                        <p class="fluxo-erro-campo" id="medioPrazo-a-erro"></p>
+                    </div>
+                    <div class="reflexao-opcao opcao-b">
+                        <label for="medioPrazo-b">Opção B — <span data-nome="b">…</span><span class="fluxo-sr-only">, daqui a 10 meses</span></label>
+                        <textarea id="medioPrazo-b" name="medioPrazo-b" rows="3" maxlength="16000" placeholder="O que poderia mudar na sua rotina nos próximos meses?" aria-describedby="medioPrazo-b-erro"></textarea>
+                        <p class="fluxo-erro-campo" id="medioPrazo-b-erro"></p>
+                    </div>
+                </div>
+            </section>
+            <section class="reflexao-prazo" aria-labelledby="longoPrazo-titulo">
+                <h2 id="longoPrazo-titulo"><span aria-hidden="true">🌏</span> Daqui a 10 anos</h2>
+                <div class="reflexoes-par">
+                    <div class="reflexao-opcao opcao-a">
+                        <label for="longoPrazo-a">Opção A — <span data-nome="a">…</span><span class="fluxo-sr-only">, daqui a 10 anos</span></label>
+                        <textarea id="longoPrazo-a" name="longoPrazo-a" rows="3" maxlength="16000" placeholder="Como essa escolha poderia se conectar à vida que você deseja?" aria-describedby="longoPrazo-a-erro"></textarea>
+                        <p class="fluxo-erro-campo" id="longoPrazo-a-erro"></p>
+                    </div>
+                    <div class="reflexao-opcao opcao-b">
+                        <label for="longoPrazo-b">Opção B — <span data-nome="b">…</span><span class="fluxo-sr-only">, daqui a 10 anos</span></label>
+                        <textarea id="longoPrazo-b" name="longoPrazo-b" rows="3" maxlength="16000" placeholder="Como essa escolha poderia se conectar à vida que você deseja?" aria-describedby="longoPrazo-b-erro"></textarea>
+                        <p class="fluxo-erro-campo" id="longoPrazo-b-erro"></p>
+                    </div>
+                </div>
+            </section>
+                    <p class="reflexoes-ajuda">Não há resposta certa. Registre suas próprias expectativas; você pode salvar e continuar depois.</p>
+                </div>
+                <div class="reflexoes-rodape"><p id="progresso">0 de 6 reflexões preenchidas</p><p id="situacao"></p></div>
+                <div class="fluxo-acoes" id="acoes-edicao">
+                    <button type="submit" id="salvar-reflexoes" class="fluxo-salvar">Salvar para depois</button>
+                    <button type="submit" id="ver-resultado" class="fluxo-proxima"><span>Ver resultado</span><img src="../assets/images/metodo-101010/resultado.svg" width="17" height="17" alt=""></button>
+                </div>
+            </fieldset>
+        </form>
+        <button type="button" id="resultado-consulta" class="fluxo-proxima" hidden>Ver resultado</button>
+    </div>
+</main>
+<dialog class="confirmacao-etapa" id="confirmar-tecnica" aria-labelledby="confirmar-titulo" aria-describedby="confirmar-texto">
+    <h2 id="confirmar-titulo">Concluir o método 10–10–10?</h2>
+    <p id="confirmar-texto">As seis reflexões serão salvas e esta técnica será marcada como concluída. Isso não encerra sua decisão. Enquanto ela estiver em andamento, você poderá revisar as respostas e concluir a técnica novamente.</p>
+    <form method="dialog" class="confirmacao-etapa-acoes"><button value="cancelar" autofocus>Continuar revisando</button><button value="confirmar" class="confirmacao-etapa-avancar">Confirmar e continuar</button></form>
+</dialog>
+<dialog class="home-dialog" id="aviso" aria-labelledby="aviso-titulo" aria-describedby="aviso-texto"><h2 id="aviso-titulo"></h2><p id="aviso-texto"></p><form method="dialog"><button class="home-primary" autofocus>Entendi</button></form></dialog>
+<noscript><p class="home-noscript">Ative o JavaScript para carregar e salvar suas reflexões.</p></noscript>
+</body></html>

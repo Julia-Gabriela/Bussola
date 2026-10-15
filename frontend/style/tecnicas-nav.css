@@ -1,0 +1,9 @@
+.tecnicas-nav { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin:16px 0 24px; padding:6px; border:1px solid #c4933f30; border-radius:10px; background:#221c14; }
+.tecnicas-nav a,.tecnicas-nav button { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; min-height:60px; padding:10px 8px; border:0; border-radius:7px; background:transparent; color:var(--muted); text-decoration:none; font:400 14px/1.4 var(--font-ui); text-align:center; }
+.tecnicas-nav small { font-size:12px; }
+.tecnicas-nav [aria-current] { color:#211a10; background:var(--home-accent); font-weight:600; }
+.tecnicas-nav :is(a,button):not([aria-current]):not([aria-disabled="true"]):hover { background:#c4933f12; color:var(--fluxo-texto); }
+.tecnicas-nav [aria-disabled="true"] { cursor:not-allowed; }
+.tecnicas-nav :is(a,button):focus-visible { outline:2px solid var(--home-accent); outline-offset:3px; }
+.tecnicas-nav :is(a,button):not([aria-disabled="true"]) { cursor:pointer; }
+@media(max-width:680px) { .tecnicas-nav { grid-template-columns:repeat(2,minmax(0,1fr)); } }

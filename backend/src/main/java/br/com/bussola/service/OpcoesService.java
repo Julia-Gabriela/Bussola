@@ -88,6 +88,8 @@ public class OpcoesService {
             opcao.setDecisao(decisao);
             par.add(opcao);
         }
+        // Preserva os textos, mas uma alternativa diferente exige nova conclusão da reflexão.
+        if (!mesmosDados(decisao, existentes, request)) decisao.setReflexao101010ConcluidaEm(null);
         var efeitoA = efeitoDaAlteracao(par.get(0), request.opcaoA());
         var efeitoB = efeitoDaAlteracao(par.get(1), request.opcaoB());
         preencher(par.get(0), request.opcaoA());

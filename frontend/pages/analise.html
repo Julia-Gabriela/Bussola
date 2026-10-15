@@ -18,6 +18,7 @@
     <script src="../js/shared/revisao-etapa.js" defer></script>
     <script src="../js/pages/analise.js" type="module"></script>
     <link rel="stylesheet" href="../style/fluxo-compacto.css">
+    <link rel="stylesheet" href="../style/tecnicas-nav.css">
 </head>
 <body class="home-page fluxo-page analise-page">
     <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
@@ -51,11 +52,13 @@
 <p id="mensagem" role="status" aria-live="polite">Carregando sua decisão…</p>
 <button type="button" class="fluxo-salvar" id="recarregar" hidden>Recarregar dados</button>
 <div id="analise" hidden>
-<div class="analise-abas" role="tablist" aria-label="Técnicas de análise">
-<button type="button" role="tab" id="aba-pros" aria-controls="painel-pros" aria-selected="true">Prós e Contras</button>
-<button type="button" role="tab" id="aba-gut" aria-controls="painel-gut" aria-selected="false" tabindex="-1">Matriz GUT</button>
-</div>
-<section id="painel-pros" role="tabpanel" aria-labelledby="aba-pros">
+<nav class="tecnicas-nav" aria-label="T&#233;cnicas de an&#225;lise">
+<button type="button" id="aba-pros" aria-controls="painel-pros" aria-current="true"><span>Pr&#243;s e Contras</span><small>Cl&#225;ssico</small></button>
+<button type="button" id="aba-gut" aria-controls="painel-gut"><span>Matriz GUT</span><small>Prioridade</small></button>
+<a id="abrir-101010" href="metodo-101010.html"><span>T&#233;cnica 10/10/10</span><small>Temporal</small></a>
+<button type="button" aria-disabled="true" title="Invers&#227;o estar&#225; dispon&#237;vel em breve"><span>Invers&#227;o</span><small>Em breve</small></button>
+</nav>
+<section id="painel-pros" aria-labelledby="aba-pros">
 <label for="alternativa">Alternativa</label><select id="alternativa"></select>
 <form id="argumento-form"><fieldset id="argumento-campos" disabled><legend id="argumento-titulo">Adicionar pró ou contra</legend>
 <div class="argumento-entrada"><div><label for="tipo">Tipo</label><select id="tipo"><option value="PRO">Pró</option><option value="CONTRA">Contra</option></select></div>
@@ -64,7 +67,7 @@
 </fieldset></form>
 <div class="argumentos-grade"><section class="lista-pros"><h2>Prós</h2><ul id="pros"></ul></section><section class="lista-contras"><h2>Contras</h2><ul id="contras"></ul></section></div>
 </section>
-<section id="painel-gut" role="tabpanel" aria-labelledby="aba-gut" hidden>
+<section id="painel-gut" aria-labelledby="aba-gut" hidden>
 <p>Compare os fatores da decisão. Dê notas inteiras de 1 a 5 para Gravidade, Urgência e Tendência. A prioridade é G × U × T.</p>
 <form id="gut-form"><fieldset id="gut-campos" disabled><legend id="gut-titulo">Adicionar fator</legend>
 <label for="gut-descricao">Fator</label><input id="gut-descricao" required maxlength="200" autocomplete="off">
@@ -76,7 +79,7 @@
 </fieldset></form>
 <p>Fatores ordenados da maior para a menor prioridade.</p><div class="gut-tabela"><table><caption class="fluxo-sr-only">Fatores da matriz GUT</caption><thead><tr><th>Fator</th><th>G</th><th>U</th><th>T</th><th>GUT</th><th>Ações</th></tr></thead><tbody id="fatores"></tbody></table></div>
 </section>
-<p class="analise-pendente">Técnica 10/10/10, Inversão e resultado estarão disponíveis nas próximas entregas.</p>
+<p class="analise-pendente">Inversão e resultado estarão disponíveis nas próximas entregas.</p>
 <a class="fluxo-salvar" href="home.html">Voltar ao início</a>
 </div></main>
 <dialog class="home-dialog" id="aviso" aria-labelledby="aviso-titulo"><h2 id="aviso-titulo"></h2><p id="aviso-texto"></p><form method="dialog"><button class="home-primary">Entendi</button></form></dialog>

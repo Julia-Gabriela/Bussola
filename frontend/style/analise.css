@@ -1,9 +1,6 @@
 .analise-conteudo { max-width:1120px; }
 .analise-conteudo .fluxo-intro { padding:16px 0; }
 #decisao-titulo { color:var(--beige); margin-top:8px; overflow-wrap:anywhere; }
-.analise-abas { display:flex; gap:8px; padding:6px; margin:16px 0; background:#211b14; border:1px solid #c4933f40; border-radius:8px; }
-.analise-abas button { flex:1; min-height:44px; border:0; border-radius:6px; background:transparent; color:var(--beige); font:inherit; }
-.analise-abas [aria-selected="true"] { background:var(--home-accent); color:#211a10; }
 .analise-conteudo label { display:block; font-size:14px; margin-bottom:6px; }
 .analise-conteudo input,.analise-conteudo select { width:100%; min-width:0; min-height:44px; padding:10px; border:1px solid #c4933f50; border-radius:6px; background:#211b14; color:var(--beige); font:inherit; }
 .analise-conteudo fieldset { min-width:0; margin:16px 0; padding:16px; border:1px solid #c4933f40; border-radius:8px; }

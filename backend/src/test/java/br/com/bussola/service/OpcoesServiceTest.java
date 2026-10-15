@@ -321,6 +321,19 @@ class OpcoesServiceTest {
         verify(resultados, never()).delete(any());
     }
 
+    @Test
+    void revisarAlternativaExigeNovaConclusaoDoMetodo101010() {
+        service.salvar(7L, 12L, dados);
+        var concluida = java.time.LocalDateTime.now();
+        decisao.setReflexao101010ConcluidaEm(concluida);
+        service.salvar(7L, 12L, dados);
+        assertEquals(concluida, decisao.getReflexao101010ConcluidaEm());
+        var diferentes = new DefinirOpcoesRequest(dados.titulo(),
+                new DadosOpcao("Outra alternativa", dados.opcaoA().descricao()), dados.opcaoB());
+        service.salvar(7L, 12L, diferentes);
+        assertNull(decisao.getReflexao101010ConcluidaEm());
+    }
+
     private Opcao opcao(long id, String nome) {
         var opcao = new Opcao(); opcao.setId(id); opcao.setNome(nome); opcao.setDecisao(decisao); return opcao;
     }

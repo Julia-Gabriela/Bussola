@@ -45,6 +45,7 @@ Para conferir o layout, teste uma janela de computador e uma tela estreita. Os c
 | Avaliação por critérios | `http://127.0.0.1:8765/pages/criterios.html?decisaoId=ID_DA_DECISAO` (após concluir Opções) |
 | Priorização de pesos | http://127.0.0.1:8765/pages/pesos.html?decisaoId=ID_DA_DECISAO (após concluir Critérios) |
 | Definição das opções | `http://127.0.0.1:8765/pages/opcoes.html?decisaoId=ID_DA_DECISAO` (use uma decisão sua na etapa 3 ou posterior) |
+| Método 10–10–10 | `http://127.0.0.1:8765/pages/metodo-101010.html?decisaoId=ID_DA_DECISAO` (etapa interna 6 — Análise) |
 | Sobre o projeto | http://127.0.0.1:8765/pages/sobre.html |
 | Swagger: testar a API | http://localhost:8080/swagger-ui/index.html |
 
@@ -134,7 +135,7 @@ Mantenha MySQL, backend e frontend ligados. Use uma decisão sua que já tenha p
 2. Clique em **Cancelar** ou pressione **Esc**. O aviso fecha, o endereço continua o mesmo e a decisão não é gravada de novo. O foco volta ao passo clicado.
 3. Abra de novo e clique em **Continuar revisão**. A etapa escolhida abre com `revisao=1` na URL e mostra o aviso **Suas alterações podem atualizar o resultado desta análise.** No indicador, essa página fica em destaque. A etapa já salva no backend continua marcada como alcançada, com o círculo só contornado, sem o mesmo preenchimento da página aberta. O botão de concluir a etapa fica oculto. Em Opções e Critérios, o salvamento aparece como **Salvar alterações**. Em Critérios, se a decisão já chegou em Pesos, **Continuar para pesos** fica à esquerda e **Salvar alterações** à direita, na mesma linha.
 4. Altere uma resposta e salve. Recarregue a página: a alteração continua, os identificadores das opções, critérios ou ideias já existentes continuam os mesmos e `etapaAtual` não volta nem avança. Os dados das etapas seguintes não são apagados.
-5. No indicador, o passo da etapa atual (quando essa etapa tem página) volta para ela sem o aviso de revisão. Pesos e Análise, e qualquer etapa ainda não alcançada, não são clicáveis. Abrir Critérios ou Opções direto na URL antes da hora continua respondendo **409** e a tela não libera a edição.
+5. No indicador, o passo da etapa atual (quando essa etapa tem página) volta para ela sem o aviso de revisão. Qualquer etapa ainda não alcançada não é clicável. Análise abre a tela de técnicas quando a decisão chega à etapa 6. Abrir Critérios ou Opções direto na URL antes da hora continua respondendo **409** e a tela não libera a edição.
 6. Sem `revisao=1`, uma etapa já passada abre só para consulta, sem o aviso de revisão. Se a decisão já passou de Critérios e a tela aberta é a própria avaliação, clique de novo em **Critérios** no indicador: o popup **Revisar esta etapa?** aparece e **Continuar revisão** acrescenta `revisao=1`. A decisão de outra conta responde **404**.
 
 ## Sair sem perder o que foi digitado
@@ -435,7 +436,7 @@ Ao concluir Pesos, o backend libera a etapa 6 e a tela abre a página de Anális
 3. Exclua um registro: primeiro cancele a confirmação; depois confirme e confira a lista.
 4. Em **Matriz GUT**, cadastre um fator com notas 5, 4 e 3. A prioridade deve ser **60**. Edite para 1, 1 e 1: deve virar **1** e mudar de posição na lista.
 5. Recarregue a página para conferir os dados salvos. Um rascunho impede trocar de técnica ou sair até salvar/cancelar. Falhas de envio exigem recarregar antes de tentar novamente, evitando duplicação.
-6. Decisões concluídas são somente consultáveis. Salvar técnicas não conclui a decisão. Técnica 10/10/10, Inversão e resultado continuam pendentes da outra dupla.
+6. Decisões concluídas são somente consultáveis. Salvar técnicas não conclui a decisão. O método 10–10–10 já está acessível pelo link **Técnica 10/10/10**. Inversão e resultado continuam pendentes.
 
 Prós/Contras pertencem à alternativa; os fatores GUT pertencem à decisão inteira. A prioridade é calculada pelo servidor como G × U × T (1–125), ordenada de forma decrescente, com desempate pelo ID. Não existe conversão dessa prioridade em uma pontuação final das alternativas nesta entrega.
 
@@ -473,7 +474,7 @@ No terminal, dentro de `backend`, execute:
 .\mvnw.cmd '-Dtest=TecnicasAnaliseControllerTest' test
 ```
 
-Esse teste exercita controller, serviço e segurança, com repositórios simulados. Não exige senha do MySQL e não grava no seu banco. Para a suíte sem banco, use `'-Dtest=*Test'` no mesmo comando. Os testes não substituem a validação futura do caminho completo após a entrega de Pesos.
+Esse teste exercita controller, serviço e segurança, com repositórios simulados. Não exige senha do MySQL e não grava no seu banco. Para a suíte sem banco, use `'-Dtest=*Test'` no mesmo comando. Os testes não substituem a validação do caminho completo pelas telas, incluindo Pesos.
 
 ## Histórico de decisões
 
@@ -507,3 +508,72 @@ Para conferir a revisão de etapas existente:
 ```
 
 A revisão de Critérios e Pesos preserva os dados e o progresso e sinaliza resultados anteriores quando notas ou pesos mudam. O cálculo do resultado consolidado continua pendente. A contextualização permanece editável somente antes de avançar; o indicador de revisão começa em Brainstorming.
+
+## Método 10–10–10
+
+A página `frontend/pages/metodo-101010.html` permite registrar, para **cada uma das duas opções**, como a pessoa imagina que se sentirá em **10 minutos, 10 meses e 10 anos**. Os nomes vêm da própria decisão. Não há respostas automáticas nem textos de exemplo salvos como se fossem respostas do usuário.
+
+### Iniciar e abrir
+
+Continue usando os mesmos comandos/terminais. **Reinicie o backend atualizado**, com MySQL disponível, e espere **Started BussolaApplication**. O Flyway aplica automaticamente **V4__Conclusao_reflexao_101010.sql**, que adiciona uma coluna opcional de data de conclusão da técnica em `decisoes`. Os textos usam a tabela `reflexoes_101010` já existente. Não apague o banco nem altere migrations antigas. Não há novas dependências, variáveis ou portas. Mantenha o frontend aberto e use **Ctrl + F5**.
+
+A API exige uma decisão sua na **etapa interna 6 — Análise**, com duas alternativas. Na Home/Histórico, continue essa decisão e, na tela de Análise, clique em **Técnica 10/10/10**. Também é possível abrir a URL da tabela de links. Trocar o ID ou a etapa na URL não libera acesso.
+
+A tela de Pesos permite chegar aqui pelo fluxo normal: Home, Contextualização, Brainstorming, Opções, Critérios, Pesos e Análise.
+
+Opcionalmente, para testar somente esta técnica com uma decisão fictícia:
+
+1. Cadastre uma **conta de teste** no Bússola e entre nela.
+2. No MySQL Workbench, conecte ao banco local usado pelo backend (3307 neste computador, se mantida a configuração anterior; o padrão do projeto é 3306).
+3. Abra **File → Open SQL Script** e selecione `backend/src/test/resources/metodo-101010-desenvolvimento.sql`.
+4. Substitua somente `SEU_EMAIL_DE_TESTE` pelo e-mail dessa conta e execute o script completo pelo botão de raio. Não coloque senha no arquivo e não envie a alteração do e-mail ao Git.
+5. O script cria uma **nova decisão fictícia** com duas opções na etapa 6 e devolve a URL. Nenhuma decisão existente é modificada. Se o e-mail não existir, não cria registros. Cada execução válida cria outro cenário de teste.
+6. Abra a URL na aba autenticada ou retome pela Home. O script não é migration, não roda automaticamente e não substitui o fluxo de Pesos.
+
+### Conferir pela tela
+
+1. Confira o título e os nomes de A/B. Inicialmente os seis campos devem estar vazios.
+2. Preencha só um campo e clique em **Salvar para depois**. Recarregue: o texto deve permanecer e a técnica ainda não estará concluída. Cada texto aceita até **16.000 caracteres**; apagar e salvar limpa aquela resposta.
+3. Tente **Ver resultado** com campos vazios. A tela deve indicar e focar o primeiro campo pendente, sem concluir ou abrir confirmação.
+4. Preencha os seis campos e clique em **Ver resultado**. Cancele com **Continuar revisando** ou **Esc**: nenhum envio deve acontecer e as respostas permanecem. Abra novamente e escolha **Confirmar e continuar**.
+5. A técnica fica marcada como concluída, mas a decisão permanece **EM_ANDAMENTO**, na etapa 6. Como o resultado final ainda não existe, aparece um aviso de reflexões salvas, sem abrir página inexistente ou inventar uma recomendação.
+6. Recarregue para conferir as seis respostas e a indicação de conclusão. Enquanto a decisão estiver em andamento, editar e salvar respostas exige nova conclusão da técnica. Revisar o nome ou a descrição de uma alternativa também remove a conclusão do 10–10–10, preservando seus textos para revisão. Uma decisão concluída é apenas consultável.
+7. Os links **Prós e Contras** e **Matriz GUT** abrem a técnica correspondente com o mesmo ID. Rascunhos não salvos impedem a saída. **Inversão** permanece indicada como indisponível.
+8. Se um envio falhar sem confirmar a gravação, os textos permanecem na tela e novos envios ficam bloqueados. Use **Recarregar dados**, confirmando a substituição pelo que realmente foi salvo. Não há reenvio automático.
+
+**Teste visual:** sem a API, somente o cabeçalho e os estados de carregamento/erro podem ser conferidos. Para ver as opções reais, preencher, salvar e concluir, use **MySQL + backend + frontend**. O navegador não cria uma decisão de teste automaticamente.
+
+### API e integração
+
+No Swagger, autentique-se, use **Authorize** e o ID da decisão fictícia:
+
+| Operação | Rota | Resultado |
+| --- | --- | --- |
+| Consultar | GET /decisoes/{decisaoId}/reflexoes-101010 | 200; não cria registros; textos ausentes são null |
+| Salvar parcial | PUT /decisoes/{decisaoId}/reflexoes-101010 | 200; salva as duas opções atomicamente, mantendo IDs |
+| Concluir técnica | POST /decisoes/{decisaoId}/reflexoes-101010/concluir | 200; exige seis textos e registra a data de conclusão, sem encerrar a decisão |
+
+Copie do GET os IDs reais de A/B, que seguem a ordem crescente de ID das opções. Exemplo de corpo completo para PUT/POST:
+
+```json
+{
+  "opcaoA": { "opcaoId": 21, "curtoPrazo": "Alívio", "medioPrazo": "Aprendizado", "longoPrazo": "Experiência" },
+  "opcaoB": { "opcaoId": 22, "curtoPrazo": "Calma", "medioPrazo": "Estabilidade", "longoPrazo": "Equilíbrio" }
+}
+```
+
+No PUT, os textos podem ser null. Sempre envie as duas opções; campos omitidos/nulos limpam aquela resposta. IDs trocados/de outra decisão, texto acima do limite ou conclusão incompleta retornam **400**; sem sessão, **401**; decisão inexistente/de outra conta, **404**; etapa diferente de 6 ou alteração de decisão concluída, **409**. O Swagger não mostra o diálogo do frontend: POST válido conclui diretamente.
+
+A resposta traz `decisaoId`, `titulo`, `etapaAtual`, `status`, `concluida`, `concluidaEm` e `opcaoA/B`, com ID/nome/descrição da opção, `reflexaoId` e os três textos. Repetir dados idênticos não duplica registros nem altera a data de conclusão. Alterações marcam os resultados existentes das opções afetadas para atualização, sem apagar a pontuação anterior.
+
+As rotas futuras ficam em `frontend/js/pages/metodo-101010-integracoes.js`: `resultado` e `inversao` devem permanecer null até existirem. A navegação acrescenta `decisaoId`. O evento cancelável `bussola:101010-concluido` informa `detail: { decisaoId, etapa: 6 }` quando o usuário pede o resultado após a conclusão. Esse evento não significa que toda a decisão foi finalizada.
+
+### Testes automatizados
+
+No PowerShell, **dentro de backend**, execute:
+
+```powershell
+.\mvnw.cmd '-Dtest=Reflexoes101010ServiceTest,Reflexoes101010ControllerTest,OpcoesServiceTest' test
+```
+
+Espere **BUILD SUCCESS**. Os testes usam repositórios simulados, sem MySQL, e verificam salvamento parcial, seis respostas obrigatórias, titularidade, ordem das etapas, IDs estáveis, reenvios, revisão, conclusão independente, autenticação e CORS. Eles não substituem o teste de persistência no MySQL pelo roteiro acima.
