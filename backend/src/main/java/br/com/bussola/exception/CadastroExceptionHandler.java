@@ -12,6 +12,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class CadastroExceptionHandler {
 
+    @ExceptionHandler(RegistroAnaliseNaoEncontradoException.class)
+    public ResponseEntity<Map<String, String>> registroAnaliseNaoEncontrado(RegistroAnaliseNaoEncontradoException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("erro", exception.getMessage()));
+    }
+
     @ExceptionHandler(CriteriosInvalidosException.class)
     public ResponseEntity<Map<String, String>> criteriosInvalidos(CriteriosInvalidosException exception) {
         return ResponseEntity.badRequest().body(Map.of("erro", exception.getMessage()));

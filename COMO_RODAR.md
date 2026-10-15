@@ -30,6 +30,10 @@ python -m http.server 8765 --directory frontend
 
 ## Links úteis
 
+Após atualizar o frontend, pressione **Ctrl + F5** no navegador. Na Home, **Continuar** abre diretamente a tela disponível correspondente à etapa salva. Ao revisar Brainstorming, Opções ou Critérios pelo indicador superior, use **Próxima etapa** para seguir: salve ou cancele o rascunho de ideia; em Opções e Critérios, o botão salva as alterações antes de navegar, sem reiniciar o progresso. Notas pendentes ainda precisam de confirmação. A tela de Pesos continua aguardando implementação.
+
+Para conferir o layout, teste uma janela de computador e uma tela estreita. Os campos e espaços estão mais compactos; listas longas e telas de celular mantêm rolagem para não cortar conteúdo.
+
 | O que abrir | Endereço |
 | --- | --- |
 | Login | http://127.0.0.1:8765/pages/login.html |
@@ -338,10 +342,9 @@ No PUT, pode trocar uma nota por `null` para testar o salvamento parcial. Envie 
 
 Sem autenticação: **401**. Decisão inexistente/de outra conta: **404**. Nota fora de 1–5, fracionária ou em texto, nome repetido, fixo ausente ou conclusão incompleta: **400**. Salvar ou concluir antes da etapa 4, concluir com dados diferentes depois do avanço, concluir com avaliação pendente, confirmar com `versaoAvaliacao` antiga, ou alterar uma decisão concluída: **409**. O PUT de revisão, com a decisão em andamento e já na etapa 5 ou posterior, salva sem mudar `etapaAtual` e sem confirmar a pendência. Repetir a mesma conclusão na etapa 5 retorna os dados salvos sem avançar novamente. Para evidências, capture a rota, o código de resposta e o corpo, ocultando o token do trecho Curl.
 
-Confirmar uma alternativa:
+Confirmar uma alternativa: `POST /decisoes/{decisaoId}/criterios/confirmacao`.
 
 ```json
-POST /decisoes/{decisaoId}/criterios/confirmacao
 {"alternativa": "A", "versaoAvaliacao": 1}
 ```
 
