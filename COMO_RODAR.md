@@ -342,10 +342,9 @@ No PUT, pode trocar uma nota por `null` para testar o salvamento parcial. Envie 
 
 Sem autenticação: **401**. Decisão inexistente/de outra conta: **404**. Nota fora de 1–5, fracionária ou em texto, nome repetido, fixo ausente ou conclusão incompleta: **400**. Salvar ou concluir antes da etapa 4, concluir com dados diferentes depois do avanço, concluir com avaliação pendente, confirmar com `versaoAvaliacao` antiga, ou alterar uma decisão concluída: **409**. O PUT de revisão, com a decisão em andamento e já na etapa 5 ou posterior, salva sem mudar `etapaAtual` e sem confirmar a pendência. Repetir a mesma conclusão na etapa 5 retorna os dados salvos sem avançar novamente. Para evidências, capture a rota, o código de resposta e o corpo, ocultando o token do trecho Curl.
 
-Confirmar uma alternativa:
+Confirmar uma alternativa: `POST /decisoes/{decisaoId}/criterios/confirmacao`.
 
 ```json
-POST /decisoes/{decisaoId}/criterios/confirmacao
 {"alternativa": "A", "versaoAvaliacao": 1}
 ```
 
