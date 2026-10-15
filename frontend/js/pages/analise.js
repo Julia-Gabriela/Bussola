@@ -26,7 +26,7 @@ function estado(valor) {
     el("recarregar").disabled = valor;
 }
 const preencherConta = configurarConta({ requisitar: api.requisitar, aviso, podeSair: () => !ocupado,
-    aoSair: () => { referencia = ""; }, ocupado: estado, rotas: {} });
+    aoSair: () => { referencia = ""; }, ocupado: estado, rotas: { historico: "historico.html" } });
 function limpar() {
     argumentoId = null; fatorId = null;
     el("argumento-form").reset(); el("gut-form").reset();

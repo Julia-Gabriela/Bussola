@@ -6,11 +6,21 @@ import jakarta.persistence.LockModeType;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface DecisaoRepository extends JpaRepository<Decisao, Long> {
+    @Query("""
+            select d from Decisao d where d.usuario.id = :usuarioId
+            and (:status is null or d.status = :status)
+            and lower(d.titulo) like lower(:busca) escape '!'
+            """)
+    Page<Decisao> pesquisarHistorico(@Param("usuarioId") Long usuarioId,
+            @Param("status") StatusDecisao status, @Param("busca") String busca, Pageable pagina);
+
     Optional<Decisao> findByIdAndUsuarioId(Long id, Long usuarioId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

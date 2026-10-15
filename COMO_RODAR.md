@@ -39,6 +39,7 @@ Para conferir o layout, teste uma janela de computador e uma tela estreita. Os c
 | Login | http://127.0.0.1:8765/pages/login.html |
 | Cadastro | http://127.0.0.1:8765/pages/cadastro.html |
 | Home autenticada | http://127.0.0.1:8765/pages/home.html |
+| Histórico | http://127.0.0.1:8765/pages/historico.html |
 | Nova decisão | http://127.0.0.1:8765/pages/nova-decisao.html |
 | Brainstorming | `http://127.0.0.1:8765/pages/brainstorming.html?decisaoId=ID_DA_DECISAO` (após concluir a contextualização) |
 | Avaliação por critérios | `http://127.0.0.1:8765/pages/criterios.html?decisaoId=ID_DA_DECISAO` (após concluir Opções) |
@@ -471,3 +472,36 @@ No terminal, dentro de `backend`, execute:
 ```
 
 Esse teste exercita controller, serviço e segurança, com repositórios simulados. Não exige senha do MySQL e não grava no seu banco. Para a suíte sem banco, use `'-Dtest=*Test'` no mesmo comando. Os testes não substituem a validação futura do caminho completo após a entrega de Pesos.
+
+## Histórico de decisões
+
+Reinicie o backend e atualize o navegador com **Ctrl + F5**. Na Home, clique em **Histórico** ou **Ver todas**. O cabeçalho das etapas também abre o histórico, preservando a proteção dos rascunhos.
+
+- Pesquise pelo título e combine com Todas, Concluídas ou Em andamento. A busca trata `%` e `_` como texto, não como curingas.
+- Ordene por última atualização (mais recente ou mais antiga) ou título. A lista mostra 10 decisões por página; use Anterior/Próxima. Os totais do topo representam sua conta inteira, mesmo com filtros.
+- **Continuar decisão** abre a tela correspondente à etapa salva. Na etapa5, Pesos ainda pendente, mantém a consulta de Critérios; na etapa6, abre Análise.
+- **Ver análise** de decisões concluídas está preparado para a tela de resultado da Dupla B. Enquanto ela não existir, mostra um aviso, sem inventar um resultado. Configure `resultadoDecisao` em `frontend/js/pages/historico-integracoes.js` quando a tela for entregue; receberá `decisaoId`. Também existe o evento cancelável `bussola:ver-resultado`.
+- **Excluir** abre uma confirmação com o título e explica que a operação é irreversível. Cancelar não altera nada. Confirmar apaga a decisão e todos os seus registros relacionados. Após excluir, a Home recalcula seus totais usando os registros restantes.
+- Em falha de rede durante exclusão, use Recarregar histórico para conferir o estado antes de tentar novamente.
+
+### Teste manual e Swagger
+
+Faça testes de exclusão somente em decisões de exemplo que você queira descartar. Crie decisões com títulos diferentes; pesquise, filtre, ordene, cancele uma exclusão e só então confirme a exclusão de um exemplo. Confira os totais ao retornar à Home.
+
+`GET /decisoes` aceita `busca`, `status` (`EM_ANDAMENTO` ou `CONCLUIDA`, opcional), `ordem` (`recentes`, `antigas` ou `titulo`), `pagina` (a partir de0) e `tamanho` (1–50; padrão10). Retorna somente as decisões da conta autenticada, com paginação e totais.
+
+`DELETE /decisoes/{id}?confirmar=true` retorna **204** ao excluir. Sem confirmação retorna **400**; sem autenticação, **401**; decisão inexistente/de outra conta, **404**. Não há restauração após a exclusão. As migrations existentes já têm a remoção em cascata; nenhuma migration nova é necessária.
+
+No terminal dentro de `backend`, execute os testes sem banco:
+
+```powershell
+.\mvnw.cmd '-Dtest=HistoricoControllerTest' test
+```
+
+Para conferir a revisão de etapas existente:
+
+```powershell
+.\mvnw.cmd '-Dtest=FluxoDecisaoControllerTest,OpcoesServiceTest,CriteriosServiceTest' test
+```
+
+A rodada4 está implementada nas telas disponíveis: confirmação da revisão, preservação de dados/progresso, controle de etapas e confirmação de notas afetadas. A integração com Pesos e o recálculo/retorno a partir do Resultado aguardam essas funcionalidades da Dupla B. A contextualização continua editável somente antes de avançar, conforme implementação atual; o indicador de revisão começa em Brainstorming.

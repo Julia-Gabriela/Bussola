@@ -6,7 +6,7 @@
  * Alternativa: escutar o evento cancelável bussola:navegar e chamar preventDefault().
  */
 window.BUSSOLA_HOME_ROTAS = {
-    historico: null,
+    historico: "historico.html",
     novaDecisao: "nova-decisao.html",
     continuarDecisao: "nova-decisao.html",
     resultadoDecisao: null,

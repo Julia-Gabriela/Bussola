@@ -3,6 +3,6 @@
  */
 window.BUSSOLA_CRITERIOS_ROTAS = {
     pesos: null,
-    historico: null,
+    historico: "historico.html",
     ...window.BUSSOLA_CRITERIOS_ROTAS
 };
