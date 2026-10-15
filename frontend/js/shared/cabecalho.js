@@ -6,9 +6,9 @@
  * botão de perfil, painel com nome, e-mail e “Meu perfil”, e o botão Sair.
  * O aviso de área indisponível usa o diálogo `#aviso-integracao`.
  *
- * Histórico e Meu perfil seguem a regra atual da Home: não existe página
- * para esses destinos, então o diálogo explica que a área ainda não está
- * disponível. Sair chama `POST /auth/logout` pelo cliente já existente,
+ * Histórico abre a listagem, respeitando os rascunhos da etapa.
+ * Meu perfil ainda apresenta o aviso de indisponibilidade.
+ * Sair chama `POST /auth/logout` pelo cliente já existente,
  * apaga `bussola.sessao` e abre `login.html`.
  */
 (() => {
@@ -131,7 +131,7 @@
         if (evento.key === "Escape") fecharPerfil(true);
     });
     elemento("historico").addEventListener("click", () => {
-        avisar("Em breve", "O Histórico estará disponível em breve. Suas decisões recentes continuam disponíveis na Home.");
+        window.BussolaAlteracoes.permitir(elemento("historico"), () => window.location.assign("historico.html"));
     });
     elemento("perfil-menu").querySelector("[data-destino='perfil']").addEventListener("click", () => {
         avisar("Em breve", "A edição do perfil estará disponível em breve.");

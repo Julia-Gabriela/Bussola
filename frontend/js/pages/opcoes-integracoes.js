@@ -4,6 +4,6 @@
  */
 window.BUSSOLA_OPCOES_ROTAS = {
     criterios: "criterios.html",
-    historico: null,
+    historico: "historico.html",
     ...window.BUSSOLA_OPCOES_ROTAS
 };

@@ -1,0 +1,25 @@
+.historico-conteudo { max-width:1120px; }
+.historico-intro { display:flex; align-items:center; justify-content:space-between; gap:16px; margin:12px 0 24px; }
+.historico-intro h1 { margin:0; font-size:24px; font-weight:500; }
+.historico-intro p { margin:8px 0 0; color:var(--muted); font-size:14px; }
+.historico-filtros { border:1px solid #c4933f40; border-radius:10px; background:#211b14; padding:16px; }
+.historico-filtros fieldset { display:flex; align-items:end; gap:12px; flex-wrap:wrap; border:0; margin:0; padding:0; min-width:0; }
+.historico-filtros label { display:grid; gap:6px; color:var(--muted); font-size:13px; }
+.historico-busca { flex:1; min-width:180px; }
+.historico-filtros input,.historico-filtros select { width:100%; min-width:0; min-height:44px; border:1px solid #c4933f40; border-radius:6px; background:#2b2218; color:var(--beige); padding:10px; font:inherit; font-size:14px; }
+.historico-lista { list-style:none; margin:20px 0; padding:0; display:grid; gap:12px; }
+.historico-item { display:flex; justify-content:space-between; align-items:center; gap:20px; padding:20px; border:1px solid #c4933f50; border-left:3px solid #d4ad68; border-radius:10px; background:#211b14ed; }
+.historico-item.concluida { border-color:#a5c48e55; border-left-color:#a5c48e; }
+.historico-item h2 { margin:0; font-size:16px; line-height:1.5; overflow-wrap:anywhere; }
+.historico-item p { margin:8px 0; font-size:13px; color:var(--muted); }
+.historico-item progress { display:block; width:160px; max-width:100%; height:6px; accent-color:var(--home-accent); margin:8px 0; }
+.historico-texto { min-width:0; }
+.historico-status { display:inline-block; margin:8px 0 0; font-size:12px; color:var(--home-accent); }
+.concluida .historico-status { color:#a5c48e; }
+.historico-acoes { display:flex; gap:10px; flex-shrink:0; flex-wrap:wrap; }
+.historico-acoes button { font:inherit; font-size:14px; }
+.historico-paginacao { display:flex; justify-content:center; align-items:center; gap:16px; font-size:14px; }
+.historico-conteudo button:disabled { opacity:.5; cursor:not-allowed; }
+.historico-conteudo :focus-visible { outline:2px solid var(--home-accent); outline-offset:3px; }
+#mensagem:empty { display:none; } #exclusao-nome { overflow-wrap:anywhere; }
+@media(max-width:680px) { .historico-intro { align-items:start; flex-direction:column; } .historico-item { flex-direction:column; align-items:stretch; padding:16px; } .historico-filtros label { width:100%; } .historico-acoes button { flex:1; } .historico-paginacao { gap:8px; } }
