@@ -416,3 +416,58 @@ Faça antes a primeira configuração da chave JWT. Deixe esse terminal aberto. 
 | `cannot find symbol` para `EtapaInvalidaException` ou `IdeiaNaoEncontradaException` | Confira se os dois arquivos `.java` estão em `backend/src/main/java/br/com/bussola/exception/`, com o pacote `br.com.bussola.exception`. Esse erro ocorre antes da conexão ao banco; não exige trocar senha ou porta. Após obter a correção, execute os testes ou inicie novamente o backend. |
 
 **Resumo:** MySQL ligado → ▶ BussolaApplication → `.\rodar-frontend.ps1` na raiz → abrir login.
+
+## Prós e Contras e Matriz GUT
+
+Reinicie o backend e use **Ctrl + F5** no frontend. Não há dependências, variáveis ou migrations novas.
+
+**Pré-requisito:** a decisão precisa ter duas alternativas e estar na etapa interna **6 — Análise** (visual 5 de 5). A etapa Pesos ainda não está implementada, então o fluxo normal de uma decisão nova ainda não chega aqui. Não altere o banco pessoal para pular etapas. Os testes automatizados usam decisões simuladas nessa etapa, sem MySQL.
+
+Quando Pesos estiver integrada, sua conclusão deve liberar a etapa 6 e abrir `analise.html?decisaoId=ID`. A Home e o indicador superior já apontam para essa tela quando a API informa a etapa 6.
+
+### Conferir pela tela, com uma decisão já liberada
+
+1. Na Home, clique em **Continuar** na decisão em Análise.
+2. Em **Prós e Contras**, escolha a alternativa A ou B. Selecione Pró/Contra, escreva a descrição e salve. Edite um registro e confira que a outra alternativa permanece intacta.
+3. Exclua um registro: primeiro cancele a confirmação; depois confirme e confira a lista.
+4. Em **Matriz GUT**, cadastre um fator com notas 5, 4 e 3. A prioridade deve ser **60**. Edite para 1, 1 e 1: deve virar **1** e mudar de posição na lista.
+5. Recarregue a página para conferir os dados salvos. Um rascunho impede trocar de técnica ou sair até salvar/cancelar. Falhas de envio exigem recarregar antes de tentar novamente, evitando duplicação.
+6. Decisões concluídas são somente consultáveis. Salvar técnicas não conclui a decisão. Técnica 10/10/10, Inversão e resultado continuam pendentes da outra dupla.
+
+Prós/Contras pertencem à alternativa; os fatores GUT pertencem à decisão inteira. A prioridade é calculada pelo servidor como G × U × T (1–125), ordenada de forma decrescente, com desempate pelo ID. Não existe conversão dessa prioridade em uma pontuação final das alternativas nesta entrega.
+
+### Conferir no Swagger
+
+Autentique-se e use **Authorize** como explicado acima. Substitua os IDs pelos da sua decisão e alternativas:
+
+| Operação | Rota |
+| --- | --- |
+| Consultar ambas as alternativas e GUT | `GET /decisoes/{id}/analise` |
+| Adicionar pró/contra | `POST /decisoes/{id}/opcoes/{opcaoId}/pros-contras` |
+| Editar ou excluir pró/contra | `PUT` ou `DELETE /decisoes/{id}/opcoes/{opcaoId}/pros-contras/{registroId}` |
+| Adicionar fator | `POST /decisoes/{id}/gut` |
+| Editar ou excluir fator | `PUT` ou `DELETE /decisoes/{id}/gut/{registroId}` |
+
+Corpo de pró/contra (descrição obrigatória, até 300 caracteres; tipo `PRO` ou `CONTRA`):
+
+```json
+{"tipo":"PRO","descricao":"Ganhar experiência profissional"}
+```
+
+Corpo de fator GUT (descrição obrigatória, até 200 caracteres; três notas inteiras de 1 a 5):
+
+```json
+{"descricao":"Prazo para inscrição","gravidade":5,"urgencia":4,"tendencia":3}
+```
+
+Criação retorna **201**, edição/consulta **200**, exclusão **204**. Dados inválidos retornam **400**, falta de autenticação **401**, decisão/registro de outra pessoa ou fora do vínculo indicado **404**, etapa anterior ou tentativa de alterar decisão concluída **409**. Alterações sinalizam resultados existentes como desatualizados, sem apagar a pontuação anterior.
+
+### Testes desta entrega
+
+No terminal, dentro de `backend`, execute:
+
+```powershell
+.\mvnw.cmd '-Dtest=TecnicasAnaliseControllerTest' test
+```
+
+Esse teste exercita controller, serviço e segurança, com repositórios simulados. Não exige senha do MySQL e não grava no seu banco. Para a suíte sem banco, use `'-Dtest=*Test'` no mesmo comando. Os testes não substituem a validação futura do caminho completo após a entrega de Pesos.
