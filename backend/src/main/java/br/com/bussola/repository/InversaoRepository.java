@@ -4,4 +4,5 @@ import br.com.bussola.model.entity.Inversao;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface InversaoRepository extends JpaRepository<Inversao, Long> {
+    java.util.List<Inversao> findByOpcaoDecisaoIdOrderByIdAsc(Long decisaoId);
 }

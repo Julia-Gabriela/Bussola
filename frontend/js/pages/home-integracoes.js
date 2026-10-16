@@ -10,6 +10,6 @@ window.BUSSOLA_HOME_ROTAS = {
     novaDecisao: "nova-decisao.html",
     continuarDecisao: "nova-decisao.html",
     resultadoDecisao: null,
-    perfil: null,
+    perfil: "perfil.html",
     ...window.BUSSOLA_HOME_ROTAS
 };

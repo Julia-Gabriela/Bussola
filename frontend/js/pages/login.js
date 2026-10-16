@@ -302,6 +302,14 @@ function iniciar() {
     const parametros = new URLSearchParams(window.location.search);
     if (parametros.get("cadastro") === "sucesso") {
         mostrarMensagemGlobal(formulario, "Conta criada. Entre para acessar sua Home.");
+    } else if (parametros.get("motivo") === "senha-alterada") {
+        mostrarMensagemGlobal(formulario, "Senha alterada. Entre novamente com a nova senha.");
+    } else if (parametros.get("motivo") === "conta-excluida") {
+        mostrarMensagemGlobal(formulario, "Sua conta e seus dados foram excluídos.");
+    } else if (parametros.get("motivo") === "seguranca-incerta") {
+        mostrarMensagemGlobal(formulario, "Não foi possível confirmar a alteração da senha. Entre novamente; se a alteração foi salva, use a nova senha.");
+    } else if (parametros.get("motivo") === "exclusao-incerta") {
+        mostrarMensagemGlobal(formulario, "Não foi possível confirmar a exclusão. Tente entrar para verificar se a conta ainda está disponível. Nenhum pedido será reenviado automaticamente.");
     } else if (parametros.get("motivo") === "sessao-expirada") {
         mostrarMensagemGlobal(formulario, "Sua sessão expirou ou foi encerrada. Entre novamente.");
     }
