@@ -326,12 +326,15 @@ class OpcoesServiceTest {
         service.salvar(7L, 12L, dados);
         var concluida = java.time.LocalDateTime.now();
         decisao.setReflexao101010ConcluidaEm(concluida);
+        decisao.setInversaoConcluidaEm(concluida);
         service.salvar(7L, 12L, dados);
         assertEquals(concluida, decisao.getReflexao101010ConcluidaEm());
+        assertEquals(concluida, decisao.getInversaoConcluidaEm());
         var diferentes = new DefinirOpcoesRequest(dados.titulo(),
                 new DadosOpcao("Outra alternativa", dados.opcaoA().descricao()), dados.opcaoB());
         service.salvar(7L, 12L, diferentes);
         assertNull(decisao.getReflexao101010ConcluidaEm());
+        assertNull(decisao.getInversaoConcluidaEm());
     }
 
     private Opcao opcao(long id, String nome) {

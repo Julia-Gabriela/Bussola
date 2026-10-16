@@ -134,7 +134,7 @@
         window.BussolaAlteracoes.permitir(elemento("historico"), () => window.location.assign("historico.html"));
     });
     elemento("perfil-menu").querySelector("[data-destino='perfil']").addEventListener("click", () => {
-        avisar("Em breve", "A edição do perfil estará disponível em breve.");
+        window.BussolaAlteracoes.permitir(elemento("perfil-botao"), () => window.location.assign("perfil.html"));
     });
     elemento("sair").addEventListener("click", sair);
 

@@ -12,6 +12,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class CadastroExceptionHandler {
 
+    @ExceptionHandler(PerfilInvalidoException.class)
+    public ResponseEntity<Map<String, String>> perfilInvalido(PerfilInvalidoException exception) {
+        return ResponseEntity.badRequest().body(Map.of("erro", exception.getMessage()));
+    }
+
+
     @ExceptionHandler(ReflexoesInvalidasException.class)
     public ResponseEntity<Map<String, String>> reflexoesInvalidas(ReflexoesInvalidasException exception) {
         return ResponseEntity.badRequest().body(Map.of("erro", exception.getMessage()));

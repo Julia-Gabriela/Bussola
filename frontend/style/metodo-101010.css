@@ -1,31 +1,37 @@
-.metodo-conteudo { max-width:1120px; }
+.metodo-conteudo { width:min(100%,1600px); max-width:1600px; }
 .metodo-page .fluxo-intro { padding:24px 0 16px; }
 #decisao-titulo { color:var(--beige); margin-top:10px; overflow-wrap:anywhere; }
 #mensagem { color:var(--beige); font-size:14px; line-height:1.6; }
 #mensagem:empty { display:none; }
 #reflexoes-campos { border:0; margin:0; padding:0; min-width:0; }
-.reflexoes-painel { background:#221c14; border:1px solid #c4933f30; border-radius:12px; padding:24px; }
+.metodo-page:not(.inversao-page) .reflexoes-painel { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); align-items:stretch; gap:18px; background:linear-gradient(145deg,#241d15e8,#1b160fdb); border:1px solid #c4933f30; border-radius:14px; padding:clamp(20px,3vw,40px); }
 .reflexoes-pergunta { margin:0 0 20px; color:var(--muted); font-size:15px; line-height:1.7; }
 .reflexoes-pergunta strong { color:var(--beige); }
-.reflexao-prazo { background:#2a2118; border:1px solid #c4933f22; border-radius:10px; padding:20px; margin-top:16px; }
+.metodo-page:not(.inversao-page) .reflexoes-painel > .reflexoes-pergunta,.metodo-page:not(.inversao-page) .reflexoes-painel > .reflexoes-ajuda { grid-column:1/-1; }
+.metodo-page:not(.inversao-page) .reflexoes-pergunta { margin-bottom:0; }
+.metodo-page .reflexao-prazo { display:flex; flex-direction:column; min-width:0; background:#2a2118; border:1px solid #c4933f22; border-radius:10px; padding:22px; margin:0; }
 .reflexao-prazo h2 { display:flex; align-items:center; gap:8px; margin:0 0 14px; color:var(--home-accent); font-size:17px; font-weight:600; line-height:24px; }
-.reflexoes-par { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+.metodo-page .reflexoes-par { display:grid; grid-template-columns:1fr; gap:14px; flex:1; }
 .reflexao-opcao { --opcao-cor:var(--alternativa-a); --opcao-texto:var(--alternativa-a-texto); --opcao-rgb:var(--alternativa-a-rgb); min-width:0; background:rgb(var(--opcao-rgb) / .04); padding:14px; border:1px solid rgb(var(--opcao-rgb) / .22); border-radius:8px; }
 .reflexao-opcao.opcao-b { --opcao-cor:var(--alternativa-b); --opcao-texto:var(--alternativa-b-texto); --opcao-rgb:var(--alternativa-b-rgb); }
 .reflexao-opcao label { display:block; margin-bottom:8px; color:var(--opcao-texto); font-size:13px; line-height:20px; font-weight:600; overflow-wrap:anywhere; }
-.reflexao-opcao textarea { display:block; width:100%; min-width:0; min-height:100px; resize:vertical; padding:8px; border:1px solid transparent; border-radius:4px; background:#17120d45; color:var(--fluxo-texto); font:400 15px/1.6 var(--font-ui); }
+.reflexao-opcao textarea { display:block; width:100%; min-width:0; min-height:120px; resize:vertical; padding:12px; border:1px solid #c4933f20; border-radius:6px; background:#17120d45; color:var(--fluxo-texto); font:400 15px/1.6 var(--font-ui); }
 .reflexao-opcao textarea::placeholder { color:#ae9e87; }
 .reflexao-opcao textarea:focus-visible { outline:2px solid var(--opcao-cor); outline-offset:2px; }
 .reflexao-opcao textarea[aria-invalid="true"] { border-color:#efb3ad; }
 .reflexao-opcao textarea:read-only { background:transparent; }
-.reflexoes-ajuda { margin:18px 0 0; color:var(--muted); font-size:13px; line-height:1.6; }
+.reflexoes-ajuda { margin:0; color:var(--muted); font-size:13px; line-height:1.6; }
 .reflexoes-rodape { display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px 24px; margin-top:16px; color:var(--beige); font-size:13px; line-height:1.6; }
 .reflexoes-rodape p { margin:0; }
 .metodo-page button:disabled { opacity:.55; cursor:wait; }
+@media(max-width:1100px) {
+    .metodo-page:not(.inversao-page) .reflexoes-painel { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    .metodo-page:not(.inversao-page) .reflexoes-painel > .reflexoes-pergunta,.metodo-page:not(.inversao-page) .reflexoes-painel > .reflexoes-ajuda { grid-column:1/-1; }
+}
 @media(max-width:680px) {
-    .reflexoes-painel { padding:16px; }
-    .reflexao-prazo { padding:14px; }
-    .reflexoes-par { grid-template-columns:1fr; }
+    .metodo-page:not(.inversao-page) .reflexoes-painel { grid-template-columns:1fr; gap:12px; padding:16px; }
+    .metodo-page .reflexao-prazo { padding:14px; }
+    .metodo-page:not(.inversao-page) .reflexoes-painel > .reflexoes-pergunta,.metodo-page:not(.inversao-page) .reflexoes-painel > .reflexoes-ajuda { grid-column:auto; }
     .reflexao-opcao { padding:12px; }
     .reflexao-opcao textarea { font-size:16px; }
 }

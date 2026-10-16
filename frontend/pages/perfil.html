@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Meu perfil — Bússola</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style/landing-page.css">
+    <link rel="stylesheet" href="../style/home.css">
+    <link rel="stylesheet" href="../style/revisao-etapa.css">
+    <link rel="stylesheet" href="../style/perfil.css">
+    <script src="../js/shared/alteracoes-nao-salvas.js" defer></script>
+    <script src="../js/pages/documentos-legais.js" defer></script>
+    <script src="../js/pages/perfil.js" type="module"></script>
+</head>
+<body class="home-page perfil-page">
+    <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
+    <div class="home-scene" aria-hidden="true">
+        <img src="../assets/images/fundo-cadastro.png" alt="" class="home-map">
+        <div class="home-ring"></div>
+    </div>
+    <header class="home-header">
+        <div class="home-header-inner">
+            <a href="home.html" class="home-brand" aria-label="Bússola — Início"><span class="home-brand-mark"><img src="../assets/images/home/marca.png" alt=""></span><span>Bússola</span></a>
+            <nav class="home-nav" aria-label="Navegação principal">
+                <a href="home.html" class="home-nav-link"><img src="../assets/images/opcoes/inicio.svg" alt="" width="15" height="15">Início</a>
+                <button type="button" class="home-nav-link" id="historico"><img src="../assets/images/home/historico.svg" alt="" width="15" height="15">Histórico</button>
+            </nav>
+            <div class="home-account">
+                <button class="home-profile" type="button" id="perfil-botao" aria-expanded="false" aria-controls="perfil-menu" disabled>
+                    <span class="home-avatar" id="usuario-inicial" aria-hidden="true">…</span><span id="usuario-menu">Minha conta</span>
+                    <img src="../assets/images/home/menu.svg" alt="" width="14" height="14">
+                </button>
+                <div class="home-profile-panel" id="perfil-menu" hidden>
+                    <strong id="perfil-nome"></strong><span id="perfil-email"></span>
+                    <button type="button" data-destino="perfil">Meu perfil</button>
+                </div>
+                <button type="button" class="home-exit" id="sair" aria-label="Sair da conta" title="Sair da conta"><img src="../assets/images/home/sair.svg" alt="" width="16" height="16"></button>
+            </div>
+        </div>
+    </header>
+
+<main id="conteudo" class="perfil-conteudo" aria-busy="true">
+    <a class="perfil-voltar" href="home.html">← Voltar ao início</a>
+    <div class="perfil-intro"><p class="perfil-sobretitulo">Sua conta</p><h1>Meu perfil</h1><p>Mantenha seus dados atualizados e cuide do acesso à sua conta.</p></div>
+    <p id="mensagem" role="status" aria-live="polite">Carregando seu perfil…</p>
+    <button id="recarregar" class="home-secondary" type="button" hidden>Recarregar dados</button>
+    <div id="perfil-conteudo" hidden>
+        <section class="perfil-secao" aria-labelledby="dados-titulo">
+            <div class="perfil-secao-intro"><span class="perfil-numero">01</span><h2 id="dados-titulo">Dados pessoais</h2><p>São os dados usados para identificar você no Bússola.</p></div>
+            <form id="dados-form">
+                <fieldset id="dados-campos" disabled><legend class="perfil-sr-only">Editar dados pessoais</legend>
+                    <div class="perfil-grade">
+                        <div class="perfil-campo perfil-largo"><label for="nome">Nome completo</label><input id="nome" name="nomeCompleto" autocomplete="name" maxlength="150" required></div>
+                        <div class="perfil-campo"><label for="nascimento">Data de nascimento</label><input id="nascimento" name="dataNascimento" type="date" autocomplete="bday" required aria-describedby="idade-ajuda"><small id="idade-ajuda">Você precisa ter pelo menos 16 anos.</small></div>
+                        <div class="perfil-campo"><label for="email">E-mail</label><input id="email" name="email" type="email" autocomplete="email" maxlength="150" required></div>
+                        <div class="perfil-campo perfil-largo" id="confirmar-email" hidden><label for="senha-email">Senha atual</label><input id="senha-email" type="password" autocomplete="current-password" aria-describedby="email-ajuda"><small id="email-ajuda">Confirme sua senha para alterar o e-mail de acesso.</small></div>
+                    </div>
+                    <p id="dados-mensagem" class="perfil-feedback" role="status"></p>
+                    <div class="perfil-acoes"><button class="home-secondary" type="button" id="cancelar-dados">Descartar alterações</button><button class="home-primary" type="submit">Salvar dados</button></div>
+                </fieldset>
+            </form>
+        </section>
+        <section class="perfil-secao" aria-labelledby="senha-titulo">
+            <div class="perfil-secao-intro"><span class="perfil-numero">02</span><h2 id="senha-titulo">Segurança</h2><p>Depois de alterar a senha, entre novamente em seus dispositivos.</p></div>
+            <form id="senha-form">
+                <fieldset id="senha-campos" disabled><legend class="perfil-sr-only">Alterar senha</legend>
+                    <div class="perfil-campo"><label for="senha-atual">Senha atual</label><input id="senha-atual" type="password" autocomplete="current-password" required></div>
+                    <div class="perfil-grade">
+                        <div class="perfil-campo"><label for="nova-senha">Nova senha</label><input id="nova-senha" type="password" autocomplete="new-password" minlength="8" maxlength="72" required aria-describedby="senha-ajuda"></div>
+                        <div class="perfil-campo"><label for="confirmacao-senha">Confirmar nova senha</label><input id="confirmacao-senha" type="password" autocomplete="new-password" maxlength="72" required></div>
+                    </div>
+                    <small id="senha-ajuda">Use pelo menos 8 caracteres. Caracteres especiais podem ocupar mais espaço; o limite é de 72 bytes.</small>
+                    <label class="perfil-checkbox"><input id="mostrar-senhas" type="checkbox">Mostrar senhas deste formulário</label>
+                    <p id="senha-mensagem" class="perfil-feedback" role="status"></p>
+                    <div class="perfil-acoes"><button type="button" class="home-secondary" id="limpar-senhas">Limpar campos</button><button type="submit" class="home-primary">Alterar senha</button></div>
+                </fieldset>
+            </form>
+        </section>
+        <section class="perfil-secao perfil-privacidade" aria-labelledby="privacidade-titulo">
+            <div class="perfil-secao-intro"><span class="perfil-numero">03</span><h2 id="privacidade-titulo">Privacidade e conta</h2><p>Consulte nossos documentos e gerencie seus dados.</p></div>
+            <div>
+                <div class="perfil-legais"><button type="button" data-documento="termos">Termos de Uso ↗</button><button type="button" data-documento="politica">Política de Privacidade ↗</button></div>
+                <div class="perfil-exclusao"><h3>Excluir minha conta</h3><p>A exclusão remove sua conta, decisões e respostas. Essa ação é definitiva e não pode ser desfeita.</p><button type="button" id="abrir-exclusao" class="perfil-perigo">Excluir conta</button></div>
+            </div>
+        </section>
+    </div>
+</main>
+<dialog class="home-dialog" id="aviso" aria-labelledby="aviso-titulo"><h2 id="aviso-titulo"></h2><p id="aviso-texto"></p><form method="dialog"><button class="home-primary" autofocus>Entendi</button></form></dialog>
+<dialog class="home-dialog perfil-dialogo" id="exclusao" aria-labelledby="exclusao-titulo" aria-describedby="exclusao-texto">
+    <h2 id="exclusao-titulo">Excluir sua conta definitivamente?</h2>
+    <p id="exclusao-texto">Sua conta, todas as decisões e as respostas serão apagadas. Você perderá o acesso e não poderá recuperar esses dados.</p>
+    <form id="exclusao-form">
+        <fieldset id="exclusao-campos">
+            <legend class="perfil-sr-only">Confirmar exclusão</legend>
+            <label for="senha-exclusao">Senha atual</label><input id="senha-exclusao" type="password" autocomplete="current-password" required>
+            <label class="perfil-checkbox"><input id="confirmar-exclusao" type="checkbox" required>Entendo que a exclusão é definitiva e inclui todas as minhas decisões.</label>
+            <p id="exclusao-mensagem" class="perfil-feedback" role="alert"></p>
+            <div class="perfil-acoes"><button type="button" class="home-secondary" id="cancelar-exclusao" autofocus>Manter minha conta</button><button class="perfil-perigo" type="submit">Excluir definitivamente</button></div>
+        </fieldset>
+    </form>
+</dialog>
+<dialog class="home-dialog perfil-documento" id="documento" aria-labelledby="documento-titulo">
+    <h2 id="documento-titulo"></h2><p id="documento-versao"></p><div id="documento-corpo"></div><form method="dialog"><button class="home-primary" autofocus>Fechar</button></form>
+</dialog>
+<noscript><p class="home-noscript">Ative o JavaScript para consultar e editar seu perfil.</p></noscript>
+</body>
+</html>

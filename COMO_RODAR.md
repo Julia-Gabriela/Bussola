@@ -9,7 +9,7 @@ Se você já configurou o projeto neste computador, faça só estes passos:
 3. **Frontend:** abra um PowerShell na pasta raiz do projeto e execute:
 
 ```powershell
-.\.\rodar-frontend.ps1
+.\rodar-frontend.ps1
 ```
 
 4. Deixe esse terminal aberto e acesse **http://127.0.0.1:8765/pages/login.html**. Entre com um usuário cadastrado no Bússola, não com a senha do MySQL.
@@ -39,6 +39,7 @@ Para conferir o layout, teste uma janela de computador e uma tela estreita. Os c
 | Login | http://127.0.0.1:8765/pages/login.html |
 | Cadastro | http://127.0.0.1:8765/pages/cadastro.html |
 | Home autenticada | http://127.0.0.1:8765/pages/home.html |
+| Meu perfil | http://127.0.0.1:8765/pages/perfil.html (após entrar na conta) |
 | Histórico | http://127.0.0.1:8765/pages/historico.html |
 | Nova decisão | http://127.0.0.1:8765/pages/nova-decisao.html |
 | Brainstorming | `http://127.0.0.1:8765/pages/brainstorming.html?decisaoId=ID_DA_DECISAO` (após concluir a contextualização) |
@@ -46,6 +47,7 @@ Para conferir o layout, teste uma janela de computador e uma tela estreita. Os c
 | Priorização de pesos | http://127.0.0.1:8765/pages/pesos.html?decisaoId=ID_DA_DECISAO (após concluir Critérios) |
 | Definição das opções | `http://127.0.0.1:8765/pages/opcoes.html?decisaoId=ID_DA_DECISAO` (use uma decisão sua na etapa 3 ou posterior) |
 | Método 10–10–10 | `http://127.0.0.1:8765/pages/metodo-101010.html?decisaoId=ID_DA_DECISAO` (etapa interna 6 — Análise) |
+| Inversão | `http://127.0.0.1:8765/pages/inversao.html?decisaoId=ID_DA_DECISAO` (etapa interna 6 — Análise) |
 | Sobre o projeto | http://127.0.0.1:8765/pages/sobre.html |
 | Swagger: testar a API | http://localhost:8080/swagger-ui/index.html |
 
@@ -173,7 +175,7 @@ Alterar notas ou pesos sinaliza resultados existentes para atualização. Esta e
 
 ## Testar contextualização e brainstorming
 
-O fluxo disponível é Home → Contextualização → Brainstorming → Opções → Critérios → Pesos → Análise. O resultado consolidado e outras técnicas continuam pendentes.
+O fluxo disponível é Home → Contextualização → Brainstorming → Opções → Critérios → Pesos → Análise. A Análise inclui Prós e Contras, Matriz GUT, 10–10–10 e Inversão. O resultado consolidado continua pendente.
 
 Depois de atualizar o projeto, **reinicie o backend no IntelliJ** e atualize o navegador com **Ctrl + F5**. Não precisa criar tabelas nem mudar variáveis ou portas.
 
@@ -436,7 +438,7 @@ Ao concluir Pesos, o backend libera a etapa 6 e a tela abre a página de Anális
 3. Exclua um registro: primeiro cancele a confirmação; depois confirme e confira a lista.
 4. Em **Matriz GUT**, cadastre um fator com notas 5, 4 e 3. A prioridade deve ser **60**. Edite para 1, 1 e 1: deve virar **1** e mudar de posição na lista.
 5. Recarregue a página para conferir os dados salvos. Um rascunho impede trocar de técnica ou sair até salvar/cancelar. Falhas de envio exigem recarregar antes de tentar novamente, evitando duplicação.
-6. Decisões concluídas são somente consultáveis. Salvar técnicas não conclui a decisão. O método 10–10–10 já está acessível pelo link **Técnica 10/10/10**. Inversão e resultado continuam pendentes.
+6. Decisões concluídas são somente consultáveis. Salvar técnicas não conclui a decisão. O método 10–10–10 e a Inversão estão acessíveis na barra de técnicas. O resultado consolidado continua pendente.
 
 Prós/Contras pertencem à alternativa; os fatores GUT pertencem à decisão inteira. A prioridade é calculada pelo servidor como G × U × T (1–125), ordenada de forma decrescente, com desempate pelo ID. Não existe conversão dessa prioridade em uma pontuação final das alternativas nesta entrega.
 
@@ -538,7 +540,7 @@ Opcionalmente, para testar somente esta técnica com uma decisão fictícia:
 4. Preencha os seis campos e clique em **Ver resultado**. Cancele com **Continuar revisando** ou **Esc**: nenhum envio deve acontecer e as respostas permanecem. Abra novamente e escolha **Confirmar e continuar**.
 5. A técnica fica marcada como concluída, mas a decisão permanece **EM_ANDAMENTO**, na etapa 6. Como o resultado final ainda não existe, aparece um aviso de reflexões salvas, sem abrir página inexistente ou inventar uma recomendação.
 6. Recarregue para conferir as seis respostas e a indicação de conclusão. Enquanto a decisão estiver em andamento, editar e salvar respostas exige nova conclusão da técnica. Revisar o nome ou a descrição de uma alternativa também remove a conclusão do 10–10–10, preservando seus textos para revisão. Uma decisão concluída é apenas consultável.
-7. Os links **Prós e Contras** e **Matriz GUT** abrem a técnica correspondente com o mesmo ID. Rascunhos não salvos impedem a saída. **Inversão** permanece indicada como indisponível.
+7. Os links **Prós e Contras**, **Matriz GUT** e **Inversão** abrem a técnica correspondente com o mesmo ID. Rascunhos não salvos impedem a saída.
 8. Se um envio falhar sem confirmar a gravação, os textos permanecem na tela e novos envios ficam bloqueados. Use **Recarregar dados**, confirmando a substituição pelo que realmente foi salvo. Não há reenvio automático.
 
 **Teste visual:** sem a API, somente o cabeçalho e os estados de carregamento/erro podem ser conferidos. Para ver as opções reais, preencher, salvar e concluir, use **MySQL + backend + frontend**. O navegador não cria uma decisão de teste automaticamente.
@@ -566,7 +568,7 @@ No PUT, os textos podem ser null. Sempre envie as duas opções; campos omitidos
 
 A resposta traz `decisaoId`, `titulo`, `etapaAtual`, `status`, `concluida`, `concluidaEm` e `opcaoA/B`, com ID/nome/descrição da opção, `reflexaoId` e os três textos. Repetir dados idênticos não duplica registros nem altera a data de conclusão. Alterações marcam os resultados existentes das opções afetadas para atualização, sem apagar a pontuação anterior.
 
-As rotas futuras ficam em `frontend/js/pages/metodo-101010-integracoes.js`: `resultado` e `inversao` devem permanecer null até existirem. A navegação acrescenta `decisaoId`. O evento cancelável `bussola:101010-concluido` informa `detail: { decisaoId, etapa: 6 }` quando o usuário pede o resultado após a conclusão. Esse evento não significa que toda a decisão foi finalizada.
+As rotas ficam em `frontend/js/pages/metodo-101010-integracoes.js`: `inversao` aponta para `inversao.html`; `resultado` permanece null até essa tela existir. A navegação acrescenta `decisaoId`. O evento cancelável `bussola:101010-concluido` informa `detail: { decisaoId, etapa: 6 }` quando o usuário pede o resultado após a conclusão. Esse evento não significa que toda a decisão foi finalizada.
 
 ### Testes automatizados
 
@@ -577,3 +579,106 @@ No PowerShell, **dentro de backend**, execute:
 ```
 
 Espere **BUILD SUCCESS**. Os testes usam repositórios simulados, sem MySQL, e verificam salvamento parcial, seis respostas obrigatórias, titularidade, ordem das etapas, IDs estáveis, reenvios, revisão, conclusão independente, autenticação e CORS. Eles não substituem o teste de persistência no MySQL pelo roteiro acima.
+
+## Técnica de Inversão
+
+A página `frontend/pages/inversao.html` registra **possíveis fracassos e ações de prevenção para cada alternativa**. A barra superior mantém as quatro técnicas disponíveis. Os nomes de A/B vêm da decisão; os exemplos do Figma não são gravados como respostas.
+
+### Iniciar e testar
+
+1. Continue usando os mesmos comandos. Com **MySQL disponível**, reinicie o backend e aguarde **Started BussolaApplication**. O Flyway aplica **V5__Conclusao_inversao.sql**, acrescentando a data opcional de conclusão da técnica. A tabela `inversoes` já existe; não apague o banco nem edite migrations aplicadas.
+2. Mantenha os terminais do backend e frontend abertos. No navegador, pressione **Ctrl + F5**, faça login e retome uma decisão sua em **Análise**, após concluir Pesos.
+3. Clique em **Inversão** na barra. A URL recebe `decisaoId`; a API exige etapa interna 6 e duas alternativas. Alterar a URL não permite pular etapas.
+4. Em A, preencha o que poderia dar errado e como evitar isso. Troque para B e volte: os rascunhos devem permanecer. As setas do teclado também alternam A/B quando o seletor tem foco.
+5. **Salvar para depois** aceita campos incompletos. Atualize a página para verificar a persistência. Textos aceitam até 16.000 caracteres; apagar e salvar limpa a resposta. Trocar A/B não salva automaticamente.
+6. **Ver resultado** exige os quatro campos. Se faltar um, a tela abre a alternativa correspondente e foca o campo. Com tudo preenchido, abre uma confirmação; **Continuar revisando** ou **Esc** não envia dados. **Confirmar e continuar** salva e conclui somente a técnica.
+7. A decisão permanece **EM_ANDAMENTO**, na etapa 6. Como o resultado consolidado ainda não existe, aparece um aviso de reflexões salvas. Não há pontuação nem recomendação automática.
+8. Recarregue e confira textos e conclusão. Alterar respostas ou revisar nome/descrição de uma opção exige concluir novamente a Inversão; os textos anteriores permanecem. Salvar a Inversão não altera a conclusão do 10–10–10; revisar uma opção pode exigir nova conclusão de ambas as técnicas.
+9. Tente sair com texto não salvo: a navegação deve ser bloqueada. Se um envio falhar sem confirmação, os campos permanecem e o reenvio fica bloqueado até **Recarregar dados**, com confirmação de descarte do rascunho.
+10. Uma decisão globalmente concluída permite somente consulta. Nenhuma decisão real precisa ser alterada diretamente no banco para testar.
+
+**Teste visual:** apenas frontend permite conferir cabeçalho e estado de erro, mas a área de respostas depende da API autenticada. **Teste funcional:** carregar as alternativas, salvar, concluir e conferir persistência exige **MySQL + backend + frontend**. Não há novas dependências, variáveis, portas ou comandos de inicialização.
+
+### Swagger e integração
+
+Faça login e use **Authorize**, como explicado no início do guia. As rotas autenticadas são:
+
+| Operação | Rota |
+| --- | --- |
+| Consultar sem criar registros | GET /decisoes/{decisaoId}/inversao |
+| Salvar respostas parciais | PUT /decisoes/{decisaoId}/inversao |
+| Salvar quatro respostas e concluir a técnica | POST /decisoes/{decisaoId}/inversao/concluir |
+
+Copie os IDs reais de `opcaoA` e `opcaoB` do GET. Exemplo de corpo:
+
+```json
+{
+  "opcaoA": { "opcaoId": 21, "fracassos": "Assumir mais tarefas do que consigo cumprir", "prevencoes": "Combinar prioridades e limites antes de aceitar" },
+  "opcaoB": { "opcaoId": 22, "fracassos": "Deixar de buscar experiências práticas", "prevencoes": "Participar de projetos e reservar tempo para praticar" }
+}
+```
+
+PUT aceita null ou texto vazio; campos omitidos limpam a resposta. Sempre envie ambas as opções. POST exige os quatro textos não vazios. As duas alternativas são salvas na mesma transação; reenvios idênticos preservam IDs e data de conclusão.
+
+**200** indica sucesso; **400** indica campos/IDs inválidos, limite excedido ou conclusão incompleta; **401**, falta de autenticação; **404**, decisão inexistente ou de outra conta; **409**, etapa incorreta, decisão concluída para escrita ou registros duplicados que precisam de conferência.
+
+Cada perspectiva é armazenada na tabela existente `inversoes`, com códigos `FRACASSOS` e `PREVENCOES`, vinculada à opção. Outros registros legados são preservados. A resposta inclui `fracassosId`, `fracassos`, `prevencoesId` e `prevencoes` para cada opção, além de `concluida` e `concluidaEm`. Alterações sinalizam resultados existentes para atualização, sem apagar sua pontuação.
+
+A futura tela de resultado deve ser configurada em `frontend/js/pages/inversao-integracoes.js` (`resultado: null` até existir). O evento cancelável `bussola:inversao-concluida` leva `detail: { decisaoId, etapa: 6 }`; não significa conclusão global da decisão.
+
+### Testes automatizados
+
+No PowerShell, dentro da pasta **backend**, execute:
+
+```powershell
+.\mvnw.cmd '-Dtest=InversaoServiceTest,InversaoControllerTest,OpcoesServiceTest' test
+```
+
+Aguarde **BUILD SUCCESS**. Esses testes usam repositórios simulados, sem MySQL. Verificam autorização, etapas, salvamento parcial, validação dos quatro campos, IDs preservados, reenvios, revisão, dados legados e CORS. Não substituem o teste de persistência no banco pelo roteiro acima.
+
+## Meu perfil
+
+A página `frontend/pages/perfil.html` permite consultar e editar os dados pessoais, trocar a senha, consultar os documentos legais e solicitar a exclusão da própria conta.
+
+### Iniciar e testar
+
+1. Para conferir apenas o layout, inicie o frontend e abra `http://127.0.0.1:8765/pages/perfil.html`. A tela exige uma sessão válida; sem login, será redirecionado à página de entrada.
+2. Para testar as operações, mantenha **MySQL + backend + frontend** ligados, faça login e, na Home, abra **Meu perfil** pelo menu da conta.
+3. Edite o nome ou a data de nascimento e use **Salvar dados**. Para testar o cancelamento, altere um campo e escolha **Descartar alterações**. A idade mínima é 16 anos.
+4. A troca do e-mail exige a senha atual. Se o novo endereço já estiver cadastrado, a tela informa que não foi possível usá-lo.
+5. A alteração de senha exige a senha atual e a confirmação da nova senha. Após a alteração, todas as sessões são encerradas; entre novamente com a senha nova.
+6. Os documentos legais abrem diretamente na página. A exclusão da conta exige a senha atual e a confirmação da ação irreversível. Faça esse teste somente com uma conta e decisões descartáveis: os dados da conta são removidos.
+
+**Teste visual:** o frontend sozinho permite conferir o layout, mas consultar e alterar dados exige login e API. **Teste funcional:** salvar dados, trocar senha e excluir a conta exige **MySQL + backend + frontend**. O perfil não acrescenta migration, dependências, variáveis de ambiente ou portas.
+
+### API e testes automatizados
+
+As operações autenticadas também podem ser conferidas no Swagger, com login e **Authorize**:
+
+| Operação | Rota |
+| --- | --- |
+| Consultar o perfil | GET /perfil |
+| Atualizar dados pessoais | PUT /perfil |
+| Alterar senha | PUT /perfil/senha |
+| Excluir a própria conta | DELETE /perfil |
+
+Para atualizar dados, envie `nomeCompleto`, `dataNascimento` e `email`. A senha atual só é necessária quando o e-mail muda:
+
+```json
+{
+  "nomeCompleto": "Nome para teste",
+  "dataNascimento": "2000-01-01",
+  "email": "pessoa@example.invalid",
+  "senhaAtual": null
+}
+```
+
+Para trocar a senha, envie `senhaAtual`, `novaSenha` e `confirmacaoSenha`. Para excluir, envie `senhaAtual` e `confirmar: true`; a operação é definitiva. Use apenas uma conta descartável ao testar a exclusão.
+
+No PowerShell, dentro da pasta **backend**, execute os testes automatizados do perfil:
+
+```powershell
+.\mvnw.cmd '-Dtest=PerfilServiceTest,PerfilControllerTest' test
+```
+
+Os testes automatizados não usam MySQL e não substituem a conferência funcional da persistência com o banco.

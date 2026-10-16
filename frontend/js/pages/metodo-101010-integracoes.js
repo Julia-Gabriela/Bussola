@@ -2,5 +2,5 @@
 window.BUSSOLA_101010_ROTAS = Object.freeze({
     historico: "historico.html",
     resultado: null,
-    inversao: null
+    inversao: "inversao.html"
 });

@@ -1,5 +1,6 @@
 /** Cabeçalho reutilizável pelas etapas que usam o cliente autenticado. */
 export function configurarConta({ requisitar, aviso, podeSair, aoSair, ocupado, rotas }) {
+    rotas = { ...rotas, perfil: rotas?.perfil || "perfil.html" };
     const el = id => document.getElementById(id);
     function fechar() { el("perfil-menu").hidden = true; el("perfil-botao").setAttribute("aria-expanded", "false"); }
     el("perfil-botao").addEventListener("click", () => {

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Técnica de Inversão — Bússola</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style/landing-page.css">
+    <link rel="stylesheet" href="../style/home.css">
+    <link rel="stylesheet" href="../style/fluxo-decisao.css">
+    <link rel="stylesheet" href="../style/metodo-101010.css">
+    <link rel="stylesheet" href="../style/revisao-etapa.css">
+    <link rel="stylesheet" href="../style/confirmacao-etapa.css">
+    <script src="../js/shared/alteracoes-nao-salvas.js" defer></script>
+    <script src="../js/shared/confirmacao-etapa.js" defer></script>
+    <script src="../js/shared/revisao-etapa.js" defer></script>
+    <script src="../js/pages/inversao-integracoes.js" defer></script>
+    <script src="../js/pages/inversao.js" type="module"></script>
+    <link rel="stylesheet" href="../style/fluxo-compacto.css">
+    <link rel="stylesheet" href="../style/tecnicas-nav.css">
+    <link rel="stylesheet" href="../style/inversao.css">
+</head>
+<body class="home-page fluxo-page metodo-page inversao-page">
+    <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
+    <div class="home-scene" aria-hidden="true">
+        <img src="../assets/images/fundo-cadastro.png" alt="" class="home-map">
+        <div class="home-ring"></div>
+    </div>
+    <header class="home-header">
+        <div class="home-header-inner">
+            <a href="home.html" class="home-brand" aria-label="Bússola — Início"><span class="home-brand-mark"><img src="../assets/images/home/marca.png" alt=""></span><span>Bússola</span></a>
+            <nav class="home-nav" aria-label="Navegação principal">
+                <a href="home.html" class="home-nav-link"><img src="../assets/images/opcoes/inicio.svg" alt="" width="15" height="15">Início</a>
+                <button type="button" class="home-nav-link" id="historico"><img src="../assets/images/home/historico.svg" alt="" width="15" height="15">Histórico</button>
+            </nav>
+            <div class="home-account">
+                <button class="home-profile" type="button" id="perfil-botao" aria-expanded="false" aria-controls="perfil-menu" disabled>
+                    <span class="home-avatar" id="usuario-inicial" aria-hidden="true">…</span><span id="usuario-menu">Minha conta</span>
+                    <img src="../assets/images/home/menu.svg" alt="" width="14" height="14">
+                </button>
+                <div class="home-profile-panel" id="perfil-menu" hidden>
+                    <strong id="perfil-nome"></strong><span id="perfil-email"></span>
+                    <button type="button" data-destino="perfil">Meu perfil</button>
+                </div>
+                <button type="button" class="home-exit" id="sair" aria-label="Sair da conta" title="Sair da conta"><img src="../assets/images/home/sair.svg" alt="" width="16" height="16"></button>
+            </div>
+        </div>
+    </header>
+<main class="fluxo-conteudo metodo-conteudo" id="conteudo" aria-busy="true">
+    <ol class="fluxo-etapas" id="indicador-etapas" aria-label="Etapas da análise"></ol>
+    <div class="fluxo-intro">
+        <span class="fluxo-badge"><img src="../assets/images/metodo-101010/etapa.svg" width="13" height="13" alt="">Etapa 5 de 5</span>
+        <h1>Técnicas de análise</h1>
+        <p>Explore diferentes perspectivas para aprofundar sua análise.</p>
+        <p id="decisao-titulo"></p>
+    </div>
+    <p id="mensagem" role="status" aria-live="polite">Carregando suas reflexões…</p>
+    <button type="button" class="fluxo-salvar" id="recarregar" hidden>Recarregar dados</button>
+    <div id="metodo" hidden>
+        <nav class="tecnicas-nav" aria-label="Técnicas de análise">
+            <a id="tecnica-pros" href="analise.html"><span>Prós e Contras</span><small>Clássico</small></a>
+            <a id="tecnica-gut" href="analise.html"><span>Matriz GUT</span><small>Prioridade</small></a>
+            <a id="tecnica-101010" href="metodo-101010.html"><span>Técnica 10/10/10</span><small>Temporal</small></a>
+            <a href="#reflexoes-form" aria-current="page"><span>Inversão</span><small>Antifrágil</small></a>
+        </nav>
+        <form id="reflexoes-form" novalidate>
+            <fieldset id="reflexoes-campos" disabled>
+                <legend class="fluxo-sr-only">Reflexões do técnica de Inversão</legend>
+                <div class="reflexoes-painel">
+                    <p class="reflexoes-pergunta">Em vez de “como dar certo?”, pergunte: <strong>“o que garantiria o fracasso?”</strong> — depois pense em como evitar isso.</p>
+                    <div class="inversao-opcoes" role="tablist" aria-label="Alternativa em análise">
+                        <button type="button" role="tab" id="selecionar-a" aria-controls="opcao-a" aria-selected="true"><span class="inversao-letra">A</span><span data-nome="a">Opção A</span><small id="progresso-a">0 de 2</small></button>
+                        <button type="button" role="tab" id="selecionar-b" aria-controls="opcao-b" aria-selected="false" tabindex="-1"><span class="inversao-letra">B</span><span data-nome="b">Opção B</span><small id="progresso-b">0 de 2</small></button>
+                    </div>
+
+                    <section id="opcao-a" role="tabpanel" aria-labelledby="selecionar-a" >
+                        <div class="inversao-par">
+                            <div class="inversao-campo inversao-fracassos">
+                                <label for="fracassos-a">O que poderia dar errado com esta escolha?</label>
+                                <p id="fracassos-a-ajuda">Pense em atitudes, omissões ou situações que levariam a um resultado ruim.</p>
+                                <textarea id="fracassos-a" rows="6" maxlength="16000" placeholder="Escreva os possíveis problemas, um por linha." aria-describedby="fracassos-a-ajuda fracassos-a-erro"></textarea>
+                                <p class="fluxo-erro-campo" id="fracassos-a-erro"></p>
+                            </div>
+                            <div class="inversao-campo inversao-prevencoes">
+                                <label for="prevencoes-a">Como evitar esses fracassos?</label>
+                                <p id="prevencoes-a-ajuda">Para cada problema, registre uma ação concreta que ajudaria a preveni-lo.</p>
+                                <textarea id="prevencoes-a" rows="6" maxlength="16000" placeholder="Escreva o que você poderia fazer, um por linha." aria-describedby="prevencoes-a-ajuda prevencoes-a-erro"></textarea>
+                                <p class="fluxo-erro-campo" id="prevencoes-a-erro"></p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section id="opcao-b" role="tabpanel" aria-labelledby="selecionar-b" hidden>
+                        <div class="inversao-par">
+                            <div class="inversao-campo inversao-fracassos">
+                                <label for="fracassos-b">O que poderia dar errado com esta escolha?</label>
+                                <p id="fracassos-b-ajuda">Pense em atitudes, omissões ou situações que levariam a um resultado ruim.</p>
+                                <textarea id="fracassos-b" rows="6" maxlength="16000" placeholder="Escreva os possíveis problemas, um por linha." aria-describedby="fracassos-b-ajuda fracassos-b-erro"></textarea>
+                                <p class="fluxo-erro-campo" id="fracassos-b-erro"></p>
+                            </div>
+                            <div class="inversao-campo inversao-prevencoes">
+                                <label for="prevencoes-b">Como evitar esses fracassos?</label>
+                                <p id="prevencoes-b-ajuda">Para cada problema, registre uma ação concreta que ajudaria a preveni-lo.</p>
+                                <textarea id="prevencoes-b" rows="6" maxlength="16000" placeholder="Escreva o que você poderia fazer, um por linha." aria-describedby="prevencoes-b-ajuda prevencoes-b-erro"></textarea>
+                                <p class="fluxo-erro-campo" id="prevencoes-b-erro"></p>
+                            </div>
+                        </div>
+                    </section>
+                    <p class="reflexoes-ajuda">Explore as duas alternativas. Trocar entre A e B mantém o que você digitou; use “Salvar para depois” para guardar suas respostas.</p>
+                </div>
+                <div class="reflexoes-rodape"><p id="progresso">0 de 4 reflexões preenchidas</p><p id="situacao"></p></div>
+                <div class="fluxo-acoes" id="acoes-edicao">
+                    <button type="submit" id="salvar-reflexoes" class="fluxo-salvar">Salvar para depois</button>
+                    <button type="submit" id="ver-resultado" class="fluxo-proxima"><span>Ver resultado</span><img src="../assets/images/metodo-101010/resultado.svg" width="17" height="17" alt=""></button>
+                </div>
+            </fieldset>
+        </form>
+        <button type="button" id="resultado-consulta" class="fluxo-proxima" hidden>Ver resultado</button>
+    </div>
+</main>
+<dialog class="confirmacao-etapa" id="confirmar-tecnica" aria-labelledby="confirmar-titulo" aria-describedby="confirmar-texto">
+    <h2 id="confirmar-titulo">Concluir a técnica de Inversão?</h2>
+    <p id="confirmar-texto">As quatro reflexões serão salvas e esta técnica será marcada como concluída. Isso não encerra sua decisão. Enquanto ela estiver em andamento, você poderá revisar as respostas e concluir a técnica novamente.</p>
+    <form method="dialog" class="confirmacao-etapa-acoes"><button value="cancelar" autofocus>Continuar revisando</button><button value="confirmar" class="confirmacao-etapa-avancar">Confirmar e continuar</button></form>
+</dialog>
+<dialog class="home-dialog" id="aviso" aria-labelledby="aviso-titulo" aria-describedby="aviso-texto"><h2 id="aviso-titulo"></h2><p id="aviso-texto"></p><form method="dialog"><button class="home-primary" autofocus>Entendi</button></form></dialog>
+<noscript><p class="home-noscript">Ative o JavaScript para carregar e salvar suas reflexões.</p></noscript>
+</body></html>

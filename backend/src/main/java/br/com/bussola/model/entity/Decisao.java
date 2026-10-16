@@ -64,6 +64,9 @@ public class Decisao {
     @Column(name = "etapa_atual", nullable = false, columnDefinition = "TINYINT")
     private Integer etapaAtual = 1;
 
+    @Column(name = "inversao_concluida_em")
+    private LocalDateTime inversaoConcluidaEm;
+
     @Column(name = "reflexao_101010_concluida_em")
     private LocalDateTime reflexao101010ConcluidaEm;
 

@@ -14,4 +14,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * deste repositório.
  */
 public interface TokenRecuperacaoSenhaRepository extends JpaRepository<TokenRecuperacaoSenha, Long> {
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query("delete from TokenRecuperacaoSenha t where t.usuario.id = :usuarioId")
+    void revogarTodosDoUsuario(@org.springframework.data.repository.query.Param("usuarioId") Long usuarioId);
+
 }
