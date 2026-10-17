@@ -48,6 +48,7 @@ Para conferir o layout, teste uma janela de computador e uma tela estreita. Os c
 | Definição das opções | `http://127.0.0.1:8765/pages/opcoes.html?decisaoId=ID_DA_DECISAO` (use uma decisão sua na etapa 3 ou posterior) |
 | Método 10–10–10 | `http://127.0.0.1:8765/pages/metodo-101010.html?decisaoId=ID_DA_DECISAO` (etapa interna 6 — Análise) |
 | Inversão | `http://127.0.0.1:8765/pages/inversao.html?decisaoId=ID_DA_DECISAO` (etapa interna 6 — Análise) |
+| Resultado comparativo | `http://127.0.0.1:8765/pages/resultado.html?decisaoId=ID_DA_DECISAO` (após concluir as quatro técnicas) |
 | Sobre o projeto | http://127.0.0.1:8765/pages/sobre.html |
 | Swagger: testar a API | http://localhost:8080/swagger-ui/index.html |
 
@@ -175,7 +176,7 @@ Alterar notas ou pesos sinaliza resultados existentes para atualização. Esta e
 
 ## Testar contextualização e brainstorming
 
-O fluxo disponível é Home → Contextualização → Brainstorming → Opções → Critérios → Pesos → Análise. A Análise inclui Prós e Contras, Matriz GUT, 10–10–10 e Inversão. O resultado consolidado continua pendente.
+O fluxo disponível é Home → Contextualização → Brainstorming → Opções → Critérios → Pesos → Análise. A Análise inclui Prós e Contras, Matriz GUT, 10–10–10 e Inversão. A página Resultado comparativo só libera depois de concluir Prós e Contras, Matriz GUT, 10–10–10 e Inversão.
 
 Depois de atualizar o projeto, **reinicie o backend no IntelliJ** e atualize o navegador com **Ctrl + F5**. Não precisa criar tabelas nem mudar variáveis ou portas.
 
@@ -438,9 +439,9 @@ Ao concluir Pesos, o backend libera a etapa 6 e a tela abre a página de Anális
 3. Exclua um registro: primeiro cancele a confirmação; depois confirme e confira a lista.
 4. Em **Matriz GUT**, cadastre um fator com notas 5, 4 e 3. A prioridade deve ser **60**. Edite para 1, 1 e 1: deve virar **1** e mudar de posição na lista.
 5. Recarregue a página para conferir os dados salvos. Um rascunho impede trocar de técnica ou sair até salvar/cancelar. Falhas de envio exigem recarregar antes de tentar novamente, evitando duplicação.
-6. Decisões concluídas são somente consultáveis. Salvar técnicas não conclui a decisão. O método 10–10–10 e a Inversão estão acessíveis na barra de técnicas. O resultado consolidado continua pendente.
+6. Decisões concluídas são somente consultáveis. Salvar técnicas não conclui a decisão. O método 10–10–10 e a Inversão estão acessíveis na barra de técnicas. A página Resultado comparativo só libera depois de concluir Prós e Contras, Matriz GUT, 10–10–10 e Inversão.
 
-Prós/Contras pertencem à alternativa; os fatores GUT pertencem à decisão inteira. A prioridade é calculada pelo servidor como G × U × T (1–125), ordenada de forma decrescente, com desempate pelo ID. Não existe conversão dessa prioridade em uma pontuação final das alternativas nesta entrega.
+Prós/Contras pertencem à alternativa; os fatores GUT pertencem à decisão inteira. A prioridade é calculada pelo servidor como G × U × T (1–125), ordenada de forma decrescente, com desempate pelo ID. Essa prioridade organiza os fatores da Matriz GUT; o resultado comparativo usa as notas e os pesos dos critérios.
 
 ### Conferir no Swagger
 
@@ -509,7 +510,7 @@ Para conferir a revisão de etapas existente:
 .\mvnw.cmd '-Dtest=FluxoDecisaoControllerTest,OpcoesServiceTest,CriteriosServiceTest' test
 ```
 
-A revisão de Critérios e Pesos preserva os dados e o progresso e sinaliza resultados anteriores quando notas ou pesos mudam. O cálculo do resultado consolidado continua pendente. A contextualização permanece editável somente antes de avançar; o indicador de revisão começa em Brainstorming.
+A revisão de Critérios e Pesos preserva os dados e o progresso e sinaliza resultados anteriores quando notas ou pesos mudam. O resultado comparativo usa a soma de nota × peso para cada alternativa. A contextualização permanece editável somente antes de avançar; o indicador de revisão começa em Brainstorming.
 
 ## Método 10–10–10
 
@@ -538,7 +539,7 @@ Opcionalmente, para testar somente esta técnica com uma decisão fictícia:
 2. Preencha só um campo e clique em **Salvar para depois**. Recarregue: o texto deve permanecer e a técnica ainda não estará concluída. Cada texto aceita até **16.000 caracteres**; apagar e salvar limpa aquela resposta.
 3. Tente **Ver resultado** com campos vazios. A tela deve indicar e focar o primeiro campo pendente, sem concluir ou abrir confirmação.
 4. Preencha os seis campos e clique em **Ver resultado**. Cancele com **Continuar revisando** ou **Esc**: nenhum envio deve acontecer e as respostas permanecem. Abra novamente e escolha **Confirmar e continuar**.
-5. A técnica fica marcada como concluída, mas a decisão permanece **EM_ANDAMENTO**, na etapa 6. Como o resultado final ainda não existe, aparece um aviso de reflexões salvas, sem abrir página inexistente ou inventar uma recomendação.
+5. A técnica fica marcada como concluída, mas a decisão permanece **EM_ANDAMENTO**, na etapa 6. O resultado comparativo fica disponível depois que Prós e Contras, Matriz GUT, 10–10–10 e Inversão estiverem concluídas e todas as avaliações tiverem sido confirmadas.
 6. Recarregue para conferir as seis respostas e a indicação de conclusão. Enquanto a decisão estiver em andamento, editar e salvar respostas exige nova conclusão da técnica. Revisar o nome ou a descrição de uma alternativa também remove a conclusão do 10–10–10, preservando seus textos para revisão. Uma decisão concluída é apenas consultável.
 7. Os links **Prós e Contras**, **Matriz GUT** e **Inversão** abrem a técnica correspondente com o mesmo ID. Rascunhos não salvos impedem a saída.
 8. Se um envio falhar sem confirmar a gravação, os textos permanecem na tela e novos envios ficam bloqueados. Use **Recarregar dados**, confirmando a substituição pelo que realmente foi salvo. Não há reenvio automático.
@@ -592,7 +593,7 @@ A página `frontend/pages/inversao.html` registra **possíveis fracassos e açõ
 4. Em A, preencha o que poderia dar errado e como evitar isso. Troque para B e volte: os rascunhos devem permanecer. As setas do teclado também alternam A/B quando o seletor tem foco.
 5. **Salvar para depois** aceita campos incompletos. Atualize a página para verificar a persistência. Textos aceitam até 16.000 caracteres; apagar e salvar limpa a resposta. Trocar A/B não salva automaticamente.
 6. **Ver resultado** exige os quatro campos. Se faltar um, a tela abre a alternativa correspondente e foca o campo. Com tudo preenchido, abre uma confirmação; **Continuar revisando** ou **Esc** não envia dados. **Confirmar e continuar** salva e conclui somente a técnica.
-7. A decisão permanece **EM_ANDAMENTO**, na etapa 6. Como o resultado consolidado ainda não existe, aparece um aviso de reflexões salvas. Não há pontuação nem recomendação automática.
+7. A decisão permanece **EM_ANDAMENTO**, na etapa 6. Ao concluir uma técnica, a página de resultado verifica se as outras também foram concluídas. Se faltar alguma, ela informa qual técnica ainda precisa de registros e permite voltar à Análise.
 8. Recarregue e confira textos e conclusão. Alterar respostas ou revisar nome/descrição de uma opção exige concluir novamente a Inversão; os textos anteriores permanecem. Salvar a Inversão não altera a conclusão do 10–10–10; revisar uma opção pode exigir nova conclusão de ambas as técnicas.
 9. Tente sair com texto não salvo: a navegação deve ser bloqueada. Se um envio falhar sem confirmação, os campos permanecem e o reenvio fica bloqueado até **Recarregar dados**, com confirmação de descarte do rascunho.
 10. Uma decisão globalmente concluída permite somente consulta. Nenhuma decisão real precisa ser alterada diretamente no banco para testar.

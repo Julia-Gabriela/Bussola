@@ -2,6 +2,7 @@
     "use strict";
     let dialogo;
     let pendente = false;
+    let respostaEscolhida = "";
 
     function criarDialogo() {
         dialogo = document.createElement("dialog");
@@ -17,19 +18,26 @@
                 <button type="submit" value="confirmar" class="confirmacao-etapa-avancar">Confirmar e avançar</button>
             </form>
         `;
+        dialogo.querySelectorAll("button[value]").forEach(botao => {
+            botao.addEventListener("click", evento => {
+                evento.preventDefault();
+                respostaEscolhida = botao.value;
+                dialogo.close();
+            });
+        });
         document.body.append(dialogo);
     }
 
     function confirmarAvanco() {
-        // Uma segunda tentativa enquanto o diálogo está aberto nunca autoriza outro envio.
         if (pendente) return Promise.resolve(false);
         if (!dialogo) criarDialogo();
         pendente = true;
-        dialogo.returnValue = "";
+        respostaEscolhida = "";
         return new Promise(resolve => {
             dialogo.addEventListener("close", () => {
                 pendente = false;
-                resolve(dialogo.returnValue === "confirmar");
+                resolve(respostaEscolhida === "confirmar");
+                respostaEscolhida = "";
             }, { once: true });
             dialogo.showModal();
         });

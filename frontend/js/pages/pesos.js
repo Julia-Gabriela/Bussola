@@ -106,6 +106,10 @@ async function carregar() {
         if (String(resposta.decisaoId) !== id || !Array.isArray(resposta.criterios) || resposta.criterios.length < 5
             || resposta.criterios.some(item => !Number.isInteger(item.id) || !Number.isInteger(item.peso) || item.peso < 1 || item.peso > 5))
             throw new Error("Os dados dos pesos vieram em um formato inesperado. Recarregue a decisão.");
+        if (resposta.etapaAtual === 6 && !window.BussolaRevisao.emRevisao(resposta.etapaAtual, 5)) {
+            location.replace("analise.html?decisaoId=" + encodeURIComponent(id) + "&etapa=6");
+            return;
+        }
         dados = resposta; referencia = foto(); renderizar();
         el("recarregar").hidden = true;
         el("mensagem").textContent = dados.status === "CONCLUIDA" ? "Decisão concluída: somente consulta."
@@ -129,7 +133,14 @@ el("avancar").addEventListener("click", async () => {
             revisao ? "PUT" : "POST", corpo);
         if (revisao) {
             dados = resposta; referencia = foto(); renderizar(); el("mensagem").textContent = "Alterações salvas.";
-        } else location.assign("analise.html?decisaoId=" + encodeURIComponent(id));
+        } else if (resposta.etapaAtual === 6) {
+            dados = resposta;
+            referencia = foto();
+            estado(false);
+            location.replace("analise.html?decisaoId=" + encodeURIComponent(id) + "&etapa=6");
+        } else {
+            throw new Error("Os pesos foram salvos, mas a decisão não avançou. Recarregue os dados antes de tentar novamente.");
+        }
     } catch (erro) {
         const recarregar = erro.incerto || erro.status >= 500 || [404, 409].includes(erro.status);
         bloqueado = recarregar; el("recarregar").hidden = !recarregar;

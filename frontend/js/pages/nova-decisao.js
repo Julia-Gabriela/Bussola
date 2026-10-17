@@ -46,6 +46,8 @@
 
     function abrirBrainstorming() {
         bloqueado = true;
+        ocupado = false;
+        campos.disabled = true;
         window.location.replace(`brainstorming.html?decisaoId=${encodeURIComponent(id)}`);
     }
 
