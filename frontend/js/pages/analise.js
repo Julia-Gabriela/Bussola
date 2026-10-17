@@ -61,6 +61,7 @@ function acoes(item, tipo) {
 function renderizar() {
     el("decisao-titulo").textContent = dados.titulo;
     el("abrir-inversao").href = "inversao.html?decisaoId=" + encodeURIComponent(id);
+    el("abrir-resultado").href = "resultado.html?decisaoId=" + encodeURIComponent(id);
     el("abrir-101010").href = "metodo-101010.html?decisaoId=" + encodeURIComponent(id);
     el("argumento-form").hidden = el("gut-form").hidden = dados.status !== "EM_ANDAMENTO";
     window.BussolaRevisao.sincronizar({ etapaAtual: dados.etapaAtual, status: dados.status, etapaPagina: 6, decisaoId: id });
