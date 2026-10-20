@@ -118,6 +118,41 @@
     outline-offset: 3px;
 }
 
+.aviso-concluida[hidden] {
+    display: none;
+}
+
+.aviso-concluida .aviso-pendencia-acoes a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 41px;
+    padding: 9px 20px;
+    border: 1px solid rgba(196, 147, 63, 0.3);
+    border-radius: 8px;
+    color: #e4d5c0;
+    font: 600 14px/21px var(--font-ui, Inter, sans-serif);
+    letter-spacing: 0.16px;
+    text-decoration: none;
+}
+
+.aviso-concluida .aviso-pendencia-acoes .aviso-concluida-consulta {
+    border-color: transparent;
+    background: linear-gradient(166deg, #8a6828 0%, #c4933f 100%);
+    color: #17120d;
+}
+
+.aviso-concluida .aviso-pendencia-acoes a:focus-visible {
+    outline: 2px solid #dfb977;
+    outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+    .aviso-concluida .aviso-pendencia-acoes a {
+        justify-content: center;
+        width: 100%;
+    }
+}
+
 .aviso-revisao {
     display: flex;
     align-items: center;

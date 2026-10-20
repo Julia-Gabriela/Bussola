@@ -170,6 +170,70 @@
     }
 
     /**
+     * Mostra, abaixo do indicador de etapas, que a decisão já foi finalizada,
+     * com os caminhos "Visualizar resultado" e "Voltar ao Histórico".
+     *
+     * Usado quando alguém abre uma URL antiga de edição de uma decisão
+     * concluída. O bloco é criado uma única vez; se a decisão não estiver
+     * concluída, ele fica escondido. Não altera nada no backend: a própria
+     * API recusa qualquer escrita em decisões concluídas.
+     *
+     * @param {HTMLElement|null} lista indicador de etapas da tela, usado como âncora
+     * @param {boolean} concluida true quando o status da decisão é CONCLUIDA
+     * @param {string} decisaoId identificador da decisão na URL
+     * @returns {void}
+     */
+    function avisarConcluida(lista, concluida, decisaoId) {
+        let aviso = document.getElementById("aviso-concluida");
+        if (!concluida) {
+            if (aviso) aviso.hidden = true;
+            return;
+        }
+        if (!aviso) {
+            if (!lista) return;
+            aviso = document.createElement("section");
+            aviso.id = "aviso-concluida";
+            aviso.className = "aviso-pendencia aviso-concluida";
+            aviso.setAttribute("aria-labelledby", "aviso-concluida-titulo");
+            aviso.innerHTML = `
+                <h2 id="aviso-concluida-titulo">Esta decisão foi concluída</h2>
+                <p>Ela foi finalizada e está disponível apenas para consulta. Nenhuma etapa pode ser alterada.</p>
+                <div class="aviso-pendencia-acoes">
+                    <a class="aviso-concluida-consulta">Visualizar minha análise</a>
+                    <a class="aviso-concluida-resultado-secundario">Visualizar resultado</a>
+                    <a class="aviso-concluida-historico" href="historico.html">Voltar ao Histórico</a>
+                </div>
+            `;
+            lista.after(aviso);
+        }
+        const url = new URL("resultado.html", window.location.href);
+        url.searchParams.set("decisaoId", decisaoId);
+        aviso.querySelector(".aviso-concluida-resultado-secundario").href = url.href;
+        const consulta = new URL("consulta.html", window.location.href);
+        consulta.searchParams.set("decisaoId", decisaoId);
+        consulta.searchParams.set("etapa", etapaDaConsulta());
+        aviso.querySelector(".aviso-concluida-consulta").href = consulta.href;
+        aviso.hidden = false;
+    }
+
+    /**
+     * Descobre qual etapa da consulta somente leitura corresponde à tela aberta,
+     * para "Visualizar minha análise" abrir no mesmo ponto.
+     *
+     * @returns {string} chave da etapa em consulta.html (por exemplo "criterios" ou "gut")
+     */
+    function etapaDaConsulta() {
+        const pagina = window.location.pathname.split("/").pop();
+        const parametros = new URLSearchParams(window.location.search);
+        const mapa = {
+            "brainstorming.html": "brainstorming", "opcoes.html": "opcoes", "criterios.html": "criterios",
+            "pesos.html": "pesos", "metodo-101010.html": "101010", "inversao.html": "inversao"
+        };
+        if (pagina === "analise.html") return parametros.get("tecnica") === "gut" ? "gut" : "pros-contras";
+        return mapa[pagina] || "contexto";
+    }
+
+    /**
      * Atualiza o indicador e o aviso da revisão com o estado real da decisão.
      *
      * @param {{etapaAtual: number, status: string, etapaPagina: number, decisaoId: string}} estado dados da decisão aberta
@@ -185,6 +249,7 @@
             )));
         }
         if (aviso) aviso.hidden = !revisao;
+        avisarConcluida(lista, estado.status === "CONCLUIDA", String(estado.decisaoId));
         return { revisao };
     }
 

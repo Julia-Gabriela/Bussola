@@ -11,15 +11,15 @@
     <link rel="stylesheet" href="../style/home.css">
     <link rel="stylesheet" href="../style/fluxo-decisao.css">
     <link rel="stylesheet" href="../style/metodo-101010.css">
-    <link rel="stylesheet" href="../style/revisao-etapa.css">
+    <link rel="stylesheet" href="../style/revisao-etapa.css?v=3">
     <link rel="stylesheet" href="../style/confirmacao-etapa.css">
     <script src="../js/shared/alteracoes-nao-salvas.js" defer></script>
     <script src="../js/shared/confirmacao-etapa.js" defer></script>
-    <script src="../js/shared/revisao-etapa.js" defer></script>
+    <script src="../js/shared/revisao-etapa.js?v=3" defer></script>
     <script src="../js/pages/metodo-101010-integracoes.js" defer></script>
-    <script src="../js/pages/metodo-101010.js" type="module"></script>
+    <script src="../js/pages/metodo-101010.js?v=2" type="module"></script>
     <link rel="stylesheet" href="../style/fluxo-compacto.css">
-    <link rel="stylesheet" href="../style/tecnicas-nav.css">
+    <link rel="stylesheet" href="../style/tecnicas-nav.css?v=2">
 </head>
 <body class="home-page fluxo-page metodo-page">
     <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
@@ -119,11 +119,13 @@
                 <div class="reflexoes-rodape"><p id="progresso">0 de 6 reflexões preenchidas</p><p id="situacao"></p></div>
                 <div class="fluxo-acoes" id="acoes-edicao">
                     <button type="submit" id="salvar-reflexoes" class="fluxo-salvar">Salvar para depois</button>
-                    <button type="submit" id="ver-resultado" class="fluxo-proxima"><span>Ver resultado</span><img src="../assets/images/metodo-101010/resultado.svg" width="17" height="17" alt=""></button>
+                    <button type="submit" id="proxima-inversao" class="fluxo-proxima"><span>Próxima: Inversão</span><img src="../assets/images/opcoes/proxima.svg" width="17" height="17" alt=""></button>
                 </div>
             </fieldset>
         </form>
-        <button type="button" id="resultado-consulta" class="fluxo-proxima" hidden>Ver resultado</button>
+        <div class="fluxo-acoes" id="acoes-consulta" hidden>
+            <button type="button" id="proxima-consulta" class="fluxo-proxima"><span>Próxima: Inversão</span><img src="../assets/images/opcoes/proxima.svg" width="17" height="17" alt=""></button>
+        </div>
     </div>
 </main>
 <dialog class="confirmacao-etapa" id="confirmar-tecnica" aria-labelledby="confirmar-titulo" aria-describedby="confirmar-texto">

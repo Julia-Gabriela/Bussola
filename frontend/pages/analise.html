@@ -10,15 +10,15 @@
     <link rel="stylesheet" href="../style/landing-page.css">
     <link rel="stylesheet" href="../style/home.css">
     <link rel="stylesheet" href="../style/fluxo-decisao.css">
-    <link rel="stylesheet" href="../style/analise.css">
-    <link rel="stylesheet" href="../style/revisao-etapa.css">
+    <link rel="stylesheet" href="../style/analise.css?v=5">
+    <link rel="stylesheet" href="../style/revisao-etapa.css?v=3">
     <link rel="stylesheet" href="../style/confirmacao-etapa.css">
     <script src="../js/shared/alteracoes-nao-salvas.js" defer></script>
     <script src="../js/shared/confirmacao-etapa.js" defer></script>
-    <script src="../js/shared/revisao-etapa.js" defer></script>
-    <script src="../js/pages/analise.js" type="module"></script>
+    <script src="../js/shared/revisao-etapa.js?v=3" defer></script>
+    <script src="../js/pages/analise.js?v=5" type="module"></script>
     <link rel="stylesheet" href="../style/fluxo-compacto.css">
-    <link rel="stylesheet" href="../style/tecnicas-nav.css">
+    <link rel="stylesheet" href="../style/tecnicas-nav.css?v=2">
 </head>
 <body class="home-page fluxo-page analise-page">
     <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
@@ -59,29 +59,58 @@
 <a id="abrir-inversao" href="inversao.html"><span>Inversão</span><small>Antifrágil</small></a>
 </nav>
 <section id="painel-pros" aria-labelledby="aba-pros">
-<label for="alternativa">Alternativa</label><select id="alternativa"></select>
-<form id="argumento-form"><fieldset id="argumento-campos" disabled><legend id="argumento-titulo">Adicionar pró ou contra</legend>
-<div class="argumento-entrada"><div><label for="tipo">Tipo</label><select id="tipo"><option value="PRO">Pró</option><option value="CONTRA">Contra</option></select></div>
-<div class="descricao-entrada"><label for="argumento-descricao">Descrição</label><input id="argumento-descricao" required maxlength="300" autocomplete="off"></div>
-<button type="submit" class="fluxo-proxima">Salvar</button><button type="button" class="fluxo-salvar" id="cancelar-argumento">Cancelar</button></div>
+<p class="analise-ajuda">Registre os pontos positivos e negativos de cada alternativa para comparar melhor suas possibilidades.</p>
+<section class="argumentos-alternativa" data-letra="a" aria-labelledby="argumentos-nome-a">
+<h2 class="argumentos-titulo"><span class="argumentos-letra" aria-hidden="true">A</span><span id="argumentos-nome-a">Alternativa A — <span data-nome-opcao>…</span></span></h2>
+<div class="argumentos-grade">
+<section class="argumentos-card lista-pros" data-tipo="PRO" aria-labelledby="titulo-pros-a"><h3 id="titulo-pros-a">Prós</h3><ul></ul><div class="argumentos-slot"></div><button type="button" class="argumentos-adicionar"><span aria-hidden="true">+ </span>Adicionar pró<span class="fluxo-sr-only"> na alternativa A</span></button></section>
+<section class="argumentos-card lista-contras" data-tipo="CONTRA" aria-labelledby="titulo-contras-a"><h3 id="titulo-contras-a">Contras</h3><ul></ul><div class="argumentos-slot"></div><button type="button" class="argumentos-adicionar"><span aria-hidden="true">+ </span>Adicionar contra<span class="fluxo-sr-only"> na alternativa A</span></button></section>
+</div>
+</section>
+<section class="argumentos-alternativa" data-letra="b" aria-labelledby="argumentos-nome-b">
+<h2 class="argumentos-titulo"><span class="argumentos-letra" aria-hidden="true">B</span><span id="argumentos-nome-b">Alternativa B — <span data-nome-opcao>…</span></span></h2>
+<div class="argumentos-grade">
+<section class="argumentos-card lista-pros" data-tipo="PRO" aria-labelledby="titulo-pros-b"><h3 id="titulo-pros-b">Prós</h3><ul></ul><div class="argumentos-slot"></div><button type="button" class="argumentos-adicionar"><span aria-hidden="true">+ </span>Adicionar pró<span class="fluxo-sr-only"> na alternativa B</span></button></section>
+<section class="argumentos-card lista-contras" data-tipo="CONTRA" aria-labelledby="titulo-contras-b"><h3 id="titulo-contras-b">Contras</h3><ul></ul><div class="argumentos-slot"></div><button type="button" class="argumentos-adicionar"><span aria-hidden="true">+ </span>Adicionar contra<span class="fluxo-sr-only"> na alternativa B</span></button></section>
+</div>
+</section>
+<div id="retorno-geral-pros"><p class="analise-feedback" id="feedback-pros" role="status" aria-live="polite"></p></div>
+<form id="argumento-form" class="argumento-form" hidden><fieldset id="argumento-campos" disabled>
+<label for="argumento-descricao"><span id="argumento-rotulo">Novo pró</span><span class="fluxo-sr-only" id="argumento-alternativa"></span></label>
+<input id="argumento-descricao" required maxlength="300" autocomplete="off">
+<div class="argumento-botoes"><button type="submit" class="fluxo-proxima" id="salvar-argumento">Salvar</button><button type="button" class="fluxo-salvar" id="cancelar-argumento">Cancelar</button></div>
 </fieldset></form>
-<div class="argumentos-grade"><section class="lista-pros"><h2>Prós</h2><ul id="pros"></ul></section><section class="lista-contras"><h2>Contras</h2><ul id="contras"></ul></section></div>
 </section>
 <section id="painel-gut" aria-labelledby="aba-gut" hidden>
-<p>Compare os fatores da decisão. Dê notas inteiras de 1 a 5 para Gravidade, Urgência e Tendência. A prioridade é G × U × T.</p>
+<p class="analise-ajuda">A Matriz GUT ajuda a priorizar os problemas ou fatores que podem afetar sua decisão. Dê uma nota de 1 a 5 em cada critério: quanto maior o resultado de G × U × T, maior a prioridade.</p>
 <form id="gut-form"><fieldset id="gut-campos" disabled><legend id="gut-titulo">Adicionar fator</legend>
-<label for="gut-descricao">Fator</label><input id="gut-descricao" required maxlength="200" autocomplete="off">
+<label for="gut-descricao">Fator</label><input id="gut-descricao" required maxlength="200" autocomplete="off" placeholder="Ex.: Pouco tempo livre para estudar">
 <div class="gut-entrada">
-<label>Gravidade<select id="gravidade" required><option value="">Selecione</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
-<label>Urgência<select id="urgencia" required><option value="">Selecione</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
-<label>Tendência<select id="tendencia" required><option value="">Selecione</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
-<button type="submit" class="fluxo-proxima">Salvar fator</button><button type="button" class="fluxo-salvar" id="cancelar-gut">Cancelar</button></div>
+<div><label for="gravidade">Gravidade</label><small class="analise-dica" id="dica-gravidade">Intensidade do impacto do problema.</small>
+<select id="gravidade" required aria-describedby="dica-gravidade"><option value="">Selecione</option><option value="1">1 — Sem gravidade</option><option value="2">2 — Pouco grave</option><option value="3">3 — Grave</option><option value="4">4 — Muito grave</option><option value="5">5 — Extremamente grave</option></select></div>
+<div><label for="urgencia">Urgência</label><small class="analise-dica" id="dica-urgencia">Necessidade de agir rapidamente.</small>
+<select id="urgencia" required aria-describedby="dica-urgencia"><option value="">Selecione</option><option value="1">1 — Pode esperar</option><option value="2">2 — Pouco urgente</option><option value="3">3 — Urgente</option><option value="4">4 — Muito urgente</option><option value="5">5 — Agir imediatamente</option></select></div>
+<div><label for="tendencia">Tendência</label><small class="analise-dica" id="dica-tendencia">Possibilidade de piorar com o tempo.</small>
+<select id="tendencia" required aria-describedby="dica-tendencia"><option value="">Selecione</option><option value="1">1 — Não deve piorar</option><option value="2">2 — Piora a longo prazo</option><option value="3">3 — Piora a médio prazo</option><option value="4">4 — Piora em pouco tempo</option><option value="5">5 — Piora rapidamente</option></select></div>
+<div class="gut-botoes"><button type="submit" class="fluxo-proxima">Salvar fator</button><button type="button" class="fluxo-salvar" id="cancelar-gut">Cancelar</button></div></div>
+<p class="analise-feedback" id="feedback-gut" role="status" aria-live="polite"></p>
 </fieldset></form>
-<p>Fatores ordenados da maior para a menor prioridade.</p><div class="gut-tabela"><table><caption class="fluxo-sr-only">Fatores da matriz GUT</caption><thead><tr><th>Fator</th><th>G</th><th>U</th><th>T</th><th>GUT</th><th>Ações</th></tr></thead><tbody id="fatores"></tbody></table></div>
+<p class="gut-legenda"><strong>Maior GUT = maior prioridade.</strong> Fatores ordenados do mais prioritário para o menos prioritário. <span>G: Gravidade · U: Urgência · T: Tendência · GUT: G × U × T (1 a 125)</span></p>
+<div class="gut-tabela"><table><caption class="fluxo-sr-only">Fatores da matriz GUT, do mais prioritário para o menos prioritário</caption><thead><tr><th scope="col">Fator</th><th scope="col"><abbr title="Gravidade">G</abbr></th><th scope="col"><abbr title="Urgência">U</abbr></th><th scope="col"><abbr title="Tendência">T</abbr></th><th scope="col"><abbr title="Prioridade: G × U × T">GUT</abbr></th><th scope="col">Ações</th></tr></thead><tbody id="fatores"></tbody></table></div>
 </section>
-<p class="analise-pendente">Conclua Prós e Contras, Matriz GUT, 10/10/10 e Inversão para liberar seu resultado.</p>
-<a class="fluxo-proxima" id="abrir-resultado" href="resultado.html">Ver resultado comparativo</a>
-<a class="fluxo-salvar" href="home.html">Voltar ao início</a>
+<section class="analise-pendente" aria-labelledby="pendencias-titulo">
+<h2 id="pendencias-titulo">Para liberar o resultado comparativo</h2>
+<ul id="pendencias">
+<li data-requisito="pros"><span class="pendencia-marca" aria-hidden="true"></span><span><strong>Prós e Contras:</strong> <span class="pendencia-texto"></span></span></li>
+<li data-requisito="gut"><span class="pendencia-marca" aria-hidden="true"></span><span><strong>Matriz GUT:</strong> <span class="pendencia-texto"></span></span></li>
+<li data-requisito="externo"><span class="pendencia-marca" aria-hidden="true"></span><span><strong>Técnica 10/10/10:</strong> preencha as seis reflexões e conclua pelo botão “Próxima: Inversão”.</span></li>
+<li data-requisito="externo"><span class="pendencia-marca" aria-hidden="true"></span><span><strong>Inversão:</strong> preencha as quatro reflexões e conclua pelo botão “Ver resultado comparativo”.</span></li>
+</ul>
+</section>
+<div class="fluxo-acoes" id="acoes-edicao">
+<button type="button" class="fluxo-salvar" id="salvar-depois">Salvar para depois</button>
+<button type="button" class="fluxo-proxima" id="proxima-tecnica"><span id="proxima-texto">Próxima: Matriz GUT</span><img src="../assets/images/opcoes/proxima.svg" alt="" width="17" height="17"></button>
+</div>
 </div></main>
 <dialog class="home-dialog" id="aviso" aria-labelledby="aviso-titulo"><h2 id="aviso-titulo"></h2><p id="aviso-texto"></p><form method="dialog"><button class="home-primary">Entendi</button></form></dialog>
 <dialog class="home-dialog" id="exclusao" aria-labelledby="exclusao-titulo"><h2 id="exclusao-titulo">Excluir este registro?</h2><p id="exclusao-texto"></p><div class="fluxo-acoes"><button class="fluxo-salvar" id="cancelar-exclusao" type="button">Cancelar</button><button class="fluxo-proxima" id="excluir" type="button">Excluir</button></div></dialog>
