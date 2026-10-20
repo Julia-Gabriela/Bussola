@@ -11,16 +11,16 @@
     <link rel="stylesheet" href="../style/home.css">
     <link rel="stylesheet" href="../style/fluxo-decisao.css">
     <link rel="stylesheet" href="../style/metodo-101010.css">
-    <link rel="stylesheet" href="../style/revisao-etapa.css">
+    <link rel="stylesheet" href="../style/revisao-etapa.css?v=3">
     <link rel="stylesheet" href="../style/confirmacao-etapa.css">
     <script src="../js/shared/alteracoes-nao-salvas.js" defer></script>
     <script src="../js/shared/confirmacao-etapa.js" defer></script>
-    <script src="../js/shared/revisao-etapa.js" defer></script>
+    <script src="../js/shared/revisao-etapa.js?v=3" defer></script>
     <script src="../js/pages/inversao-integracoes.js" defer></script>
-    <script src="../js/pages/inversao.js" type="module"></script>
+    <script src="../js/pages/inversao.js?v=5" type="module"></script>
     <link rel="stylesheet" href="../style/fluxo-compacto.css">
-    <link rel="stylesheet" href="../style/tecnicas-nav.css">
-    <link rel="stylesheet" href="../style/inversao.css">
+    <link rel="stylesheet" href="../style/tecnicas-nav.css?v=3">
+    <link rel="stylesheet" href="../style/inversao.css?v=2">
 </head>
 <body class="home-page fluxo-page metodo-page inversao-page">
     <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
@@ -67,57 +67,69 @@
         </nav>
         <form id="reflexoes-form" novalidate>
             <fieldset id="reflexoes-campos" disabled>
-                <legend class="fluxo-sr-only">Reflexões do técnica de Inversão</legend>
+                <legend class="fluxo-sr-only">Reflexões da técnica de Inversão</legend>
                 <div class="reflexoes-painel">
-                    <p class="reflexoes-pergunta">Em vez de “como dar certo?”, pergunte: <strong>“o que garantiria o fracasso?”</strong> — depois pense em como evitar isso.</p>
-                    <div class="inversao-opcoes" role="tablist" aria-label="Alternativa em análise">
-                        <button type="button" role="tab" id="selecionar-a" aria-controls="opcao-a" aria-selected="true"><span class="inversao-letra">A</span><span data-nome="a">Opção A</span><small id="progresso-a">0 de 2</small></button>
-                        <button type="button" role="tab" id="selecionar-b" aria-controls="opcao-b" aria-selected="false" tabindex="-1"><span class="inversao-letra">B</span><span data-nome="b">Opção B</span><small id="progresso-b">0 de 2</small></button>
-                    </div>
+                    <p class="reflexoes-pergunta">Para cada alternativa, imagine <strong>o que poderia dar errado</strong> e pense em <strong>ações que ajudariam a evitar esses problemas</strong>.</p>
 
-                    <section id="opcao-a" role="tabpanel" aria-labelledby="selecionar-a" >
+                    <section class="inversao-alternativa alternativa-a" aria-labelledby="titulo-a">
+                        <h2 class="inversao-titulo"><span class="inversao-letra" aria-hidden="true">A</span><span id="titulo-a" class="inversao-nome">Alternativa A — <span data-nome="a">…</span></span><small id="progresso-a">0 de 2 preenchidos</small></h2>
                         <div class="inversao-par">
                             <div class="inversao-campo inversao-fracassos">
-                                <label for="fracassos-a">O que poderia dar errado com esta escolha?</label>
+                                <label for="fracassos-a">O que poderia dar errado com esta escolha?<span class="fluxo-sr-only"> (alternativa A)</span></label>
                                 <p id="fracassos-a-ajuda">Pense em atitudes, omissões ou situações que levariam a um resultado ruim.</p>
-                                <textarea id="fracassos-a" rows="6" maxlength="16000" placeholder="Escreva os possíveis problemas, um por linha." aria-describedby="fracassos-a-ajuda fracassos-a-erro"></textarea>
+                                <textarea id="fracassos-a" rows="5" maxlength="16000" placeholder="Ex.: Não conseguir me adaptar à nova rotina." aria-describedby="fracassos-a-ajuda fracassos-a-erro"></textarea>
                                 <p class="fluxo-erro-campo" id="fracassos-a-erro"></p>
                             </div>
                             <div class="inversao-campo inversao-prevencoes">
-                                <label for="prevencoes-a">Como evitar esses fracassos?</label>
+                                <label for="prevencoes-a">Como evitar esses fracassos?<span class="fluxo-sr-only"> (alternativa A)</span></label>
                                 <p id="prevencoes-a-ajuda">Para cada problema, registre uma ação concreta que ajudaria a preveni-lo.</p>
-                                <textarea id="prevencoes-a" rows="6" maxlength="16000" placeholder="Escreva o que você poderia fazer, um por linha." aria-describedby="prevencoes-a-ajuda prevencoes-a-erro"></textarea>
+                                <textarea id="prevencoes-a" rows="5" maxlength="16000" placeholder="Ex.: Conversar com quem já passou por essa mudança." aria-describedby="prevencoes-a-ajuda prevencoes-a-erro"></textarea>
                                 <p class="fluxo-erro-campo" id="prevencoes-a-erro"></p>
                             </div>
                         </div>
                     </section>
 
-                    <section id="opcao-b" role="tabpanel" aria-labelledby="selecionar-b" hidden>
+                    <section class="inversao-alternativa alternativa-b" aria-labelledby="titulo-b">
+                        <h2 class="inversao-titulo"><span class="inversao-letra" aria-hidden="true">B</span><span id="titulo-b" class="inversao-nome">Alternativa B — <span data-nome="b">…</span></span><small id="progresso-b">0 de 2 preenchidos</small></h2>
                         <div class="inversao-par">
                             <div class="inversao-campo inversao-fracassos">
-                                <label for="fracassos-b">O que poderia dar errado com esta escolha?</label>
+                                <label for="fracassos-b">O que poderia dar errado com esta escolha?<span class="fluxo-sr-only"> (alternativa B)</span></label>
                                 <p id="fracassos-b-ajuda">Pense em atitudes, omissões ou situações que levariam a um resultado ruim.</p>
-                                <textarea id="fracassos-b" rows="6" maxlength="16000" placeholder="Escreva os possíveis problemas, um por linha." aria-describedby="fracassos-b-ajuda fracassos-b-erro"></textarea>
+                                <textarea id="fracassos-b" rows="5" maxlength="16000" placeholder="Ex.: Ficar estagnado por medo de mudar." aria-describedby="fracassos-b-ajuda fracassos-b-erro"></textarea>
                                 <p class="fluxo-erro-campo" id="fracassos-b-erro"></p>
                             </div>
                             <div class="inversao-campo inversao-prevencoes">
-                                <label for="prevencoes-b">Como evitar esses fracassos?</label>
+                                <label for="prevencoes-b">Como evitar esses fracassos?<span class="fluxo-sr-only"> (alternativa B)</span></label>
                                 <p id="prevencoes-b-ajuda">Para cada problema, registre uma ação concreta que ajudaria a preveni-lo.</p>
-                                <textarea id="prevencoes-b" rows="6" maxlength="16000" placeholder="Escreva o que você poderia fazer, um por linha." aria-describedby="prevencoes-b-ajuda prevencoes-b-erro"></textarea>
+                                <textarea id="prevencoes-b" rows="5" maxlength="16000" placeholder="Ex.: Definir uma meta de crescimento para os próximos meses." aria-describedby="prevencoes-b-ajuda prevencoes-b-erro"></textarea>
                                 <p class="fluxo-erro-campo" id="prevencoes-b-erro"></p>
                             </div>
                         </div>
                     </section>
-                    <p class="reflexoes-ajuda">Explore as duas alternativas. Trocar entre A e B mantém o que você digitou; use “Salvar para depois” para guardar suas respostas.</p>
+                    <p class="reflexoes-ajuda">Você pode preencher aos poucos: use “Salvar para depois” para guardar as respostas. Nada é salvo automaticamente.</p>
                 </div>
                 <div class="reflexoes-rodape"><p id="progresso">0 de 4 reflexões preenchidas</p><p id="situacao"></p></div>
+                <section class="analise-pendente" id="requisitos" aria-labelledby="requisitos-titulo" hidden>
+                    <h2 id="requisitos-titulo">Para liberar o resultado comparativo</h2>
+                    <ul id="requisitos-lista">
+                        <li data-requisito="pros"><span class="pendencia-marca" aria-hidden="true"></span><span><strong>Prós e Contras:</strong> <span class="pendencia-texto">verificando…</span></span></li>
+                        <li data-requisito="gut"><span class="pendencia-marca" aria-hidden="true"></span><span><strong>Matriz GUT:</strong> <span class="pendencia-texto">verificando…</span></span></li>
+                        <li data-requisito="101010"><span class="pendencia-marca" aria-hidden="true"></span><span><strong>Técnica 10/10/10:</strong> <span class="pendencia-texto">verificando…</span></span></li>
+                        <li data-requisito="inversao"><span class="pendencia-marca" aria-hidden="true"></span><span><strong>Inversão:</strong> <span class="pendencia-texto"></span></span></li>
+                        <li data-requisito="avaliacoes"><span class="pendencia-marca" aria-hidden="true"></span><span><strong>Avaliações dos critérios:</strong> <span class="pendencia-texto">verificando…</span></span></li>
+                    </ul>
+                    <p class="resultado-bloqueio" id="resultado-bloqueio" role="alert"></p>
+                    <button type="button" class="fluxo-salvar revisar-avaliacoes" id="revisar-avaliacoes" hidden>Revisar avaliações</button>
+                </section>
                 <div class="fluxo-acoes" id="acoes-edicao">
                     <button type="submit" id="salvar-reflexoes" class="fluxo-salvar">Salvar para depois</button>
-                    <button type="submit" id="ver-resultado" class="fluxo-proxima"><span>Ver resultado</span><img src="../assets/images/metodo-101010/resultado.svg" width="17" height="17" alt=""></button>
+                    <button type="submit" id="ver-resultado" class="fluxo-proxima"><span>Ver resultado comparativo</span><img src="../assets/images/metodo-101010/resultado.svg" width="17" height="17" alt=""></button>
                 </div>
             </fieldset>
         </form>
-        <button type="button" id="resultado-consulta" class="fluxo-proxima" hidden>Ver resultado</button>
+        <div class="fluxo-acoes" id="acoes-consulta" hidden>
+            <button type="button" id="resultado-consulta" class="fluxo-proxima"><span>Ver resultado comparativo</span><img src="../assets/images/metodo-101010/resultado.svg" width="17" height="17" alt=""></button>
+        </div>
     </div>
 </main>
 <dialog class="confirmacao-etapa" id="confirmar-tecnica" aria-labelledby="confirmar-titulo" aria-describedby="confirmar-texto">

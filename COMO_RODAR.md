@@ -5,7 +5,7 @@
 Se você já configurou o projeto neste computador, faça só estes passos:
 
 1. **MySQL:** precisa estar ligado. No PowerShell, `Get-Service *mysql*` deve mostrar `Running`. Se estiver parado, inicie o serviço pelo aplicativo Serviços do Windows.
-2. **Backend no IntelliJ:** abra o projeto, selecione **BussolaApplication** no topo e clique em **▶**. Após atualizar o código, sincronize **pom.xml → Maven → Sync Project** e reinicie a aplicação. Aguarde **Started BussolaApplication** e a porta **8080**. Deixe rodando.
+2. **Backend no IntelliJ:** abra o projeto, selecione **BussolaApplication** no topo e clique em **▶**. Após atualizar o código, sincronize **pom.xml → Maven → Sync Project** e reinicie a aplicação. Aguarde **Started BussolaApplication** e a porta **8080**. Deixe rodando. **Sem IntelliJ** (Cursor, VS Code ou só PowerShell): siga "Como executar o Bússola sem IntelliJ IDEA", mais abaixo.
 3. **Frontend:** abra um PowerShell na pasta raiz do projeto e execute:
 
 ```powershell
@@ -26,7 +26,7 @@ Se o PowerShell bloquear o script, use este comando na raiz:
 python -m http.server 8765 --directory frontend
 ```
 
-**Para parar:** botão ■ no IntelliJ e **Ctrl + C** no terminal do frontend. Fechar a aba do navegador não desliga os servidores.
+**Para parar:** botão ■ no IntelliJ (ou **Ctrl + C** no terminal do backend, se ele foi iniciado pelo PowerShell) e **Ctrl + C** no terminal do frontend. Fechar a aba do navegador não desliga os servidores.
 
 ## Links úteis
 
@@ -49,6 +49,7 @@ Para conferir o layout, teste uma janela de computador e uma tela estreita. Os c
 | Método 10–10–10 | `http://127.0.0.1:8765/pages/metodo-101010.html?decisaoId=ID_DA_DECISAO` (etapa interna 6 — Análise) |
 | Inversão | `http://127.0.0.1:8765/pages/inversao.html?decisaoId=ID_DA_DECISAO` (etapa interna 6 — Análise) |
 | Resultado comparativo | `http://127.0.0.1:8765/pages/resultado.html?decisaoId=ID_DA_DECISAO` (após concluir as quatro técnicas) |
+| Consulta de decisão finalizada | `http://127.0.0.1:8765/pages/consulta.html?decisaoId=ID_DA_DECISAO` (somente decisões **Concluídas**; somente leitura) |
 | Sobre o projeto | http://127.0.0.1:8765/pages/sobre.html |
 | Swagger: testar a API | http://localhost:8080/swagger-ui/index.html |
 
@@ -93,6 +94,199 @@ if (-not $env:JWT_SECRET) {
 Os padrões são banco `bussola` em `localhost:3306` e usuário `root`. Se forem diferentes, configure também `DB_URL` e `DB_USERNAME`. Não coloque senhas ou tokens no código, Git ou prints. A chave JWT não é a senha do banco; trocá-la invalida os tokens anteriores.
 
 Depois, siga **Para ligar no dia a dia**, no início deste arquivo.
+
+## Como executar o Bússola sem IntelliJ IDEA
+
+Este roteiro usa só o **PowerShell** (pelo terminal do Cursor, do VS Code ou do próprio Windows). Não precisa de IntelliJ nem de Docker: o banco é o MySQL instalado no computador.
+
+O Bússola tem três partes, e as três precisam estar ligadas ao mesmo tempo para usar as telas:
+
+| Parte | O que é | Porta | Onde fica |
+| --- | --- | --- | --- |
+| Banco | MySQL (serviço do Windows) | 3306 | instalado no computador |
+| Backend | API Java + Spring Boot | 8080 | pasta `backend` |
+| Frontend | páginas HTML/CSS/JS servidas pelo Python | 8765 | pasta `frontend` |
+
+### 1. Pré-requisitos
+
+| Programa | Versão | Como conferir no PowerShell | Observação |
+| --- | --- | --- | --- |
+| Java (JDK) | **25** (o `pom.xml` define `java.version` 25) | `java -version` deve mostrar `25` | Recomendado: Eclipse Temurin 25. |
+| MySQL Server | **8.0** (validado com 8.0.46 Community) | `Get-Service MySQL80` deve mostrar `Running` | O nome do serviço pode variar; `Get-Service *mysql*` lista todos. |
+| Python | 3 (validado com 3.11) | `python --version` | Usado só para servir o frontend. |
+| Maven | **não precisa instalar** | — | O projeto traz o *Maven Wrapper* (`backend\mvnw.cmd`), que baixa sozinho o Maven 3.9.16 na primeira execução (precisa de internet nessa primeira vez). |
+
+O Maven Wrapper usa o Java indicado em `JAVA_HOME` ou, se ela não existir, o `java` do PATH. Para conferir:
+
+```powershell
+java -version
+$env:JAVA_HOME
+cd backend
+.\mvnw.cmd -v
+```
+
+O último comando deve mostrar `Apache Maven 3.9.16` e `Java version: 25...`. Se mostrar outra versão do Java, veja "Problemas comuns" abaixo.
+
+**Como abrir o terminal no Cursor ou VS Code:** abra a pasta do projeto (**File → Open Folder** → pasta `Bussola`), depois **Terminal → New Terminal** (ou **Ctrl + '**). O terminal abre já na pasta raiz do projeto. Confira se é **PowerShell** no canto do painel do terminal; se for outro, escolha PowerShell na setinha ao lado do **+**. Para abrir um segundo terminal, clique no **+**.
+
+### 2. Configurar o banco de dados
+
+1. **Ligar o MySQL.** Normalmente o serviço inicia junto com o Windows. Confira:
+
+    ```powershell
+    Get-Service MySQL80
+    Test-NetConnection 127.0.0.1 -Port 3306
+    ```
+
+    O primeiro deve mostrar `Running`; o segundo, `TcpTestSucceeded : True`. Se estiver parado, abra o aplicativo **Serviços** do Windows (tecla Windows → digite "Serviços"), clique com o botão direito em **MySQL80** → **Iniciar**. Pelo terminal, também funciona `Start-Service MySQL80`, mas só em um PowerShell aberto **como administrador**.
+
+2. **Banco usado:** `bussola`, em `localhost:3306`, com o usuário `root` por padrão (veja `backend/src/main/resources/application.properties`).
+
+3. **Criar o banco (só na primeira vez).** O backend **não** cria o banco sozinho; ele precisa existir antes. No MySQL Workbench, execute:
+
+    ```sql
+    CREATE DATABASE IF NOT EXISTS bussola CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+    ```
+
+    Sem o Workbench, dá para usar o cliente que vem com o MySQL (ele pede a senha do MySQL e não a mostra):
+
+    ```powershell
+    & "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p -e "CREATE DATABASE IF NOT EXISTS bussola CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+    ```
+
+4. **Tabelas:** não crie tabelas nem rode scripts SQL manualmente. As tabelas são criadas e atualizadas pelo **Flyway** automaticamente toda vez que o backend inicia, usando os arquivos de `backend/src/main/resources/db/migration` (V1 a V5). Nunca edite uma migration que já foi aplicada.
+
+### 3. Configurar as variáveis de ambiente
+
+O backend lê estas variáveis (definidas em `application.properties`):
+
+| Variável | Obrigatória? | Padrão | Para que serve |
+| --- | --- | --- | --- |
+| `DB_PASSWORD` | **sim** | — | Senha do usuário do MySQL. |
+| `JWT_SECRET` | **sim** | — | Chave que assina os logins (Base64 de pelo menos 32 bytes). Não é a senha do banco. |
+| `DB_URL` | não | `jdbc:mysql://localhost:3306/bussola` | Só mude se o banco tiver outro nome, host ou porta. |
+| `DB_USERNAME` | não | `root` | Só mude se usar outro usuário do MySQL. |
+
+**`JWT_SECRET` (uma vez por computador).** Use o bloco de "Primeira configuração neste computador", passo 3: ele gera uma chave aleatória e a salva no usuário do Windows sem exibi-la. Depois disso, todo terminal **novo** já recebe `JWT_SECRET`. Terminais que já estavam abertos não enxergam a variável: feche e abra o terminal (ou o Cursor/VS Code).
+
+**`DB_PASSWORD` (a cada terminal novo).** Por segurança, não salve a senha do MySQL no Windows nem em arquivos do projeto. Digite-a no terminal que vai rodar o backend; o texto fica oculto:
+
+```powershell
+$senhaBanco = Read-Host "Senha do MySQL" -AsSecureString
+$env:DB_PASSWORD = [System.Net.NetworkCredential]::new("", $senhaBanco).Password
+```
+
+Variáveis definidas com `$env:` valem **só para aquele terminal**. Ao fechar o terminal, abrir outro ou reiniciar o Cursor/VS Code, defina `DB_PASSWORD` de novo. Se o seu banco não usar os padrões, defina também, no mesmo terminal:
+
+```powershell
+$env:DB_URL = "jdbc:mysql://localhost:3306/bussola"
+$env:DB_USERNAME = "SEU_USUARIO_DO_MYSQL"
+```
+
+Para conferir sem mostrar valores:
+
+```powershell
+"DB_PASSWORD definida: " + [bool]$env:DB_PASSWORD
+"JWT_SECRET definida: " + [bool]$env:JWT_SECRET
+```
+
+Não coloque senhas reais em `application.properties`, no Git, em prints ou neste arquivo.
+
+### 4. Executar o backend pelo terminal
+
+No **primeiro terminal**, a partir da pasta raiz `Bussola`:
+
+```powershell
+cd backend
+$senhaBanco = Read-Host "Senha do MySQL" -AsSecureString
+$env:DB_PASSWORD = [System.Net.NetworkCredential]::new("", $senhaBanco).Password
+.\mvnw.cmd spring-boot:run
+```
+
+1. Na primeira vez, o wrapper baixa o Maven e as dependências; pode demorar alguns minutos.
+2. Funcionou quando aparecerem as linhas `Tomcat started on port 8080 (http)` e `Started BussolaApplication in ... seconds`. O backend fica em **http://localhost:8080** (teste aberto: **http://localhost:8080/swagger-ui/index.html**).
+3. As migrations pendentes do Flyway são aplicadas nesse momento, automaticamente.
+4. **Deixe este terminal aberto** enquanto usa o sistema. O terminal fica "ocupado" com o log do backend; isso é normal.
+5. **Para encerrar:** clique no terminal e pressione **Ctrl + C**. Se aparecer `Deseja finalizar o arquivo em lotes (S/N)?`, digite `S` e Enter.
+
+Se terminar com `BUILD FAILURE` ou `APPLICATION FAILED TO START`, o backend **não** está rodando: leia a mensagem e veja "Problemas comuns".
+
+### 5. Executar o frontend
+
+Abra um **segundo terminal** (botão **+** no painel do terminal). Ele deve estar na pasta **raiz** `Bussola` (não em `backend`). Se não estiver, use `cd ..` ou `cd` até a raiz. Execute:
+
+```powershell
+.\rodar-frontend.ps1
+```
+
+O script entra em `frontend`, roda `python -m http.server 8765` e mostra os links úteis. Abra no navegador:
+
+- **http://127.0.0.1:8765/pages/login.html** (login), ou
+- **http://127.0.0.1:8765/pages/index.html** (página inicial).
+
+Use sempre o endereço com a porta **8765**; abrir o HTML com duplo clique (`file:///`) não funciona com o backend. **Deixe este terminal aberto também.** Para encerrar: **Ctrl + C** nesse terminal.
+
+Backend e frontend rodam em **terminais separados**, ao mesmo tempo. Fechar a aba do navegador não desliga nenhum dos dois.
+
+### 6. Ordem de inicialização (resumo)
+
+1. **MySQL ligado:** `Get-Service MySQL80` → `Running`.
+2. **Terminal 1 (backend):** `cd backend`, definir `DB_PASSWORD` (e `JWT_SECRET`, se ainda não estiver salva no Windows).
+3. **Terminal 1:** `.\mvnw.cmd spring-boot:run` e esperar `Started BussolaApplication`.
+4. **Terminal 2 (frontend), na raiz:** `.\rodar-frontend.ps1`.
+5. **Navegador:** http://127.0.0.1:8765/pages/login.html. Entre com um usuário cadastrado no Bússola (a senha do MySQL não serve para login).
+
+O frontend até abre sem o backend (dá para ver o layout), mas login, cadastro e qualquer tela com dados exigem o backend, e o backend exige o MySQL.
+
+### 7. Executar os testes sem IntelliJ
+
+Todos os comandos abaixo rodam na pasta `backend`:
+
+```powershell
+cd backend
+.\mvnw.cmd test
+```
+
+- Espere `BUILD SUCCESS` e o resumo `Tests run: N, Failures: 0, Errors: 0, Skipped: ...`.
+- Quase todos os testes usam repositórios simulados e **não** precisam do MySQL.
+- A exceção é `BussolaApplicationTests` (`contextLoads`): ele sobe a aplicação inteira, conecta ao MySQL real, aplica migrations pendentes e confere se as entidades batem com as tabelas. Ele só roda quando `DB_PASSWORD` e `JWT_SECRET` estão definidas **nesse terminal**; sem elas, aparece como `Skipped: 1` no resumo (não é falha). Para rodá-lo, defina `DB_PASSWORD` como no passo 3, com o MySQL ligado, e execute:
+
+    ```powershell
+    .\mvnw.cmd "-Dtest=BussolaApplicationTests" test
+    ```
+
+**Uma classe específica** (vírgula separa várias):
+
+```powershell
+.\mvnw.cmd "-Dtest=ResultadoServiceTest" test
+.\mvnw.cmd "-Dtest=ResultadoServiceTest,HistoricoControllerTest" test
+```
+
+**Só conferir se o código compila** (sem rodar testes):
+
+```powershell
+.\mvnw.cmd test-compile
+```
+
+**Como ler falhas ligadas ao MySQL:** se o erro citar `Access denied for user`, `Communications link failure`, `Unknown database 'bussola'` ou `flywayInitializer`, o problema é de banco ou de variável (veja a tabela abaixo), não do código testado. Falhas com `expected: ... but was: ...` são falhas reais de regra de negócio.
+
+### 8. Problemas comuns
+
+| Sintoma | Causa provável | O que fazer |
+| --- | --- | --- |
+| `java` não é reconhecido como comando | Java não instalado ou fora do PATH | Instale o JDK 25 (marque a opção de configurar `JAVA_HOME`/PATH no instalador) e abra um terminal novo. |
+| `release version 25 not supported`, ou `.\mvnw.cmd -v` mostra outro Java | Java antigo em `JAVA_HOME` ou no PATH | Aponte para o JDK 25 neste terminal: `$env:JAVA_HOME = "C:\Program Files\Eclipse Adoptium\jdk-25..."` (use a pasta real do seu JDK) e `$env:Path = "$env:JAVA_HOME\bin;$env:Path"`. Para valer sempre, ajuste `JAVA_HOME` em **Configurações → Sistema → Sobre → Configurações avançadas → Variáveis de Ambiente**. |
+| `Communications link failure` / `Connection refused` | MySQL desligado | `Get-Service MySQL80`; inicie pelo aplicativo Serviços. |
+| `Access denied for user 'root'@'localhost' (using password: YES)` | Senha errada **ou `DB_PASSWORD` não definida neste terminal** (sem a variável, o Spring envia o texto `${DB_PASSWORD}` como senha, por isso aparece "YES") | Defina `DB_PASSWORD` de novo neste terminal e reinicie o backend. |
+| `Unknown database 'bussola'` | Banco ainda não criado | Crie o banco (passo 2.3). Não crie as tabelas. |
+| Erro em `flywayInitializer` / `Migration ... failed` / `checksum mismatch` | Migration alterada depois de aplicada ou banco em estado inconsistente | Não edite migrations já aplicadas; desfaça a alteração local no arquivo da migration. Não apague tabelas de um banco com dados reais; peça ajuda ao grupo. |
+| `Could not resolve placeholder 'JWT_SECRET'` ou `JWT_SECRET deve conter pelo menos 32 bytes` | Chave JWT ausente ou inválida | Faça o passo 3 da primeira configuração e **abra um terminal novo**. |
+| `Port 8080 was already in use` | Já existe um backend rodando (outro terminal ou o IntelliJ) | Use o backend que já está rodando ou pare-o com **Ctrl + C** no terminal dele. Para descobrir quem usa a porta: `Get-NetTCPConnection -LocalPort 8080 -State Listen` e `Get-Process -Id NUMERO_DO_OwningProcess`. |
+| Porta 8765 ocupada | Já existe um frontend rodando (outro terminal) | No Windows, o Python **pode iniciar sem mostrar erro** mesmo com outra cópia na mesma porta, e as páginas passam a vir de qualquer uma delas. Antes de iniciar, confira `Get-NetTCPConnection -LocalPort 8765 -State Listen`: se aparecer algo, use o frontend que já está aberto ou pare-o com **Ctrl + C** no terminal dele. |
+| Telas abrem, mas login/dados falham (`Failed to fetch`, erro de CORS) | Backend desligado, ou página aberta por endereço diferente | Confira `Started BussolaApplication` no terminal 1 e abra as páginas por `http://127.0.0.1:8765` ou `http://localhost:8765` (o backend só aceita essas duas origens). Depois de atualizar arquivos, **Ctrl + F5**. |
+| Variável "sumiu" | Terminal novo ou Cursor/VS Code reiniciado | `$env:` vale só para o terminal atual: defina de novo. `JWT_SECRET` salva no usuário só aparece em terminais abertos depois de salvar. |
+| `rodar-frontend.ps1 não pode ser carregado porque a execução de scripts foi desabilitada` | Política de execução do PowerShell | Rode só para este comando, sem mudar nada permanente: `powershell -ExecutionPolicy Bypass -File .\rodar-frontend.ps1`. Ou, sem script: `python -m http.server 8765 --directory frontend` (na raiz). Se o arquivo veio de um download/zip, `Unblock-File .\rodar-frontend.ps1` também resolve. Não desative a proteção do Windows de forma permanente. |
+| `O comando python não foi encontrado` | Python não instalado ou fora do PATH | Instale o Python 3 (marque **Add python.exe to PATH**) e abra um terminal novo. |
 
 ## Testar nova decisão no Swagger
 
@@ -171,6 +365,10 @@ Para testar, mantenha MySQL, backend e frontend ligados. Use uma decisão sua qu
 6. Troque só a descrição, salve e recarregue Opções: a recomendação some e Critérios não exige confirmação.
 7. Com pendência aberta, **Próxima etapa** fica oculta. O backend também recusa concluir Critérios enquanto A ou B estiver pendente (**409**). `etapaAtual` não muda.
 8. Se a mensagem pedir para recarregar antes de confirmar, use **Recarregar dados**. Uma confirmação enviada com a versão antiga não apaga a pendência.
+9. Com uma pendência aberta, o quadro **Para liberar o resultado comparativo** da Inversão mostra o item **Avaliações dos critérios** (lido do mesmo dado que o backend usa para bloquear o resultado) e o botão **Revisar avaliações**. Ao clicar em **Ver resultado comparativo**, a Inversão é concluída e a página de Resultado informa qual alternativa precisa ser revisada (por exemplo, "Confirme as notas da alternativa A (nome) em Critérios"), com o link **Revisar avaliações** já em foco e **Voltar para a Inversão**.
+10. **Revisar avaliações** abre Critérios em revisão, já com o aviso **Revise sua avaliação** e o foco no botão de confirmação. Vindo da Inversão, aparece **Voltar para a Inversão**; vindo do Resultado, **Voltar ao resultado**. Se houver texto não salvo na Inversão ou nota não salva em Critérios, a saída é bloqueada como de costume. Depois de confirmar, volte e abra o resultado novamente.
+
+Não confunda essa pendência com `resultados.requer_atualizacao`: esse campo só marca que uma pontuação gravada ficou antiga e não bloqueia nada. A consulta do resultado sempre calcula a partir das notas e pesos atuais; a pontuação só é gravada de novo ao finalizar a decisão. O que bloqueia é `opcoes.avaliacao_pendente`. Lembre também que trocar o nome de uma opção desfaz a conclusão do 10/10/10 e da Inversão: conclua-as de novo antes de ver o resultado.
 
 Alterar notas ou pesos sinaliza resultados existentes para atualização. Esta entrega não cria um novo cálculo de recomendação.
 
@@ -314,7 +512,7 @@ A página está em `frontend/pages/criterios.html`. **Continue usando os mesmos 
 
 O indicador **Etapa 3 de 5** segue o Figma e conta as etapas da análise; o banco/Home contam também a contextualização, por isso Critérios é a etapa 4 de 6.
 
-**Totais:** são somas brutas sem pesos, com indicação de parcial quando há notas faltantes. Não são uma recomendação: incluem a nota de Risco no sentido escolhido pelo usuário. A futura análise deve interpretar `sentido: MENOR_MELHOR` antes de comparar alternativas. Os pesos existentes não são redefinidos ao salvar notas.
+**Totais:** são somas brutas sem pesos, com indicação de parcial quando há notas faltantes. Não são uma recomendação: incluem a nota de Risco no sentido escolhido pelo usuário. O resultado comparativo interpreta `sentido: MENOR_MELHOR` (6 − nota) antes de comparar alternativas. Os pesos existentes não são redefinidos ao salvar notas.
 
 Se a conexão falhar sem confirmar a gravação, o formulário preserva as notas e bloqueia reenvios. Use **Recarregar dados** para conferir o que foi salvo; haverá confirmação antes de substituir alterações locais. A página avisa ao sair com alterações não salvas, mas não as recupera depois de fechar a aba.
 
@@ -362,7 +560,7 @@ Confirmar uma alternativa: `POST /decisoes/{decisaoId}/criterios/confirmacao`.
 - Opções já abre Critérios. Os IDs de A/B são preservados: A é a opção de menor ID, B é a seguinte.
 - Critérios abre a página de Pesos após concluir a avaliação; o evento cancelável bussola:criterios-concluidos continua disponível.
 - A API retorna `criterios[].id`, `codigo`, `nome`, `descricao`, `personalizado`, `peso`, `sentido`, `notaA` e `notaB`. IDs são null somente para os cinco critérios ainda não gravados; depois de salvar, são os IDs reais para Pesos/Avaliações. O GET não cria registros.
-- `sentido` é `MENOR_MELHOR` em Risco e `MAIOR_MELHOR` nos demais. Na futura comparação em que uma pontuação maior significa preferência, normalize Risco como `6 - nota` antes de aplicar seu peso. O total bruto desta tela não deve ser reutilizado como resultado final.
+- `sentido` é `MENOR_MELHOR` em Risco e `MAIOR_MELHOR` nos demais (inclusive critérios personalizados). O resultado comparativo normaliza Risco como `6 - nota` antes de aplicar o peso (veja "Como o resultado é calculado"). O total bruto desta tela não deve ser reutilizado como resultado final.
 - GET /decisoes/{id}/pesos consulta os valores; PUT salva sem avançar; POST /decisoes/{id}/pesos/concluir salva e avança da etapa 5 para 6. Envie uma entrada por critério, com id e peso inteiro de 1 a 5. Critérios ausentes, repetidos ou de outra decisão são rejeitados.
 - Mudanças nos pesos sinalizam resultados anteriores como desatualizados. A tela não calcula nem recomenda uma alternativa.
 
@@ -387,23 +585,11 @@ cd backend
 
 Espere **BUILD SUCCESS**. Esse comando seleciona as classes terminadas em `Test` presentes no repositório, incluindo cadastro, nova decisão, definição das opções, avaliação por critérios, autenticação, Home, CORS e Swagger. Elas usam repositórios simulados e não exigem MySQL. A suíte também inclui `FluxoDecisaoControllerTest`, que verifica contextualização, ideias e avanço do brainstorming.
 
-Para rodar também `BussolaApplicationTests` (contexto completo), configure as variáveis do banco e JWT nesse terminal e use `.\mvnw.cmd test`. Esse teste conecta ao MySQL e pode aplicar migrations pendentes.
+`.\mvnw.cmd test` roda a suíte inteira. `BussolaApplicationTests` (contexto completo) conecta ao MySQL real e pode aplicar migrations pendentes; ele só roda quando `DB_PASSWORD` e `JWT_SECRET` estão definidas nesse terminal e, sem elas, aparece como `Skipped: 1`. Detalhes em "Como executar o Bússola sem IntelliJ IDEA", item 7.
 
 ## Alternativa: backend pelo PowerShell
 
-Use isto se preferir não iniciar pelo IntelliJ. Na raiz, execute:
-
-```powershell
-$env:DB_URL = "jdbc:mysql://localhost:3306/bussola"
-$env:DB_USERNAME = "root"
-$senhaBanco = Read-Host "Senha do MySQL" -AsSecureString
-$env:DB_PASSWORD = [System.Net.NetworkCredential]::new("", $senhaBanco).Password
-$env:JWT_SECRET = [Environment]::GetEnvironmentVariable("JWT_SECRET", "User")
-cd backend
-.\mvnw.cmd spring-boot:run
-```
-
-Faça antes a primeira configuração da chave JWT. Deixe esse terminal aberto. As variáveis colocadas no IntelliJ não passam automaticamente para o PowerShell.
+Está descrita, passo a passo, em "Como executar o Bússola sem IntelliJ IDEA" (itens 3 e 4). As variáveis colocadas no IntelliJ não passam automaticamente para o PowerShell: defina `DB_PASSWORD` no terminal que vai rodar o backend.
 
 ## Se algo não funcionar
 
@@ -411,7 +597,7 @@ Faça antes a primeira configuração da chave JWT. Deixe esse terminal aberto. 
 | --- | --- |
 | `Access denied for user` | Usuário/senha do MySQL na configuração usada para iniciar o backend. |
 | `Unknown database bussola` | Crie o banco no Workbench; não crie as tabelas manualmente. |
-| Erro com `JWT_SECRET` | Faça a configuração da chave acima e reinicie o IntelliJ. |
+| Erro com `JWT_SECRET` | Faça a configuração da chave acima e reinicie o IntelliJ (ou abra um terminal novo, se usa o PowerShell). |
 | Porta 8080 ocupada | Já pode existir um backend rodando. Pare a execução antiga antes de iniciar outra. |
 | `Failed to fetch` ou CORS | Backend ligado e tela aberta pela porta 8765, usando localhost ou 127.0.0.1. |
 | Site não abre na 8765 | Inicie o frontend e mantenha o terminal aberto. |
@@ -422,7 +608,7 @@ Faça antes a primeira configuração da chave JWT. Deixe esse terminal aberto. 
 | `BUILD FAILURE` | Leia o erro; não significa que o backend iniciou. |
 | `cannot find symbol` para `EtapaInvalidaException` ou `IdeiaNaoEncontradaException` | Confira se os dois arquivos `.java` estão em `backend/src/main/java/br/com/bussola/exception/`, com o pacote `br.com.bussola.exception`. Esse erro ocorre antes da conexão ao banco; não exige trocar senha ou porta. Após obter a correção, execute os testes ou inicie novamente o backend. |
 
-**Resumo:** MySQL ligado → ▶ BussolaApplication → `.\rodar-frontend.ps1` na raiz → abrir login.
+**Resumo:** MySQL ligado → ▶ BussolaApplication (ou `.\mvnw.cmd spring-boot:run` em `backend`, com `DB_PASSWORD` definida) → `.\rodar-frontend.ps1` na raiz → abrir login.
 
 ## Prós e Contras e Matriz GUT
 
@@ -435,11 +621,12 @@ Ao concluir Pesos, o backend libera a etapa 6 e a tela abre a página de Anális
 ### Conferir pela tela, com uma decisão já liberada
 
 1. Na Home, clique em **Continuar** na decisão em Análise.
-2. Em **Prós e Contras**, escolha a alternativa A ou B. Selecione Pró/Contra, escreva a descrição e salve. Edite um registro e confira que a outra alternativa permanece intacta.
+2. Em **Prós e Contras**, as duas alternativas aparecem ao mesmo tempo: **Alternativa A — nome** e **Alternativa B — nome**, cada uma com os cards **Prós (n)** e **Contras (n)**. Clique em **+ Adicionar pró** ou **+ Adicionar contra** no card desejado. O formulário abre dentro do próprio card, já ligado àquela alternativa e àquele tipo. Escreva a descrição e clique em **Salvar**: o item aparece na lista e o contador aumenta. Em **Editar**, o mesmo card mostra o texto atual e o botão **Salvar alterações**. Confira que os outros três cards permanecem intactos.
 3. Exclua um registro: primeiro cancele a confirmação; depois confirme e confira a lista.
 4. Em **Matriz GUT**, cadastre um fator com notas 5, 4 e 3. A prioridade deve ser **60**. Edite para 1, 1 e 1: deve virar **1** e mudar de posição na lista.
-5. Recarregue a página para conferir os dados salvos. Um rascunho impede trocar de técnica ou sair até salvar/cancelar. Falhas de envio exigem recarregar antes de tentar novamente, evitando duplicação.
-6. Decisões concluídas são somente consultáveis. Salvar técnicas não conclui a decisão. O método 10–10–10 e a Inversão estão acessíveis na barra de técnicas. A página Resultado comparativo só libera depois de concluir Prós e Contras, Matriz GUT, 10–10–10 e Inversão.
+5. Recarregue a página para conferir os dados salvos. Um texto digitado e ainda não salvo (novo ou em **Editar**) impede trocar de técnica, avançar, sair ou abrir outro formulário até clicar em **Salvar** ou **Cancelar**; um formulário aberto sem alterações não bloqueia nada. Se o backend recusar a descrição, o texto continua no card para corrigir; falhas de conexão ou do servidor exigem clicar em **Recarregar dados** antes de tentar novamente, evitando duplicação.
+6. Na barra inferior, **Salvar para depois** grava o rascunho do formulário aberto pela mesma operação do botão **Salvar** (sem rascunho, apenas confirma que tudo já está salvo). **Próxima: Matriz GUT** abre a aba GUT e, nela, **Próxima: 10/10/10** abre o método 10/10/10. Nenhum dos dois altera a etapa da decisão.
+7. Decisões concluídas são somente consultáveis. Salvar técnicas não conclui a decisão. O método 10–10–10 e a Inversão continuam acessíveis na barra de técnicas a qualquer momento. O botão **Ver resultado comparativo** fica só na Inversão, a última técnica da sequência Prós e Contras → Matriz GUT → 10/10/10 → Inversão.
 
 Prós/Contras pertencem à alternativa; os fatores GUT pertencem à decisão inteira. A prioridade é calculada pelo servidor como G × U × T (1–125), ordenada de forma decrescente, com desempate pelo ID. Essa prioridade organiza os fatores da Matriz GUT; o resultado comparativo usa as notas e os pesos dos critérios.
 
@@ -486,8 +673,9 @@ Reinicie o backend e atualize o navegador com **Ctrl + F5**. Na Home, clique em 
 - Pesquise pelo título e combine com Todas, Concluídas ou Em andamento. A busca trata `%` e `_` como texto, não como curingas.
 - Ordene por última atualização (mais recente ou mais antiga) ou título. A lista mostra 10 decisões por página; use Anterior/Próxima. Os totais do topo representam sua conta inteira, mesmo com filtros.
 - Continuar decisão abre a tela correspondente: Critérios na etapa 4, Pesos na etapa 5 e Análise na etapa 6.
-- **Ver análise** de decisões concluídas está preparado para a tela de resultado da Dupla B. Enquanto ela não existir, mostra um aviso, sem inventar um resultado. Configure `resultadoDecisao` em `frontend/js/pages/historico-integracoes.js` quando a tela for entregue; receberá `decisaoId`. Também existe o evento cancelável `bussola:ver-resultado`.
-- **Excluir** abre uma confirmação com o título e explica que a operação é irreversível. Cancelar não altera nada. Confirmar apaga a decisão e todos os seus registros relacionados. Após excluir, a Home recalcula seus totais usando os registros restantes.
+- Decisões **concluídas** (finalizadas na página de Resultado) mostram **Concluída**, **Finalizada em** com a data, **Visualizar resultado** e **Excluir decisão**. Não têm **Continuar decisão**. **Visualizar resultado** abre `resultado.html?decisaoId=ID` (rota `resultadoDecisao` em `frontend/js/pages/historico-integracoes.js`; na Home, em `home-integracoes.js`). O evento cancelável `bussola:ver-resultado` continua disponível.
+- Uma decisão na etapa 6 de 6 (100%) continua **Em andamento** até ser finalizada explicitamente.
+- **Excluir** / **Excluir decisão** abre uma confirmação com o título e explica que a exclusão é permanente. Cancelar não altera nada. Confirmar apaga a decisão e todos os seus registros relacionados. Após excluir, a Home recalcula seus totais usando os registros restantes.
 - Em falha de rede durante exclusão, use Recarregar histórico para conferir o estado antes de tentar novamente.
 
 ### Teste manual e Swagger
@@ -510,7 +698,72 @@ Para conferir a revisão de etapas existente:
 .\mvnw.cmd '-Dtest=FluxoDecisaoControllerTest,OpcoesServiceTest,CriteriosServiceTest' test
 ```
 
-A revisão de Critérios e Pesos preserva os dados e o progresso e sinaliza resultados anteriores quando notas ou pesos mudam. O resultado comparativo usa a soma de nota × peso para cada alternativa. A contextualização permanece editável somente antes de avançar; o indicador de revisão começa em Brainstorming.
+A revisão de Critérios e Pesos preserva os dados e o progresso e sinaliza resultados anteriores quando notas ou pesos mudam. O resultado comparativo usa a soma de nota ajustada × peso para cada alternativa (no Risco, nota ajustada = 6 − nota). A contextualização permanece editável somente antes de avançar; o indicador de revisão começa em Brainstorming.
+
+## Finalizar uma decisão
+
+Este é um teste funcional: precisa de MySQL, backend e frontend ligados. Depois de atualizar o código, reinicie o backend (ou aguarde o reinício automático, se ele estiver rodando com `spring-boot:run`) e atualize o navegador com **Ctrl + F5**.
+
+Use uma decisão de teste, não uma decisão real que você queira continuar editando: **finalizar não pode ser desfeito**.
+
+1. Leve uma decisão de teste até o resultado (Prós e Contras, Matriz GUT, 10–10–10 e Inversão concluídos, sem avaliações pendentes) e abra `http://127.0.0.1:8765/pages/resultado.html?decisaoId=ID_DA_DECISAO`. Só visualizar o resultado **não** finaliza nada: no Histórico ela continua **Em andamento**.
+2. No fim da página, clique em **Finalizar decisão**. Abre o popup **Finalizar esta decisão?**, com o fundo escurecido e desfocado. O foco começa em **Continuar analisando**.
+3. **Continuar analisando** ou a tecla **Esc** fecham o popup sem alterar nada; o foco volta ao botão **Finalizar decisão**.
+4. **Finalizar** desabilita os dois botões ("Finalizando…") até o backend responder. Se der certo, o popup fecha e a página mostra **Decisão finalizada em … · somente consulta**, sem **Revisar análise** nem **Finalizar decisão**, com os botões **Visualizar minha análise** e **Voltar ao Histórico**. As pontuações exibidas são as mesmas.
+5. Se o backend recusar (por exemplo, porque outra aba criou uma pendência), o erro aparece dentro do popup e a decisão continua **Em andamento**. Ao fechar o popup, o resultado é consultado de novo e a página mostra o motivo do bloqueio, sem pontuações desatualizadas.
+6. Recarregue a página e confira no **Histórico**: a decisão aparece como **Concluída**, com **Visualizar resultado** e **Excluir decisão**. O filtro **Concluídas** e os totais do topo já a contam como concluída.
+7. Abrir uma URL antiga de edição dessa decisão (por exemplo `analise.html?decisaoId=ID`, `criterios.html?decisaoId=ID&revisao=1`, `inversao.html?decisaoId=ID`) mostra o quadro **Esta decisão foi concluída**, com **Visualizar minha análise** (abre a consulta na etapa correspondente), **Visualizar resultado** e **Voltar ao Histórico**, e todos os campos ficam somente para consulta.
+
+Na API (Swagger), `POST /decisoes/{id}/finalizar`:
+
+| Situação | Resposta |
+|---|---|
+| Resultado válido | **200**, com `status: "CONCLUIDA"`, `finalizadaEm` e as pontuações gravadas |
+| Ainda falta algo (técnica não concluída, avaliação pendente, etapa anterior) | **409** com o motivo em `erro`; a decisão continua `EM_ANDAMENTO` |
+| Decisão já concluída | **200**, devolvendo o resultado sem gravar nada nem mudar o status |
+| Duas finalizações ao mesmo tempo (duas abas) | ambas **200**; a segunda espera a primeira e encontra a decisão já concluída |
+| Decisão inexistente ou de outra conta | **404** |
+| Sem login | **401** |
+
+Depois de concluída, todas as rotas de escrita da decisão (contexto, ideias, opções, critérios, confirmação de avaliações, pesos, prós e contras, GUT, 10–10–10 e Inversão) respondem **409**. `GET /decisoes/{id}/resultado` continua funcionando e nunca grava nada: calcula a partir das notas e pesos, que não mudam mais depois de concluída. A exclusão (`DELETE /decisoes/{id}?confirmar=true`) continua permitida. Não há migration nova: o status usa a coluna `status` existente, e a data de finalização exibida é a última atualização da decisão, que não muda mais depois de concluída.
+
+Testes automatizados (no terminal dentro de `backend`, sem banco):
+
+```powershell
+.\mvnw.cmd '-Dtest=ResultadoServiceTest,HistoricoControllerTest' test
+```
+
+### Como o resultado é calculado
+
+- Cada critério contribui com **nota ajustada × peso**. Nos critérios favoráveis (inclusive os personalizados), a nota ajustada é a própria nota. No **Risco**, a nota informada mede o risco e é invertida uma única vez no cálculo: **nota ajustada = 6 − nota** (risco 1 conta 5, risco 3 conta 3, risco 5 conta 1). Com peso 3: risco 1 = 15 pontos, risco 3 = 9, risco 5 = 3. A nota gravada no banco não muda.
+- A pontuação máxima é a soma de **peso × 5** de todos os critérios. As barras do Resultado mostram a pontuação de cada critério sobre o máximo dele (por exemplo, 12/15), e o Risco mostra "Risco informado X → conta Y".
+- **Empate:** se as duas alternativas somam o mesmo, o Resultado mostra **Empate entre as alternativas**, a pontuação comum e um selo neutro, sem destacar nenhuma. A ordem de cadastro não desempata. Uma decisão empatada pode ser finalizada normalmente.
+- A resposta de `GET /decisoes/{id}/resultado` e de `POST /decisoes/{id}/finalizar` traz `empate` (true/false) e `recomendadaId` (id da alternativa de maior pontuação, ou `null` no empate). Em cada critério: `nota` (informada), `sentido`, `notaAjustada` e `pontuacao`.
+- O GET do resultado é só leitura, então várias abas podem consultá-lo ao mesmo tempo. As pontuações são gravadas em `resultados` apenas ao finalizar, com a decisão bloqueada.
+- Decisões finalizadas antes desta correção são exibidas com o cálculo corrigido, feito a partir das notas gravadas (que não mudam). O total antigo continua no banco, sem alteração.
+
+Para conferir: em uma decisão de teste, dê Risco 1 para A e 5 para B (os outros critérios iguais). A deve ficar à frente. Para ver o empate, use notas diferentes que somem o mesmo, por exemplo Segurança A=5/B=1 e Crescimento A=1/B=5 com o mesmo peso.
+
+Testes automatizados (no terminal dentro de `backend`, sem banco): `.\mvnw.cmd '-Dtest=ResultadoServiceTest' test`.
+
+## Consultar todas as etapas de uma decisão finalizada
+
+Teste funcional: precisa de MySQL, backend e frontend ligados (a página só lê dados da API). Não há rota nova no backend; a consulta usa os mesmos `GET` das telas de edição. Depois de atualizar o código, recarregue o navegador com **Ctrl + F5**.
+
+1. No **Histórico**, clique em **Visualizar resultado** de uma decisão **Concluída**.
+2. No fim da página de Resultado, clique em **Visualizar minha análise**. Abre `consulta.html?decisaoId=ID&etapa=contexto`.
+3. No topo aparece o aviso fixo **Decisão finalizada — somente leitura** e o indicador com as 10 etapas: Contexto, Brainstorm, Opções, Critérios (notas e critérios personalizados), Pesos, Prós e Contras, Matriz GUT, 10/10/10, Inversão e Resultado. A etapa atual fica destacada e o título mostra "Consulta · Etapa X de 10".
+4. Navegue clicando em qualquer etapa do indicador (em qualquer ordem) ou pelos botões **← Anterior** e **Próxima →** no fim da página. Os botões **Voltar** e **Avançar** do navegador também funcionam, e o endereço guarda a etapa (`&etapa=criterios`, por exemplo), então dá para recarregar ou compartilhar o link da etapa.
+5. **Resultado comparativo** (no topo) ou a etapa 10 voltam para `resultado.html`; **Voltar ao Histórico** volta à lista.
+6. Confira que não há campos, botões de salvar/editar/excluir/adicionar nem "Concluir": é só leitura. No Histórico, a decisão continua **Concluída** com a mesma data de finalização.
+
+Situações esperadas:
+
+- Decisão **em andamento**: a página não mostra os dados e orienta a continuar pelo Histórico (a consulta completa só existe depois de finalizar). A revisão e a edição continuam pelas telas normais.
+- Decisão de **outra conta** ou inexistente: a página mostra "Decisão não encontrada para sua conta" e nenhum dado; a API responde **404**.
+- Sem login: a página volta para o login.
+
+Para iniciar uma nova análise, use **+ Nova decisão**; a consulta não reabre nem copia a decisão finalizada.
 
 ## Método 10–10–10
 
@@ -537,9 +790,9 @@ Opcionalmente, para testar somente esta técnica com uma decisão fictícia:
 
 1. Confira o título e os nomes de A/B. Inicialmente os seis campos devem estar vazios.
 2. Preencha só um campo e clique em **Salvar para depois**. Recarregue: o texto deve permanecer e a técnica ainda não estará concluída. Cada texto aceita até **16.000 caracteres**; apagar e salvar limpa aquela resposta.
-3. Tente **Ver resultado** com campos vazios. A tela deve indicar e focar o primeiro campo pendente, sem concluir ou abrir confirmação.
-4. Preencha os seis campos e clique em **Ver resultado**. Cancele com **Continuar revisando** ou **Esc**: nenhum envio deve acontecer e as respostas permanecem. Abra novamente e escolha **Confirmar e continuar**.
-5. A técnica fica marcada como concluída, mas a decisão permanece **EM_ANDAMENTO**, na etapa 6. O resultado comparativo fica disponível depois que Prós e Contras, Matriz GUT, 10–10–10 e Inversão estiverem concluídas e todas as avaliações tiverem sido confirmadas.
+3. Com campos ainda vazios, clique em **Próxima: Inversão**. Se houver texto não salvo, ele é salvo como em **Salvar para depois**; em seguida a Inversão abre, sem confirmação e sem concluir o 10–10–10.
+4. Volte pela aba **Técnica 10/10/10**, preencha os seis campos e clique em **Próxima: Inversão**. Cancele com **Continuar revisando** ou **Esc**: nenhum envio deve acontecer e as respostas permanecem. Abra novamente e escolha **Confirmar e continuar**: a técnica é concluída e a Inversão abre.
+5. A técnica fica marcada como concluída, mas a decisão permanece **EM_ANDAMENTO**, na etapa 6. Já concluída e sem alterações, **Próxima: Inversão** apenas abre a Inversão. O resultado comparativo é aberto pela Inversão, depois que Prós e Contras, Matriz GUT, 10–10–10 e Inversão estiverem concluídas e todas as avaliações tiverem sido confirmadas.
 6. Recarregue para conferir as seis respostas e a indicação de conclusão. Enquanto a decisão estiver em andamento, editar e salvar respostas exige nova conclusão da técnica. Revisar o nome ou a descrição de uma alternativa também remove a conclusão do 10–10–10, preservando seus textos para revisão. Uma decisão concluída é apenas consultável.
 7. Os links **Prós e Contras**, **Matriz GUT** e **Inversão** abrem a técnica correspondente com o mesmo ID. Rascunhos não salvos impedem a saída.
 8. Se um envio falhar sem confirmar a gravação, os textos permanecem na tela e novos envios ficam bloqueados. Use **Recarregar dados**, confirmando a substituição pelo que realmente foi salvo. Não há reenvio automático.
@@ -569,7 +822,7 @@ No PUT, os textos podem ser null. Sempre envie as duas opções; campos omitidos
 
 A resposta traz `decisaoId`, `titulo`, `etapaAtual`, `status`, `concluida`, `concluidaEm` e `opcaoA/B`, com ID/nome/descrição da opção, `reflexaoId` e os três textos. Repetir dados idênticos não duplica registros nem altera a data de conclusão. Alterações marcam os resultados existentes das opções afetadas para atualização, sem apagar a pontuação anterior.
 
-As rotas ficam em `frontend/js/pages/metodo-101010-integracoes.js`: `inversao` aponta para `inversao.html`; `resultado` permanece null até essa tela existir. A navegação acrescenta `decisaoId`. O evento cancelável `bussola:101010-concluido` informa `detail: { decisaoId, etapa: 6 }` quando o usuário pede o resultado após a conclusão. Esse evento não significa que toda a decisão foi finalizada.
+As rotas ficam em `frontend/js/pages/metodo-101010-integracoes.js`: **Próxima: Inversão** usa `inversao` (`inversao.html`). A navegação acrescenta `decisaoId`. O evento cancelável `bussola:101010-concluido` informa `detail: { decisaoId, etapa: 6 }` quando o usuário segue para a Inversão com a técnica concluída. Esse evento não significa que toda a decisão foi finalizada.
 
 ### Testes automatizados
 
@@ -590,10 +843,10 @@ A página `frontend/pages/inversao.html` registra **possíveis fracassos e açõ
 1. Continue usando os mesmos comandos. Com **MySQL disponível**, reinicie o backend e aguarde **Started BussolaApplication**. O Flyway aplica **V5__Conclusao_inversao.sql**, acrescentando a data opcional de conclusão da técnica. A tabela `inversoes` já existe; não apague o banco nem edite migrations aplicadas.
 2. Mantenha os terminais do backend e frontend abertos. No navegador, pressione **Ctrl + F5**, faça login e retome uma decisão sua em **Análise**, após concluir Pesos.
 3. Clique em **Inversão** na barra. A URL recebe `decisaoId`; a API exige etapa interna 6 e duas alternativas. Alterar a URL não permite pular etapas.
-4. Em A, preencha o que poderia dar errado e como evitar isso. Troque para B e volte: os rascunhos devem permanecer. As setas do teclado também alternam A/B quando o seletor tem foco.
-5. **Salvar para depois** aceita campos incompletos. Atualize a página para verificar a persistência. Textos aceitam até 16.000 caracteres; apagar e salvar limpa a resposta. Trocar A/B não salva automaticamente.
-6. **Ver resultado** exige os quatro campos. Se faltar um, a tela abre a alternativa correspondente e foca o campo. Com tudo preenchido, abre uma confirmação; **Continuar revisando** ou **Esc** não envia dados. **Confirmar e continuar** salva e conclui somente a técnica.
-7. A decisão permanece **EM_ANDAMENTO**, na etapa 6. Ao concluir uma técnica, a página de resultado verifica se as outras também foram concluídas. Se faltar alguma, ela informa qual técnica ainda precisa de registros e permite voltar à Análise.
+4. Os quatro campos aparecem juntos, sem precisar escolher a alternativa: primeiro o grupo **Alternativa A — nome**, com "O que poderia dar errado" e "Como evitar" lado a lado; abaixo, o mesmo para **Alternativa B**. No celular, os campos ficam empilhados. O **Tab** percorre problemas A, prevenção A, problemas B e prevenção B.
+5. **Salvar para depois** aceita campos incompletos. Atualize a página para verificar a persistência e confira que cada texto voltou no campo da alternativa certa. O contador geral (**x de 4**) e o de cada alternativa (**x de 2 preenchidos**) acompanham o que está digitado. Textos aceitam até 16.000 caracteres; apagar e salvar limpa a resposta. Nada é salvo automaticamente.
+6. **Ver resultado comparativo** exige os quatro campos. Se faltar algum, o quadro acima dos botões lista quais respostas faltam e a tela foca o primeiro campo vazio. Com tudo preenchido, abre uma confirmação; **Continuar revisando** ou **Esc** não envia dados. **Confirmar e continuar** salva e conclui somente a técnica.
+7. A decisão permanece **EM_ANDAMENTO**, na etapa 6. O quadro **Para liberar o resultado comparativo**, acima dos botões, mostra a situação de Prós e Contras, Matriz GUT, 10/10/10 e Inversão. Depois de concluir, a tela abre `resultado.html`, que faz a única consulta ao resultado no backend. Se ainda faltar algo (inclusive avaliações pendentes), a página de Resultado explica o motivo, não mostra pontuação e oferece **Revisar avaliações** (quando há pendência), **Voltar para a Inversão** e **Voltar à Análise**. As respostas da Inversão continuam salvas. Concluir a Inversão não finaliza a decisão; isso só acontece pelo botão **Finalizar decisão** do Resultado (veja "Finalizar uma decisão").
 8. Recarregue e confira textos e conclusão. Alterar respostas ou revisar nome/descrição de uma opção exige concluir novamente a Inversão; os textos anteriores permanecem. Salvar a Inversão não altera a conclusão do 10–10–10; revisar uma opção pode exigir nova conclusão de ambas as técnicas.
 9. Tente sair com texto não salvo: a navegação deve ser bloqueada. Se um envio falhar sem confirmação, os campos permanecem e o reenvio fica bloqueado até **Recarregar dados**, com confirmação de descarte do rascunho.
 10. Uma decisão globalmente concluída permite somente consulta. Nenhuma decisão real precisa ser alterada diretamente no banco para testar.
@@ -625,7 +878,7 @@ PUT aceita null ou texto vazio; campos omitidos limpam a resposta. Sempre envie 
 
 Cada perspectiva é armazenada na tabela existente `inversoes`, com códigos `FRACASSOS` e `PREVENCOES`, vinculada à opção. Outros registros legados são preservados. A resposta inclui `fracassosId`, `fracassos`, `prevencoesId` e `prevencoes` para cada opção, além de `concluida` e `concluidaEm`. Alterações sinalizam resultados existentes para atualização, sem apagar sua pontuação.
 
-A futura tela de resultado deve ser configurada em `frontend/js/pages/inversao-integracoes.js` (`resultado: null` até existir). O evento cancelável `bussola:inversao-concluida` leva `detail: { decisaoId, etapa: 6 }`; não significa conclusão global da decisão.
+A tela de resultado é configurada em `frontend/js/pages/inversao-integracoes.js` (`resultado: "resultado.html"`). O evento cancelável `bussola:inversao-concluida` leva `detail: { decisaoId, etapa: 6 }`; não significa conclusão global da decisão.
 
 ### Testes automatizados
 

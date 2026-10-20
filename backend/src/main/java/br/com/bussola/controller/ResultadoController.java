@@ -11,14 +11,19 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/decisoes/{decisaoId}/resultado")
+@RequestMapping("/decisoes/{decisaoId}")
 @SecurityRequirement(name = "bearerAuth")
 public class ResultadoController {
     private final ResultadoService resultados;
     public ResultadoController(ResultadoService resultados) { this.resultados = resultados; }
-    @GetMapping
-    @Operation(summary = "Consultar o resultado comparativo", description = "Calcula as notas ponderadas após a conclusão das técnicas de análise.")
+    @GetMapping("/resultado")
+    @Operation(summary = "Consultar o resultado comparativo", description = "Calcula as notas ponderadas após a conclusão das técnicas de análise. Em decisões concluídas, devolve as pontuações gravadas sem recalcular.")
     public ResponseEntity<ResultadoComparativoResponse> consultar(@AuthenticationPrincipal UsuarioResponse usuario, @PathVariable Long decisaoId) {
         return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(resultados.consultar(usuario.id(), decisaoId));
+    }
+    @PostMapping("/finalizar")
+    @Operation(summary = "Finalizar a decisão", description = "Exige um resultado válido, grava as pontuações finais e marca a decisão como CONCLUIDA. A partir daí ela fica somente para consulta; a exclusão continua permitida.")
+    public ResponseEntity<ResultadoComparativoResponse> finalizar(@AuthenticationPrincipal UsuarioResponse usuario, @PathVariable Long decisaoId) {
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(resultados.finalizar(usuario.id(), decisaoId));
     }
 }

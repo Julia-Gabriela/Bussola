@@ -9,7 +9,7 @@ window.BUSSOLA_HOME_ROTAS = {
     historico: "historico.html",
     novaDecisao: "nova-decisao.html",
     continuarDecisao: "nova-decisao.html",
-    resultadoDecisao: null,
+    resultadoDecisao: "resultado.html",
     perfil: "perfil.html",
     ...window.BUSSOLA_HOME_ROTAS
 };

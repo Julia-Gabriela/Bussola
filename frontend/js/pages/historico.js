@@ -1,7 +1,7 @@
 import { criarApi } from "../shared/api.js";
 import { configurarConta } from "../shared/conta.js";
 const el = id => document.getElementById(id);
-let ocupado = false, encerrada = false, resposta = null, selecionada = null, pagina = 0;
+let ocupado = false, encerrada = false, resposta = null, selecionada = null, abridorExclusao = null, pagina = 0;
 const parametros = new URLSearchParams(location.search);
 el("busca").value = (parametros.get("busca") || "").slice(0,200);
 el("status").value = ["CONCLUIDA","EM_ANDAMENTO"].includes(parametros.get("status")) ? parametros.get("status") : "";
@@ -41,11 +41,12 @@ function renderizar() {
         const texto=document.createElement("div");texto.className="historico-texto";
         texto.append(criar("h2",item.titulo));const status=criar("span",item.status==="CONCLUIDA"?"Concluída":"Em andamento");status.className="historico-status";texto.append(status);
         if(item.status!=="CONCLUIDA") { const progresso=document.createElement("progress");progresso.max=100;progresso.value=item.progressoPercentual;progresso.setAttribute("aria-label","Progresso da decisão");texto.append(progresso,criar("p",`Etapa ${item.etapaAtual} de ${item.totalEtapas} · ${item.progressoPercentual}%`)); }
-        const data=new Date(item.dataAtualizacao);texto.append(criar("p","Atualizada em "+(Number.isNaN(data.getTime())?"data indisponível":new Intl.DateTimeFormat("pt-BR",{dateStyle:"medium"}).format(data))));
+        const concluida=item.status==="CONCLUIDA";
+        const data=new Date(concluida&&item.finalizadaEm?item.finalizadaEm:item.dataAtualizacao);texto.append(criar("p",(concluida?"Finalizada em ":"Atualizada em ")+(Number.isNaN(data.getTime())?"data indisponível":new Intl.DateTimeFormat("pt-BR",{dateStyle:"medium"}).format(data))));
         const acoes=document.createElement("div");acoes.className="historico-acoes";
-        const continuar=criar("button",item.status==="CONCLUIDA"?"Ver análise":"Continuar decisão");continuar.type="button";continuar.className="fluxo-proxima";continuar.addEventListener("click",()=>abrir(item));
-        const excluir=criar("button","Excluir");excluir.type="button";excluir.className="fluxo-salvar";excluir.setAttribute("aria-label","Excluir decisão: "+item.titulo);
-        excluir.addEventListener("click",()=>{if(ocupado)return;selecionada=item;el("exclusao-nome").textContent=item.titulo;el("exclusao").showModal();el("cancelar-exclusao").focus();});
+        const continuar=criar("button",concluida?"Visualizar resultado":"Continuar decisão");continuar.type="button";continuar.className="fluxo-proxima";continuar.addEventListener("click",()=>abrir(item));
+        const excluir=criar("button",concluida?"Excluir decisão":"Excluir");excluir.type="button";excluir.className="fluxo-salvar";excluir.setAttribute("aria-label","Excluir decisão: "+item.titulo);
+        excluir.addEventListener("click",()=>{if(ocupado)return;selecionada=item;abridorExclusao=excluir;el("exclusao-nome").textContent=item.titulo;el("exclusao").showModal();el("cancelar-exclusao").focus();});
         acoes.append(continuar,excluir);li.append(texto,acoes);return li;
     }));
     el("pagina").textContent=resposta.totalRegistros ? `Página ${pagina+1} de ${resposta.totalPaginas} · ${resposta.totalRegistros} decisões` : "0 decisões";
@@ -73,7 +74,7 @@ el("anterior").addEventListener("click",()=>{if(!ocupado&&pagina>0){pagina--;car
 el("proxima").addEventListener("click",()=>{if(!ocupado&&resposta&&pagina+1<resposta.totalPaginas){pagina++;carregar();}});
 el("recarregar").addEventListener("click",carregar);
 el("cancelar-exclusao").addEventListener("click",()=>el("exclusao").close());
-el("exclusao").addEventListener("close",()=>{selecionada=null;});
+el("exclusao").addEventListener("close",()=>{selecionada=null;if(abridorExclusao?.isConnected)abridorExclusao.focus();abridorExclusao=null;});
 el("excluir").addEventListener("click",async()=>{
     if(ocupado||!selecionada)return;
     const id=selecionada.id;el("exclusao").close();estado(true);let excluida=false;

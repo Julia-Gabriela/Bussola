@@ -198,14 +198,27 @@ class FluxoDecisaoControllerTest {
     }
 
     @Test
-    void concluiSemInventarQuantidadeMinimaENaoAvancaDuasVezes() throws Exception {
+    void naoConcluiBrainstormingSemNenhumaIdeia() throws Exception {
         decisao.setEtapaAtual(2);
+        when(ideias.findByDecisaoIdOrderByIdAsc(12L)).thenReturn(List.of());
+        mvc.perform(post("/decisoes/12/brainstorming/concluir").header("Authorization", TOKEN))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.erro").value(containsString("pelo menos uma ideia")));
+        assertEquals(2, decisao.getEtapaAtual());
+        verify(decisoes, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void concluiComUmaIdeiaENaoAvancaDuasVezes() throws Exception {
+        decisao.setEtapaAtual(2);
+        when(ideias.findByDecisaoIdOrderByIdAsc(12L)).thenReturn(List.of(new IdeiaBrainstorming()));
         for (int i = 0; i < 2; i++) {
             mvc.perform(post("/decisoes/12/brainstorming/concluir").header("Authorization", TOKEN))
                     .andExpect(status().isOk()).andExpect(jsonPath("$.etapaAtual").value(3))
                     .andExpect(jsonPath("$.status").value("EM_ANDAMENTO"));
         }
-        verifyNoInteractions(ideias);
+        verify(decisoes).saveAndFlush(decisao);
+        verify(ideias, never()).save(any());
     }
 
     @ParameterizedTest

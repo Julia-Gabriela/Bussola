@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Minha análise — Bússola</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../style/landing-page.css">
+    <link rel="stylesheet" href="../style/home.css">
+    <link rel="stylesheet" href="../style/fluxo-decisao.css">
+    <link rel="stylesheet" href="../style/analise.css?v=5">
+    <link rel="stylesheet" href="../style/fluxo-compacto.css">
+    <link rel="stylesheet" href="../style/consulta.css?v=5">
+    <script src="../js/pages/consulta.js?v=2" type="module"></script>
+</head>
+<body class="home-page fluxo-page consulta-page">
+    <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
+    <div class="home-scene" aria-hidden="true">
+        <img src="../assets/images/fundo-cadastro.png" alt="" class="home-map">
+        <div class="home-ring"></div>
+    </div>
+    <header class="home-header">
+        <div class="home-header-inner">
+            <a href="home.html" class="home-brand" aria-label="Bússola — Início"><span class="home-brand-mark"><img src="../assets/images/home/marca.png" alt=""></span><span>Bússola</span></a>
+            <nav class="home-nav" aria-label="Navegação principal">
+                <a href="home.html" class="home-nav-link"><img src="../assets/images/home/inicio.svg" alt="" width="15" height="15">Início</a>
+                <button type="button" class="home-nav-link" id="historico"><img src="../assets/images/home/historico.svg" alt="" width="15" height="15">Histórico</button>
+            </nav>
+            <div class="home-account">
+                <button class="home-profile" type="button" id="perfil-botao" aria-expanded="false" aria-controls="perfil-menu" disabled>
+                    <span class="home-avatar" id="usuario-inicial" aria-hidden="true">…</span><span id="usuario-menu">Minha conta</span>
+                    <img src="../assets/images/home/menu.svg" alt="" width="14" height="14">
+                </button>
+                <div class="home-profile-panel" id="perfil-menu" hidden>
+                    <strong id="perfil-nome"></strong><span id="perfil-email"></span>
+                    <button type="button" data-destino="perfil">Meu perfil</button>
+                </div>
+                <button type="button" class="home-exit" id="sair" aria-label="Sair da conta" title="Sair da conta"><img src="../assets/images/home/sair.svg" alt="" width="16" height="16"></button>
+            </div>
+        </div>
+    </header>
+<main class="fluxo-conteudo consulta-conteudo" id="conteudo" aria-busy="true">
+    <p id="mensagem" role="status" aria-live="polite">Carregando sua análise…</p>
+    <div class="consulta-saidas-erro" id="saidas-erro" hidden><a class="fluxo-salvar" href="historico.html">Voltar ao Histórico</a></div>
+    <div id="consulta" hidden>
+        <section class="consulta-aviso" aria-labelledby="consulta-aviso-titulo">
+            <span class="consulta-aviso-icone" aria-hidden="true">✓</span>
+            <div><h2 id="consulta-aviso-titulo">Decisão finalizada — somente leitura</h2>
+            <p>Esta decisão já foi concluída. Você pode consultar todas as etapas da sua análise, mas não é possível fazer alterações.</p></div>
+        </section>
+        <nav class="consulta-etapas-nav" aria-label="Etapas da análise">
+            <ol class="consulta-etapas" id="etapas"></ol>
+        </nav>
+        <div class="consulta-topo">
+            <div class="fluxo-intro">
+                <span class="fluxo-badge" id="etapa-posicao"></span>
+                <h1 id="etapa-titulo" tabindex="-1"></h1>
+                <p id="decisao-titulo"></p>
+            </div>
+            <div class="consulta-atalhos">
+                <a class="consulta-atalho" id="atalho-resultado" href="resultado.html">Resultado comparativo</a>
+                <a class="consulta-atalho" href="historico.html">Voltar ao Histórico</a>
+            </div>
+        </div>
+        <section id="painel" class="consulta-painel" aria-labelledby="etapa-titulo"></section>
+        <nav class="consulta-passos" aria-label="Etapa anterior e próxima">
+            <a class="fluxo-salvar" id="anterior"></a>
+            <a class="fluxo-proxima" id="proxima"></a>
+        </nav>
+    </div>
+</main>
+<dialog class="home-dialog" id="aviso" aria-labelledby="aviso-titulo"><h2 id="aviso-titulo"></h2><p id="aviso-texto"></p><form method="dialog"><button class="home-primary">Entendi</button></form></dialog>
+</body></html>
