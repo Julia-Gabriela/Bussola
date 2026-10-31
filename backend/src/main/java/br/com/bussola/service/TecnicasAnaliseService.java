@@ -1,5 +1,6 @@
 package br.com.bussola.service;
 
+import br.com.bussola.dto.request.ClassificacaoGutRequest;
 import br.com.bussola.dto.request.ItemGutRequest;
 import br.com.bussola.dto.request.ProContraRequest;
 import br.com.bussola.dto.response.AnaliseResponse;
@@ -22,6 +23,7 @@ import br.com.bussola.repository.ResultadoRepository;
 import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,19 +67,78 @@ public class TecnicasAnaliseService {
         registro.setOpcao(opcao);
         registro.setTipo(request.tipo());
         registro.setDescricao(request.descricao().strip());
+        if (registroId != null) {
+            fatores.findByProContraId(registroId).ifPresent(fator -> fator.setDescricao(descricaoGut(registro)));
+        }
         atualizar(decisao, List.of(opcao));
         return Argumento.de(argumentos.save(registro));
     }
 
+    /**
+     * Exclui um pró ou contra e, junto, a classificação GUT dele, se existir.
+     *
+     * @param usuarioId dono da decisão
+     * @param id decisão
+     * @param opcaoId alternativa do registro
+     * @param registroId pró/contra a excluir
+     * @throws RegistroAnaliseNaoEncontradoException se o registro não pertence à alternativa da decisão
+     */
     @Transactional
     public void excluirArgumento(Long usuarioId, Long id, Long opcaoId, Long registroId) {
         var decisao = bloquear(usuarioId, id);
-        var opcao = par(id).stream().filter(item -> item.getId().equals(opcaoId)).findFirst()
+        var par = par(id);
+        var opcao = par.stream().filter(item -> item.getId().equals(opcaoId)).findFirst()
                 .orElseThrow(RegistroAnaliseNaoEncontradoException::new);
         var registro = argumentos.findByIdAndOpcaoId(registroId, opcaoId)
                 .orElseThrow(RegistroAnaliseNaoEncontradoException::new);
+        var classificacao = fatores.findByProContraId(registroId);
+        classificacao.ifPresent(fatores::delete);
         argumentos.delete(registro);
-        atualizar(decisao, List.of(opcao));
+        atualizar(decisao, classificacao.isPresent() ? par : List.of(opcao));
+    }
+
+    /**
+     * Grava as notas GUT de um pró ou contra da decisão.
+     * <p>
+     * Cria a classificação na primeira vez e a atualiza nas seguintes, sem
+     * duplicar (um item GUT por pró/contra). A descrição não é digitada: vem do
+     * pró/contra. A prioridade continua sendo G × U × T.
+     *
+     * @param usuarioId dono da decisão
+     * @param id decisão
+     * @param proContraId pró ou contra de uma das duas alternativas desta decisão
+     * @param request notas inteiras de 1 a 5
+     * @return item GUT salvo, com a prioridade calculada
+     * @throws RegistroAnaliseNaoEncontradoException se o pró/contra não pertence a esta decisão
+     */
+    @Transactional
+    public FatorGut classificarArgumento(Long usuarioId, Long id, Long proContraId, ClassificacaoGutRequest request) {
+        var decisao = bloquear(usuarioId, id);
+        var par = par(id);
+        var argumento = par.stream().map(opcao -> argumentos.findByIdAndOpcaoId(proContraId, opcao.getId()))
+                .flatMap(Optional::stream).findFirst()
+                .orElseThrow(RegistroAnaliseNaoEncontradoException::new);
+        var registro = fatores.findByProContraId(proContraId).orElseGet(ItemGut::new);
+        registro.setDecisao(decisao);
+        registro.setProContra(argumento);
+        registro.setDescricao(descricaoGut(argumento));
+        registro.setGravidade(request.gravidade().intValueExact());
+        registro.setUrgencia(request.urgencia().intValueExact());
+        registro.setTendencia(request.tendencia().intValueExact());
+        atualizar(decisao, par);
+        return FatorGut.de(fatores.save(registro));
+    }
+
+    /**
+     * Cópia da descrição do pró/contra guardada no item GUT (coluna de até 200
+     * caracteres). A tela sempre exibe a descrição completa do pró/contra.
+     *
+     * @param argumento pró ou contra vinculado
+     * @return descrição limitada a 200 caracteres
+     */
+    private static String descricaoGut(ProContra argumento) {
+        var descricao = argumento.getDescricao();
+        return descricao.length() <= 200 ? descricao : descricao.substring(0, 200);
     }
 
     @Transactional
@@ -87,7 +148,7 @@ public class TecnicasAnaliseService {
         var registro = registroId == null ? new ItemGut() : fatores.findByIdAndDecisaoId(registroId, id)
                 .orElseThrow(RegistroAnaliseNaoEncontradoException::new);
         registro.setDecisao(decisao);
-        registro.setDescricao(request.descricao().strip());
+        registro.setDescricao(registro.getProContra() == null ? request.descricao().strip() : descricaoGut(registro.getProContra()));
         registro.setGravidade(request.gravidade().intValueExact());
         registro.setUrgencia(request.urgencia().intValueExact());
         registro.setTendencia(request.tendencia().intValueExact());

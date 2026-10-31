@@ -23,14 +23,45 @@
     /**
      * Fotografa o rascunho da ideia, inclusive a edição ainda aberta.
      *
+     * Numa ideia nova sem texto, a classificação escolhida sozinha não conta
+     * como rascunho: não há o que perder ao sair.
+     *
      * @returns {string} texto, categoria e ideia em edição
      */
     function fotoFormulario() {
+        const temRascunho = editando !== null || conteudo.value.trim() !== "";
         return JSON.stringify({
             editando,
             conteudo: conteudo.value,
-            categoria: formulario.elements.categoria.value
+            categoria: temRascunho ? formulario.elements.categoria.value : ""
         });
+    }
+
+    /**
+     * Marca a classificação informada ou deixa todas desmarcadas.
+     *
+     * @param {string|null} codigo FAVORAVEL, DESFAVORAVEL, DUVIDA ou null/vazio para nenhuma
+     * @returns {void}
+     */
+    function selecionarCategoria(codigo) {
+        formulario.querySelectorAll("input[name='categoria']").forEach(radio => { radio.checked = radio.value === codigo; });
+        sinalizarCategoria(false);
+    }
+
+    /**
+     * Destaca (ou limpa o destaque) da orientação para escolher a classificação.
+     *
+     * @param {boolean} invalida true quando a pessoa tentou adicionar sem classificação
+     * @returns {void}
+     */
+    function sinalizarCategoria(invalida) {
+        formulario.querySelector(".categorias").classList.toggle("invalida", invalida);
+        el("categoria-dica").classList.toggle("invalida", invalida);
+        el("categoria-dica").textContent = invalida
+            ? "Escolha se a ideia é Favorável, Desfavorável ou Dúvida antes de adicioná-la."
+            : "Escolha uma classificação para a ideia antes de adicioná-la.";
+        formulario.querySelector("input[name='categoria']").setCustomValidity(invalida
+            ? "Escolha se a ideia é Favorável, Desfavorável ou Dúvida." : "");
     }
 
     /**
@@ -73,6 +104,7 @@
     function limparFormulario() {
         editando = null;
         formulario.reset();
+        selecionarCategoria(null);
         conteudo.setCustomValidity("");
         el("form-titulo").textContent = "Adicionar ideia";
         el("salvar-ideia").textContent = "+ Adicionar";
@@ -115,7 +147,7 @@
                         if ((editando !== null || conteudo.value.trim()) && !window.confirm("Descartar o texto ainda não salvo para editar esta ideia?")) return;
                         editando = ideia.id;
                         conteudo.value = ideia.conteudo;
-                        formulario.elements.categoria.value = categorias.some(c => c.codigo === ideia.categoria && c.codigo !== null) ? ideia.categoria : "FAVORAVEL";
+                        selecionarCategoria(categorias.some(c => c.codigo === ideia.categoria && c.codigo !== null) ? ideia.categoria : null);
                         el("form-titulo").textContent = "Editar ideia e categoria";
                         el("salvar-ideia").textContent = "Salvar alteração";
                         el("cancelar-edicao").hidden = false;
@@ -152,12 +184,32 @@
         window.BussolaRevisao.sincronizar({
             etapaAtual: decisao.etapaAtual, status: decisao.status, etapaPagina: 2, decisaoId: id
         });
-        el("continuar-decisao").href = "nova-decisao.html?decisaoId=" + encodeURIComponent(id);
+        el("continuar-decisao").href = paginaDaRetomada(decisao) + "?decisaoId=" + encodeURIComponent(id);
         if (somenteConsulta && (decisao.status === "CONCLUIDA" || decisao.etapaAtual > 3)) {
             el("proxima-descricao").textContent = "Essas são as ideias salvas da sua decisão. A consulta não altera seu progresso.";
         }
-        el("etapa").textContent = "Etapa 1 de 5 · Brainstorming";
+        el("etapa").textContent = "Etapa 2 de 6 · Brainstorming";
         atualizarControles();
+    }
+
+    /**
+     * Escolhe a tela aberta por "Continuar decisão" no cartão "Brainstorming concluído".
+     *
+     * Leva direto à etapa salva no backend, sem passar pela Contextualização
+     * (que só redirecionaria e deixaria uma entrada extra no histórico do navegador).
+     *
+     * @param {{etapaAtual: number, status: string}} dados decisão carregada da API
+     * @returns {string} página relativa a frontend/pages/: resultado.html para decisões
+     *          concluídas; analise.html, pesos.html, criterios.html ou opcoes.html conforme
+     *          a etapa salva (6, 5, 4 ou 3); brainstorming.html se ainda estiver na etapa 2
+     */
+    function paginaDaRetomada(dados) {
+        if (dados.status === "CONCLUIDA") return "resultado.html";
+        if (dados.etapaAtual >= 6) return "analise.html";
+        if (dados.etapaAtual === 5) return "pesos.html";
+        if (dados.etapaAtual === 4) return "criterios.html";
+        if (dados.etapaAtual === 3) return "opcoes.html";
+        return "brainstorming.html";
     }
 
     async function executar(acao, sucesso) {
@@ -182,7 +234,11 @@
     formulario.addEventListener("submit", evento => {
         evento.preventDefault();
         conteudo.setCustomValidity(conteudo.value.trim() ? "" : "Escreva uma ideia antes de salvar.");
-        if (!formulario.reportValidity()) return;
+        sinalizarCategoria(conteudo.value.trim() !== "" && !formulario.elements.categoria.value);
+        if (!formulario.reportValidity()) {
+            if (conteudo.value.trim()) el("mensagem").textContent = "Escolha a classificação da ideia: Favorável, Desfavorável ou Dúvida.";
+            return;
+        }
         const dados = { conteudo: conteudo.value.trim(), categoria: formulario.elements.categoria.value };
         executar(async () => {
             const ideia = await api.requisitar(`/decisoes/${id}/ideias${editando === null ? "" : `/${editando}`}`, editando === null ? "POST" : "PUT", dados);
@@ -197,7 +253,11 @@
         atualizarControles();
         window.BussolaAlteracoes.refletir(el("mensagem"), sujo());
     });
-    formulario.addEventListener("change", () => {
+    formulario.addEventListener("change", evento => {
+        if (evento.target.name === "categoria") {
+            sinalizarCategoria(false);
+            if (el("mensagem").textContent.startsWith("Escolha a classificação")) el("mensagem").textContent = "";
+        }
         window.BussolaAlteracoes.refletir(el("mensagem"), sujo());
     });
     el("cancelar-edicao").addEventListener("click", limparFormulario);
@@ -229,14 +289,14 @@
             return;
         }
         if (emRevisao()) {
-            window.location.assign("opcoes.html?decisaoId=" + encodeURIComponent(id)
+            window.BussolaAlteracoes.navegar("opcoes.html?decisaoId=" + encodeURIComponent(id)
                 + (decisao.etapaAtual > 3 ? "&revisao=1" : ""));
             return;
         }
         if (!await window.BussolaEtapas.confirmarAvanco()) return;
         executar(async () => {
             decisao = await api.requisitar(`/decisoes/${id}/brainstorming/concluir`, "POST");
-            window.location.assign("opcoes.html?decisaoId=" + encodeURIComponent(id));
+            window.BussolaAlteracoes.navegar("opcoes.html?decisaoId=" + encodeURIComponent(id));
         }, "Brainstorming concluído. Suas ideias foram preservadas.");
     });
 

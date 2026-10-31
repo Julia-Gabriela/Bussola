@@ -1,5 +1,6 @@
 package br.com.bussola.controller;
 
+import br.com.bussola.dto.request.ClassificacaoGutRequest;
 import br.com.bussola.dto.request.ItemGutRequest;
 import br.com.bussola.dto.request.ProContraRequest;
 import br.com.bussola.dto.response.AnaliseResponse;
@@ -70,6 +71,14 @@ public class TecnicasAnaliseController {
     public ResponseEntity<FatorGut> editarFator(@AuthenticationPrincipal UsuarioResponse usuario,
             @PathVariable Long id, @PathVariable Long registroId, @Valid @RequestBody ItemGutRequest request) {
         return resposta(200, tecnicas.salvarFator(usuario.id(), id, registroId, request));
+    }
+
+    @PutMapping("/gut/pros-contras/{proContraId}")
+    @Operation(summary = "Classificar pró ou contra na Matriz GUT",
+            description = "Cria ou atualiza as notas GUT do pró/contra, sem duplicar. A descrição vem do próprio pró/contra.")
+    public ResponseEntity<FatorGut> classificarArgumento(@AuthenticationPrincipal UsuarioResponse usuario,
+            @PathVariable Long id, @PathVariable Long proContraId, @Valid @RequestBody ClassificacaoGutRequest request) {
+        return resposta(200, tecnicas.classificarArgumento(usuario.id(), id, proContraId, request));
     }
 
     @DeleteMapping("/gut/{registroId}")

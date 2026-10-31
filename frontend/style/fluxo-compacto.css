@@ -56,7 +56,11 @@ body:has(.nova-decisao, .brainstorming, .fluxo-conteudo) .home-header-inner { mi
     .criterios-resumo { margin-top:12px; }
 }
 @media(min-width:701px) {
-    #ideias { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+    #ideias { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; align-items:start; }
+    #ideias > p, #ideias > .grupo-ideias:not(.favoravel, .desfavoravel, .duvida) { grid-column:1 / -1; }
+    #ideias > .grupo-ideias.favoravel { grid-column:1; }
+    #ideias > .grupo-ideias.desfavoravel { grid-column:2; }
+    #ideias > .grupo-ideias.duvida { grid-column:3; }
     .ideia { flex-wrap:wrap; }
     .ideia p { flex-basis:100%; }
 }

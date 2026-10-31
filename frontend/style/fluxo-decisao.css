@@ -11,7 +11,7 @@
 }
 .fluxo-page .home-header { --muted: #aba397; }
 .fluxo-conteudo { position:relative; width:min(100%,1320px); margin:0 auto; padding:32px 40px 64px; color:var(--fluxo-texto); }
-.fluxo-etapas { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); list-style:none; margin:0; padding:0 0 28px; border-bottom:1px solid var(--home-line); }
+.fluxo-etapas { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); list-style:none; margin:0; padding:0 0 28px; border-bottom:1px solid var(--home-line); }
 .fluxo-etapas li { display:flex; position:relative; align-items:center; gap:10px; font-size:13px; line-height:20px; color:#9e8d72; }
 .fluxo-etapas li:not(:last-child)::after { content:""; flex:1; height:1px; margin:0 20px 0 8px; background:#c4933f30; }
 .etapa-circulo { display:grid; place-items:center; flex-shrink:0; width:32px; height:32px; border:1px solid #c4933f40; border-radius:50%; font-size:13px; font-weight:500; }

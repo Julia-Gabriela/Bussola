@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -42,6 +43,15 @@ public class ItemGut {
 
     @Column(name = "tendencia", nullable = false)
     private Integer tendencia;
+
+    /**
+     * Pró ou contra classificado por este item. Nulo nos fatores antigos,
+     * digitados diretamente na Matriz GUT antes da integração.
+     */
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "pro_contra_id", unique = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private ProContra proContra;
 
     /**
      * Compara este item GUT com outro objeto usando somente a identidade persistente.

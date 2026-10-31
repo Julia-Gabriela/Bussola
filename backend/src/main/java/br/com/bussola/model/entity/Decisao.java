@@ -70,6 +70,9 @@ public class Decisao {
     @Column(name = "reflexao_101010_concluida_em")
     private LocalDateTime reflexao101010ConcluidaEm;
 
+    @Column(name = "resultado_alcancado_em")
+    private LocalDateTime resultadoAlcancadoEm;
+
     @Column(name = "data_criacao", nullable = false, updatable = false)
     private LocalDateTime dataCriacao;
 

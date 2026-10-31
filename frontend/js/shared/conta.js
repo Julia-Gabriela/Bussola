@@ -1,7 +1,30 @@
-/** Cabeçalho reutilizável pelas etapas que usam o cliente autenticado. */
-export function configurarConta({ requisitar, aviso, podeSair, aoSair, ocupado, rotas }) {
+/**
+ * Cabeçalho reutilizável pelas etapas que usam o cliente autenticado.
+ *
+ * Liga o menu de perfil (abrir/fechar por clique, clique fora e Esc), o botão
+ * Histórico, a opção "Meu perfil" e o botão Sair. Toda saída da página passa por
+ * `confirmarSaida`; sem essa opção, usa `BussolaAlteracoes.permitir` (aviso de
+ * alterações não salvas) quando o módulo está carregado, ou segue direto.
+ *
+ * @param {object} opcoes
+ * @param {Function} opcoes.requisitar cliente autenticado da API (usado no logout)
+ * @param {(titulo: string, texto: string) => void} opcoes.aviso mostra um aviso na página
+ * @param {() => boolean} opcoes.podeSair diz se o logout pode começar agora
+ * @param {() => void} opcoes.aoSair executado depois do logout bem-sucedido
+ * @param {(valor: boolean) => void} opcoes.ocupado liga/desliga o estado ocupado durante o logout
+ * @param {{historico?: string, perfil?: string}} opcoes.rotas páginas de destino
+ * @param {(origem: HTMLElement, seguir: () => void) => void} [opcoes.confirmarSaida] confirmação
+ *        própria da página antes de sair; deve chamar `seguir` só quando a saída for permitida
+ * @returns {(usuario: {nomeCompleto: string, email: string}) => void} função que preenche
+ *          o avatar, o nome e o painel com os dados do usuário e habilita o menu
+ */
+export function configurarConta({ requisitar, aviso, podeSair, aoSair, ocupado, rotas, confirmarSaida }) {
     rotas = { ...rotas, perfil: rotas?.perfil || "perfil.html" };
     const el = id => document.getElementById(id);
+    const permitir = confirmarSaida || ((origem, seguir) => {
+        if (window.BussolaAlteracoes) window.BussolaAlteracoes.permitir(origem, seguir);
+        else seguir();
+    });
     function fechar() { el("perfil-menu").hidden = true; el("perfil-botao").setAttribute("aria-expanded", "false"); }
     el("perfil-botao").addEventListener("click", () => {
         const aberto = el("perfil-menu").hidden;
@@ -16,7 +39,7 @@ export function configurarConta({ requisitar, aviso, podeSair, aoSair, ocupado, 
             if (rotas.historico) window.location.assign(rotas.historico);
             else aviso("Em breve", "O Histórico estará disponível em breve. Suas decisões recentes continuam disponíveis na Home.");
         };
-        if (rotas.historico && window.BussolaAlteracoes) window.BussolaAlteracoes.permitir(el("historico"), seguir);
+        if (rotas.historico) permitir(el("historico"), seguir);
         else seguir();
     });
     el("perfil-menu").querySelector("[data-destino='perfil']").addEventListener("click", () => {
@@ -25,23 +48,22 @@ export function configurarConta({ requisitar, aviso, podeSair, aoSair, ocupado, 
             if (rotas.perfil) window.location.assign(rotas.perfil);
             else aviso("Em breve", "A edição do perfil estará disponível em breve.");
         };
-        if (rotas.perfil && window.BussolaAlteracoes) window.BussolaAlteracoes.permitir(el("perfil-botao"), seguir);
+        if (rotas.perfil) { fechar(); permitir(el("perfil-botao"), seguir); }
         else seguir();
     });
-    el("sair").addEventListener("click", async () => {
-        const seguir = () => {
+    el("sair").addEventListener("click", () => {
+        permitir(el("sair"), () => {
             if (!podeSair()) return;
             encerrar();
-        };
-        if (window.BussolaAlteracoes) {
-            window.BussolaAlteracoes.permitir(el("sair"), seguir);
-            return;
-        }
-        seguir();
+        });
     });
     async function encerrar() {
         ocupado(true);
-        try { await requisitar("/auth/logout", "POST"); aoSair(); sessionStorage.removeItem("bussola.sessao"); window.location.assign("login.html"); }
+        try {
+            await requisitar("/auth/logout", "POST"); aoSair(); sessionStorage.removeItem("bussola.sessao");
+            if (window.BussolaAlteracoes) window.BussolaAlteracoes.navegar("login.html");
+            else window.location.assign("login.html");
+        }
         catch { aviso("Não foi possível sair", "Confira a conexão e tente novamente."); }
         finally { ocupado(false); }
     }

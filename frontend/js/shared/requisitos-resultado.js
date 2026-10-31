@@ -1,7 +1,8 @@
 /**
  * Descreve o que falta em Prós e Contras e na Matriz GUT para liberar o
  * resultado comparativo, com as mesmas condições mínimas que o backend exige:
- * ao menos um pró e um contra em cada alternativa e ao menos um fator GUT.
+ * ao menos um pró e um contra em cada alternativa e ao menos um item
+ * classificado na Matriz GUT.
  *
  * Serve apenas para orientar. A liberação final continua sendo decidida pelo
  * backend em GET /decisoes/{id}/resultado.
@@ -25,8 +26,8 @@ export function requisitosAnalise(analise) {
             ? "falta registrar ao menos " + lista + "."
             : "pronto, há prós e contras nas duas alternativas." },
         gut: { pronto: total > 0, texto: total
-            ? "pronto, " + total + (total === 1 ? " fator registrado." : " fatores registrados.")
-            : "falta registrar ao menos um fator." }
+            ? "pronto, " + total + (total === 1 ? " item classificado." : " itens classificados.")
+            : "falta classificar ao menos um item." }
     };
 }
 

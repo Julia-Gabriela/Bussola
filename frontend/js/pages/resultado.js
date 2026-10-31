@@ -1,4 +1,5 @@
 import { criarApi } from "../shared/api.js";
+import { configurarConta } from "../shared/conta.js?v=3";
 import { pendenciasAvaliacao, urlRevisarAvaliacoes } from "../shared/requisitos-resultado.js";
 
 
@@ -21,6 +22,7 @@ function renderizar(dados) {
     if (String(dados.decisaoId) !== decisaoId || !Array.isArray(dados.alternativas) || dados.alternativas.length !== 2)
         throw new Error("Não foi possível interpretar o resultado.");
     el("titulo-decisao").textContent = dados.titulo;
+    el("analise-concluida").hidden = false;
     const recomendada = alternativaRecomendada(dados);
     renderizarRecomendacao(dados, recomendada);
 
@@ -134,6 +136,7 @@ function renderizarRecomendacao(dados, recomendada) {
  */
 function aplicarStatus(dados) {
     const concluida = dados.status === "CONCLUIDA";
+    pendenteFinalizacao = dados.status === "EM_ANDAMENTO";
     el("revisar").hidden = concluida;
     el("finalizar").hidden = concluida;
     el("visualizar-analise").hidden = !concluida;
@@ -151,12 +154,14 @@ async function carregar() {
         if (!decisaoId || !/^[1-9]\d*$/.test(decisaoId))
             throw new Error("Abra uma decisão pela Análise.");
         const usuario = await api.requisitar("/auth/me");
-        el("usuario-menu").textContent = usuario.nomeCompleto.trim().split(/\s+/)[0]; el("usuario-inicial").textContent = Array.from(usuario.nomeCompleto.trim())[0]?.toLocaleUpperCase("pt-BR") || "?";
+        preencherConta(usuario);
         const dados = await api.requisitar("/decisoes/" + decisaoId + "/resultado");
         renderizar(dados);
         el("mensagem").textContent = "";
     } catch (erro) {
         el("resultado").hidden = true;
+        el("analise-concluida").hidden = true;
+        pendenteFinalizacao = false;
         el("mensagem").textContent = erro.status === 409 ? "O resultado ainda não pode ser exibido. " + erro.message : erro.message;
         if (decisaoId && /^[1-9]\d*$/.test(decisaoId)) {
             el("voltar-analise").href = "analise.html?decisaoId=" + encodeURIComponent(decisaoId);
@@ -276,13 +281,66 @@ el("finalizar-dialogo").addEventListener("close", () => {
     }
     if (!el("finalizar").hidden) el("finalizar").focus();
 });
-el("sair").addEventListener("click", async () => {
-    try {
-        await api.requisitar("/auth/logout", "POST");
-        sessionStorage.removeItem("bussola.sessao");
-        location.replace("login.html");
-    } catch (erro) {
-        aviso("Não foi possível sair", erro.message);
-    }
+let pendenteFinalizacao = false;
+let saidaPendente = null;
+let abridorSaida = null;
+const LINKS_DO_FLUXO = new Set(["revisar", "revisar-avaliacoes", "voltar-inversao", "voltar-analise", "visualizar-analise"]);
+/**
+ * Avisa que a decisão ainda não foi finalizada antes de sair do Resultado.
+ *
+ * Só abre o popup "Sua decisão ainda não foi finalizada" quando o resultado está
+ * na tela e a decisão continua EM_ANDAMENTO; em decisões concluídas, ou se o
+ * resultado não pôde ser exibido, executa a saída direto. Abrir o popup não grava
+ * nada: "Continuar analisando" fecha e mantém a pessoa aqui, e "Sair por enquanto"
+ * executa `seguir`, com a decisão ainda em andamento e todos os dados preservados.
+ * Não abre um segundo aviso se este ou o de finalização já estiver aberto.
+ *
+ * @param {() => void} seguir ação da saída escolhida (navegar ou encerrar a sessão)
+ * @param {HTMLElement} abridor elemento que pediu a saída; recebe o foco de volta se a pessoa continuar
+ * @returns {void}
+ */
+function confirmarSaida(seguir, abridor) {
+    if (!pendenteFinalizacao || el("resultado").hidden) { seguir(); return; }
+    const dialogo = el("saida-dialogo");
+    if (dialogo.open || el("finalizar-dialogo").open || finalizando) return;
+    saidaPendente = seguir;
+    abridorSaida = abridor;
+    dialogo.showModal();
+    el("saida-continuar").focus();
+}
+document.addEventListener("click", evento => {
+    const link = evento.target.closest?.("a[href]");
+    if (!link || evento.defaultPrevented || evento.button !== 0
+        || evento.ctrlKey || evento.metaKey || evento.shiftKey || evento.altKey) return;
+    if (LINKS_DO_FLUXO.has(link.id) || (link.target && link.target !== "_self") || link.hasAttribute("download")) return;
+    const destino = new URL(link.href, location.href);
+    if (destino.origin !== location.origin
+        || (destino.pathname === location.pathname && destino.search === location.search)) return;
+    if (!pendenteFinalizacao || el("resultado").hidden) return;
+    evento.preventDefault();
+    confirmarSaida(() => location.assign(destino.href), link);
+});
+el("saida-continuar").addEventListener("click", () => el("saida-dialogo").close());
+document.addEventListener("keydown", evento => {
+    if (evento.key !== "Escape" || !el("saida-dialogo").open) return;
+    evento.preventDefault();
+    el("saida-dialogo").close();
+}, true);
+el("saida-sair").addEventListener("click", () => {
+    const seguir = saidaPendente;
+    saidaPendente = null;
+    abridorSaida = null;
+    el("saida-dialogo").close();
+    seguir?.();
+});
+el("saida-dialogo").addEventListener("close", () => {
+    saidaPendente = null;
+    if (abridorSaida?.isConnected) abridorSaida.focus();
+    abridorSaida = null;
+});
+const preencherConta = configurarConta({
+    requisitar: api.requisitar, aviso, podeSair: () => !finalizando, aoSair: () => {},
+    ocupado: valor => { el("sair").disabled = valor; }, rotas: { historico: "historico.html" },
+    confirmarSaida: (origem, seguir) => confirmarSaida(seguir, origem)
 });
 carregar();

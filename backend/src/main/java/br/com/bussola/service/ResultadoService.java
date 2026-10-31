@@ -29,14 +29,20 @@ public class ResultadoService {
     }
 
     /**
-     * Monta o resultado comparativo de uma decisão do usuário autenticado, sem gravar nada.
+     * Monta o resultado comparativo de uma decisão do usuário autenticado.
      * <p>
      * Valida todas as técnicas e calcula as pontuações a partir das notas e pesos
      * atuais, tanto para decisões em andamento quanto concluídas (depois de
      * concluída, notas e pesos não podem mais mudar, então o cálculo é estável).
-     * Por ser somente leitura, consultas simultâneas, inclusive de abas
-     * diferentes, não disputam a tabela {@code resultados} e não podem gerar
-     * inserção duplicada. As pontuações só são persistidas em {@link #finalizar}.
+     * Não grava pontuações nem altera o status: consultas simultâneas, inclusive
+     * de abas diferentes, não disputam a tabela {@code resultados} e não podem
+     * gerar inserção duplicada. As pontuações só são persistidas em {@link #finalizar}.
+     * <p>
+     * A única escrita é a marcação de chegada ao resultado: na primeira consulta
+     * bem-sucedida de uma decisão em andamento, grava {@code resultado_alcancado_em}
+     * (ver {@link DecisaoRepository#registrarResultadoAlcancado}). É o que faz o
+     * Histórico e a Home levarem "Continuar decisão" direto para o Resultado, mesmo
+     * após recarregar a página ou entrar de novo. Se algum requisito falhar, nada é marcado.
      *
      * @param usuarioId dono exigido da decisão
      * @param decisaoId decisão consultada
@@ -44,10 +50,13 @@ public class ResultadoService {
      * @throws DecisaoNaoEncontradaException se a decisão não existir ou for de outra pessoa
      * @throws EtapaInvalidaException se ainda faltar algum requisito do resultado
      */
-    @Transactional(readOnly = true)
+    @Transactional
     public ResultadoComparativoResponse consultar(Long usuarioId, Long decisaoId) {
         var decisao=decisoes.findByIdAndUsuarioId(decisaoId,usuarioId).orElseThrow(DecisaoNaoEncontradaException::new);
-        return montar(decisao);
+        var resultado=montar(decisao);
+        if(decisao.getStatus()==StatusDecisao.EM_ANDAMENTO&&decisao.getResultadoAlcancadoEm()==null)
+            decisoes.registrarResultadoAlcancado(decisaoId,StatusDecisao.EM_ANDAMENTO,LocalDateTime.now());
+        return resultado;
     }
 
     /**
@@ -105,7 +114,7 @@ public class ResultadoService {
         for(var opcao:opcoesDaDecisao){var itens=argumentos.findByOpcaoIdOrderByIdAsc(opcao.getId());
             if(itens.stream().noneMatch(i->TipoProContra.PRO.equals(i.getTipo()))||itens.stream().noneMatch(i->TipoProContra.CONTRA.equals(i.getTipo())))
                 throw new EtapaInvalidaException("Conclua Prós e Contras: registre ao menos um pró e um contra para cada alternativa.");}
-        if(fatores.findByDecisaoIdOrderByIdAsc(decisaoId).isEmpty()) throw new EtapaInvalidaException("Conclua a Matriz GUT registrando ao menos um fator.");
+        if(fatores.findByDecisaoIdOrderByIdAsc(decisaoId).isEmpty()) throw new EtapaInvalidaException("Conclua a Matriz GUT classificando ao menos um item.");
         if(decisao.getReflexao101010ConcluidaEm()==null) throw new EtapaInvalidaException("Conclua a técnica 10/10/10 antes de ver o resultado.");
         if(decisao.getInversaoConcluidaEm()==null) throw new EtapaInvalidaException("Conclua a técnica de Inversão antes de ver o resultado.");
         if(pendencias.possuiPendencia(decisaoId)) throw new EtapaInvalidaException("Confirme as avaliações pendentes antes de calcular o resultado.");

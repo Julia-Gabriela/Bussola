@@ -267,7 +267,7 @@ function irParaPesos() {
     const evento = new CustomEvent("bussola:criterios-concluidos", { cancelable: true, detail: { decisaoId: id, etapa: 5 } });
     if (!window.dispatchEvent(evento)) return;
     if (rotas.pesos) {
-        const url = new URL(rotas.pesos, window.location.href); url.searchParams.set("decisaoId", id); window.location.assign(url.href);
+        const url = new URL(rotas.pesos, window.location.href); url.searchParams.set("decisaoId", id); window.BussolaAlteracoes.navegar(url.href);
     } else aviso("Avaliação salva", "Suas notas estão guardadas. A etapa de pesos estará disponível em breve. Você pode retomar esta decisão pela Home.");
 }
 function validarCompleta() {
@@ -324,6 +324,11 @@ el("recarregar").addEventListener("click", () => {
 el("ir-pesos").addEventListener("click", () => {
     window.BussolaAlteracoes.permitir(el("ir-pesos"), irParaPesos);
 });
+el("abrir-ajuda").addEventListener("click", () => {
+    const ajuda = el("ajuda-criterios");
+    if (!ajuda.open) { ajuda.showModal(); ajuda.scrollTop = 0; }
+});
+el("ajuda-criterios").addEventListener("close", () => el("abrir-ajuda").focus());
 el("voltar-retorno").addEventListener("click", voltarRetorno);
 el("confirmar-a").addEventListener("click", () => confirmarAvaliacao("A"));
 el("confirmar-b").addEventListener("click", () => confirmarAvaliacao("B"));

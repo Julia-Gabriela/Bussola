@@ -11,6 +11,8 @@
     let ocupado = true;
     let bloqueado = false;
     let referencia = null;
+    let redirecionando = false;
+    const CHAVE_DEIXADA = "bussola.contextualizacao.redirecionada";
 
     /**
      * Fotografa título e contexto exatamente como estão nos campos.
@@ -40,15 +42,59 @@
         window.BussolaAlteracoes.refletir(mensagem, false);
     }
 
-    window.BussolaAlteracoes.registrar({ sujo, ocupado: () => ocupado });
     titulo.addEventListener("input", () => window.BussolaAlteracoes.refletir(mensagem, sujo()));
     contexto.addEventListener("input", () => window.BussolaAlteracoes.refletir(mensagem, sujo()));
 
     function abrirBrainstorming() {
+        abrirEtapa("brainstorming.html");
+    }
+
+    /**
+     * Sai da Contextualização para a etapa salva, substituindo esta página no histórico.
+     *
+     * Usado quando a decisão já passou da etapa 1 (link antigo, favorito ou
+     * conclusão da contextualização). Bloqueia os campos, informa que a etapa
+     * está sendo aberta e marca na sessão que esta página foi deixada por
+     * redirecionamento: se a pessoa voltar a ela pelo botão Voltar,
+     * `pularSeVoltouAposRedirecionar` recua mais um passo em vez de mandá-la
+     * de novo para frente (ou mostrar um formulário vazio).
+     *
+     * @param {string} pagina tela de destino relativa a frontend/pages/ (por exemplo "opcoes.html")
+     * @returns {void}
+     */
+    function abrirEtapa(pagina) {
         bloqueado = true;
         ocupado = false;
+        redirecionando = true;
         campos.disabled = true;
-        window.location.replace(`brainstorming.html?decisaoId=${encodeURIComponent(id)}`);
+        mensagem.textContent = "Abrindo a etapa atual da decisão…";
+        sessionStorage.setItem(CHAVE_DEIXADA, "1");
+        window.location.replace(`${pagina}?decisaoId=${encodeURIComponent(id)}`);
+    }
+
+    /**
+     * Trata a volta (botão Voltar/Avançar ou cache do navegador) a uma
+     * Contextualização que já tinha redirecionado para outra etapa.
+     *
+     * Nesse caso recua mais um passo no histórico, mostrando "Voltando…".
+     * Se não houver para onde recuar, abre a Home depois de um instante, para
+     * a tela nunca ficar parada numa mensagem de carregamento. Num acesso
+     * normal, apenas limpa a marca deixada por `abrirEtapa`.
+     *
+     * @param {boolean} voltou true quando a página foi aberta pelo histórico do navegador
+     * @returns {boolean} true quando a página está recuando e o carregamento deve parar
+     */
+    function pularSeVoltouAposRedirecionar(voltou) {
+        const deixada = sessionStorage.getItem(CHAVE_DEIXADA) === "1";
+        sessionStorage.removeItem(CHAVE_DEIXADA);
+        if (!voltou || !deixada) return false;
+        redirecionando = true;
+        bloqueado = true;
+        campos.disabled = true;
+        mensagem.textContent = "Voltando…";
+        window.history.back();
+        setTimeout(() => window.location.replace("home.html"), 1500);
+        return true;
     }
 
     formulario.addEventListener("submit", async evento => {
@@ -105,11 +151,9 @@
             if (id) {
                 const decisao = await api.requisitar(`/decisoes/${id}`);
                 if (decisao.etapaAtual >= 3) {
-                    const pagina = decisao.etapaAtual === 6 ? "analise.html"
+                    abrirEtapa(decisao.etapaAtual === 6 ? "analise.html"
                         : decisao.etapaAtual === 5 ? "pesos.html"
-                        : decisao.etapaAtual >= 4 ? "criterios.html" : "opcoes.html";
-                    bloqueado = true;
-                    window.location.replace(pagina + "?decisaoId=" + encodeURIComponent(id));
+                        : decisao.etapaAtual >= 4 ? "criterios.html" : "opcoes.html");
                     return;
                 }
                 if (decisao.etapaAtual === 2) { abrirBrainstorming(); return; }
@@ -126,8 +170,12 @@
         } finally {
             ocupado = false;
             campos.disabled = bloqueado;
+            if (!redirecionando) window.BussolaAlteracoes.registrar({ sujo, ocupado: () => ocupado });
         }
     }
-    window.addEventListener("pageshow", evento => { if (evento.persisted) window.location.reload(); });
-    carregar();
+    window.addEventListener("pageshow", evento => {
+        if (evento.persisted && !pularSeVoltouAposRedirecionar(true)) window.location.reload();
+    });
+    const navegacao = performance.getEntriesByType("navigation")[0];
+    if (!pularSeVoltouAposRedirecionar(navegacao?.type === "back_forward")) carregar();
 })();
