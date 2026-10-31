@@ -10,9 +10,23 @@ const editavel = () => dados?.status === "EM_ANDAMENTO"
     && (dados.etapaAtual === 5 || (dados.etapaAtual === 6 && emRevisao()))
     && !bloqueado && !encerrada;
 const foto = () => JSON.stringify(dados?.criterios?.map(item => [item.id, item.peso]) || []);
-const niveis = ["", "Baixo", "Moderado", "Médio", "Alto", "Essencial"];
+const niveis = ["", "Baixo", "Moderado", "Importante", "Muito importante", "Essencial"];
 const icones = { "Segurança":"seguranca", "Crescimento":"crescimento", "Risco":"risco",
     "Impacto emocional":"emocional", "Alinhamento a valores":"valores" };
+const ajudas = {
+    "Segurança": ["Pode merecer peso maior quando estabilidade e previsibilidade são fundamentais para você.",
+        "Ex.: quando você precisa de renda garantida ou de uma rotina previsível."],
+    "Crescimento": ["Pode merecer peso maior quando aprender e evoluir é prioridade.",
+        "Ex.: quando você busca novas habilidades ou avanço na carreira."],
+    "Risco": ["Pode merecer peso maior quando evitar incertezas é especialmente importante.",
+        "Um peso maior em Risco significa dar mais importância a evitar riscos: a alternativa com menor nota de risco ganha mais pontos."],
+    "Impacto emocional": ["Pode merecer peso maior quando o bem-estar é central nesta decisão.",
+        "Ex.: quando a decisão afeta sua saúde, sua rotina ou suas relações."],
+    "Alinhamento a valores": ["Pode merecer peso maior quando princípios e prioridades pessoais têm grande importância.",
+        "Ex.: quando a escolha precisa combinar com o que você acredita."]
+};
+const AJUDA_PERSONALIZADO = ["Este é um critério que você criou. Dê peso maior se ele pesa muito na sua escolha e peso menor se ele é só um detalhe.",
+    "O peso vale igual para as duas alternativas."];
 window.BussolaAlteracoes.registrar({ sujo: () => referencia !== "" && foto() !== referencia, ocupado: () => ocupado });
 
 function aviso(titulo, texto) {
@@ -24,6 +38,7 @@ function estado(valor) {
     ocupado = valor;
     el("conteudo").setAttribute("aria-busy", String(valor));
     el("avancar").disabled = valor || !editavel();
+    el("salvar-depois").disabled = valor || !editavel();
     el("recarregar").disabled = valor;
     document.querySelectorAll(".peso-controle input").forEach(input => { input.disabled = valor || !editavel(); });
 }
@@ -35,6 +50,25 @@ function criar(tag, classe, texto) {
     if (texto !== undefined) no.textContent = texto;
     return no;
 }
+/**
+ * Monta o texto de um nível de peso, como "3 — Importante".
+ *
+ * @param {number} peso valor inteiro de 1 a 5
+ * @returns {string} número e rótulo separados por travessão
+ */
+function rotuloNivel(peso) {
+    return peso + " — " + niveis[peso];
+}
+/**
+ * Atualiza a soma dos pesos e a participação percentual de cada critério.
+ *
+ * A participação é só visual: peso / somaDosPesos × 100, arredondada para o
+ * inteiro mais próximo, no formato "Segurança representa 36% da importância
+ * total (4 de 11).". Não altera os pesos nem o cálculo do resultado, que
+ * continua no backend usando os valores de 1 a 5.
+ *
+ * @returns {void}
+ */
 function atualizarSoma() {
     const lista = dados.criterios;
     const soma = lista.reduce((total, criterio) => total + criterio.peso, 0);
@@ -43,6 +77,42 @@ function atualizarSoma() {
     el("barra-total").setAttribute("aria-valuemax", String(maximo));
     el("barra-total").setAttribute("aria-valuenow", String(soma));
     el("barra-total-valor").style.width = String(maximo ? soma / maximo * 100 : 0) + "%";
+    lista.forEach(criterio => {
+        const alvo = document.querySelector(`[data-participacao="${criterio.id}"]`);
+        if (!alvo) return;
+        const percentual = soma ? Math.round(criterio.peso / soma * 100) : 0;
+        alvo.textContent = criterio.nome + " representa " + percentual + "% da importância total ("
+            + criterio.peso + " de " + soma + ").";
+    });
+}
+/**
+ * Cria o botão "?" e o painel com exemplos de quando o critério pode merecer peso maior.
+ *
+ * Usa o componente compartilhado de ajuda contextual (ajuda-contextual.js):
+ * o botão controla o painel por aria-controls e abre com clique, toque ou
+ * teclado. Critérios personalizados recebem uma explicação genérica.
+ *
+ * @param {{id: number, nome: string}} criterio critério exibido no cartão
+ * @returns {{botao: HTMLButtonElement, painel: HTMLDivElement}} elementos a inserir no cartão
+ */
+function criarAjuda(criterio) {
+    const idPainel = "ajuda-peso-" + criterio.id;
+    const botao = criar("button", "ajuda-botao");
+    botao.type = "button";
+    botao.setAttribute("aria-expanded", "false");
+    botao.setAttribute("aria-controls", idPainel);
+    const simbolo = criar("span", "", "?");
+    simbolo.setAttribute("aria-hidden", "true");
+    botao.append(simbolo, criar("span", "ajuda-sr", "Quando " + criterio.nome + " pode merecer peso maior"));
+    const painel = criar("div", "ajuda-painel");
+    painel.id = idPainel;
+    painel.hidden = true;
+    (ajudas[criterio.nome] || AJUDA_PERSONALIZADO).forEach(texto => painel.append(criar("p", "", texto)));
+    const fechar = criar("button", "ajuda-fechar", "×");
+    fechar.type = "button";
+    fechar.setAttribute("aria-label", "Fechar ajuda");
+    painel.append(fechar);
+    return { botao, painel };
 }
 function renderizar() {
     const lista = dados.criterios, maximo = lista.length * 5;
@@ -54,9 +124,12 @@ function renderizar() {
         icone.src = "../assets/images/criterios/" + (icones[criterio.nome] || "valores") + ".svg";
         icone.alt = "";
         const texto = criar("div", "peso-criterio-texto");
-        texto.append(criar("h2", "", criterio.nome));
+        const titulo = criar("h2", "", criterio.nome);
+        const ajuda = criarAjuda(criterio);
+        titulo.append(ajuda.botao);
+        texto.append(titulo);
         texto.append(criar("p", "", criterio.descricao || "Critério personalizado"));
-        const nivel = criar("span", "peso-nivel", niveis[criterio.peso]);
+        const nivel = criar("span", "peso-nivel", rotuloNivel(criterio.peso));
         const valor = criar("output", "peso-valor", criterio.peso);
         valor.setAttribute("aria-label", "Peso de " + criterio.nome);
         cabecalho.append(icone, texto, nivel, valor);
@@ -76,7 +149,7 @@ function renderizar() {
         slider.addEventListener("input", () => {
             const peso = Number(slider.value);
             criterio.peso = peso;
-            nivel.textContent = niveis[peso];
+            nivel.textContent = rotuloNivel(peso);
             valor.value = String(peso); valor.textContent = String(peso);
             slider.setAttribute("aria-valuetext", peso + ": " + niveis[peso]);
             trilho.style.setProperty("--peso-posicao", String((peso - 1) * 25) + "%");
@@ -85,12 +158,15 @@ function renderizar() {
         });
         const escala = criar("div", "peso-escala");
         for (let marca = 1; marca <= 5; marca++) escala.append(criar("span", "", marca));
-        controle.append(trilho, slider, escala); card.append(cabecalho, controle);
+        const participacao = criar("p", "peso-participacao");
+        participacao.dataset.participacao = String(criterio.id);
+        controle.append(trilho, slider, escala); card.append(cabecalho, ajuda.painel, controle, participacao);
         return card;
     }));
     atualizarSoma();
     el("painel-pesos").hidden = false;
     el("avancar").hidden = !editavel();
+    el("salvar-depois").hidden = !editavel() || emRevisao();
     el("avancar").replaceChildren(document.createTextNode(emRevisao() ? "Salvar alterações " : "Próxima etapa "));
     el("avancar").append(criar("span", "", emRevisao() ? "✓" : "→"));
     window.BussolaRevisao.sincronizar({ etapaAtual:dados.etapaAtual, status:dados.status, etapaPagina:5, decisaoId:id });
@@ -147,6 +223,36 @@ el("avancar").addEventListener("click", async () => {
         el("mensagem").textContent = recarregar ? erro.message + " Recarregue os dados antes de continuar." : erro.message;
     } finally { estado(false); }
 });
+/**
+ * Salva os pesos atuais sem concluir a etapa ("Salvar para depois").
+ *
+ * Usa o endpoint existente PUT /decisoes/{id}/pesos, que grava todos os pesos
+ * de 1 a 5 e mantém etapaAtual. Depois do sucesso, a resposta do backend vira
+ * a nova referência, então a proteção de alterações não salvas deixa de
+ * bloquear a saída. Em falha, os pesos escolhidos continuam na tela e a
+ * mensagem explica o problema; se a resposta for incerta (rede, 5xx, 404 ou
+ * 409), pede para recarregar antes de continuar, como o botão de avanço.
+ *
+ * @returns {Promise<void>} Resolve depois de mostrar o resultado do salvamento.
+ */
+async function salvarDepois() {
+    if (ocupado || !editavel()) return;
+    estado(true);
+    el("mensagem").textContent = "Salvando pesos…";
+    el("recarregar").hidden = true;
+    try {
+        const corpo = { criterios:dados.criterios.map(item => ({ id:item.id, peso:item.peso })) };
+        dados = await api.requisitar("/decisoes/" + id + "/pesos", "PUT", corpo);
+        referencia = foto();
+        renderizar();
+        el("mensagem").textContent = "Pesos salvos. Você pode continuar depois, de onde parou.";
+    } catch (erro) {
+        const recarregar = erro.incerto || erro.status >= 500 || [404, 409].includes(erro.status);
+        bloqueado = recarregar; el("recarregar").hidden = !recarregar;
+        el("mensagem").textContent = recarregar ? erro.message + " Recarregue os dados antes de continuar." : erro.message;
+    } finally { estado(false); }
+}
+el("salvar-depois").addEventListener("click", salvarDepois);
 el("recarregar").addEventListener("click", () => window.BussolaAlteracoes.permitir(el("recarregar"), carregar));
 window.addEventListener("pageshow", evento => { if (evento.persisted) location.reload(); });
 carregar();

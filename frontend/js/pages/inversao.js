@@ -1,6 +1,7 @@
 import { criarApi } from "../shared/api.js";
 import { configurarConta } from "../shared/conta.js";
 import { requisitosAnalise, marcarRequisito, pendenciasAvaliacao, urlRevisarAvaliacoes } from "../shared/requisitos-resultado.js";
+import { marcarNavegacao } from "../shared/tecnicas-estado.js?v=1";
 
 const el = id => document.getElementById(id);
 const id = new URLSearchParams(location.search).get("decisaoId");
@@ -41,6 +42,7 @@ function marcarInversao() {
     marcarRequisito(el("requisitos-lista"), "inversao", pronta, pronta
         ? "concluída."
         : "preencha as quatro reflexões e clique em “Ver resultado comparativo” para concluir.");
+    marcarNavegacao(document.querySelector(".tecnicas-nav"), { inversao: pronta });
 }
 
 /**
@@ -66,6 +68,8 @@ async function carregarRequisitos() {
         marcarRequisito(lista, "101010", reflexoes.concluida === true, reflexoes.concluida === true
             ? "concluída."
             : "falta concluir: preencha as seis reflexões e use “Próxima: Inversão”.");
+        marcarNavegacao(document.querySelector(".tecnicas-nav"),
+            { pros: situacao.pros.pronto, gut: situacao.gut.pronto, "101010": reflexoes.concluida === true });
     } catch {
         for (const requisito of ["pros", "gut", "101010"]) marcarRequisito(lista, requisito, false, "não foi possível verificar agora.");
     }

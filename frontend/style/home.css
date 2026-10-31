@@ -52,8 +52,8 @@
 .home-stat { display: flex; align-items: center; gap: 16px; min-width: 0; padding: 22px; border: 1px solid var(--home-line); border-radius: 12px; background: linear-gradient(145deg, #251e16, #1e1912); }
 .home-stat-icon { display: grid; place-items: center; width: 46px; height: 46px; flex-shrink: 0; border: 1px solid #d4ad6820; border-radius: 10px; background: #d4ad680a; }
 .home-stat-icon.is-complete { background: #a1bc8d09; border-color: #a1bc8d20; }
-.home-stat h2 { font-size: 12px; font-weight: 400; line-height: 20px; color: var(--muted); margin: 0; }
-.home-stat p { font-size: 28px; line-height: 34px; font-weight: 500; font-variant-numeric: tabular-nums; margin: 2px 0 0; }
+.home-stat-nome { display: block; font-size: 12px; font-weight: 400; line-height: 20px; color: var(--muted); margin: 0; }
+.home-stat-valor { display: block; font-size: 28px; line-height: 34px; font-weight: 500; font-variant-numeric: tabular-nums; margin: 2px 0 0; }
 .home-columns { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); align-items: start; gap: 24px; margin-top: 28px; }
 .home-recent { min-width: 0; padding: 22px; border: 1px solid var(--home-line); border-radius: 12px; background: linear-gradient(145deg, #241d15, #1c1711); }
 .home-section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 44px; }
@@ -97,6 +97,29 @@
 .home-dialog::backdrop { background: #0009; }
 .home-dialog h2 { margin: 0; font: 400 28px/1.4 var(--font-display); }
 .home-dialog p { margin: 16px 0 24px; color: var(--muted); font-size: 14px; line-height: 24px; }
+.home-stat-link { color: var(--home-text); text-decoration: none; transition: border-color .15s ease, background .15s ease; }
+.home-stat-link:hover { border-color: #d4ad6866; background: linear-gradient(145deg, #2b2319, #221c14); }
+.home-stat-link:focus-visible { outline: 2px solid var(--home-accent); outline-offset: 3px; }
+.home-stat-texto { min-width: 0; }
+.home-stat-ver { display: block; margin-top: 2px; color: #ddbb80; font-size: 12px; line-height: 18px; }
+.home-empty p { margin: 0; }
+.home-empty[hidden], .home-empty-acao[hidden] { display: none; }
+.home-empty .home-empty-acao { width: auto; margin: 18px auto 0; padding-inline: 18px; }
+.home-etapas { margin-top: 24px; }
+.home-etapas h2 { margin: 0; font-size: 16px; font-weight: 500; line-height: 24px; }
+.home-etapas > p { margin: 6px 0 16px; color: var(--muted); font-size: 13px; line-height: 22px; }
+.home-etapas-lista { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 20px; margin: 0; padding: 0; list-style: none; counter-reset: etapa; }
+.home-etapas-lista li { position: relative; padding-left: 34px; counter-increment: etapa; font-size: 13px; line-height: 20px; }
+.home-etapas-lista li::before { content: counter(etapa); position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 24px; height: 24px; border: 1px solid #d4ad6855; border-radius: 50%; color: var(--home-accent); font-size: 12px; font-weight: 600; }
+.home-etapas-lista strong { display: block; font-weight: 500; }
+.home-etapas-lista span { display: block; color: var(--muted); }
+.botao-perigo { border: 1px solid #d4937866 !important; background: #ba604418 !important; color: #f4bea8 !important; }
+.botao-perigo:not(:disabled):hover { background: #ba60442e !important; border-color: #e0a58c !important; }
+.botao-perigo.is-forte { border-color: transparent !important; background: #b5553a !important; color: #fff !important; font-weight: 600; }
+.botao-perigo.is-forte:not(:disabled):hover { background: #9f4830 !important; }
+.botao-perigo:focus-visible { outline: 2px solid #f4bea8; outline-offset: 2px; }
+@media (max-width: 760px) { .home-etapas-lista { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .home-etapas-lista { grid-template-columns: 1fr; } .home-stat-ver { font-size: 11px; } }
 .home-skip { position: absolute; top: -100px; left: 16px; z-index: 10; padding: 12px; background: var(--home-surface); color: var(--gold); }
 .home-skip:focus { top: 12px; }
 .home-noscript { position: relative; margin: 24px; color: var(--gold); }
@@ -137,8 +160,8 @@
     .home-stat { gap: 8px; padding: 16px 10px; }
     .home-stat-icon { width: 30px; height: 34px; border: 0; background: transparent; }
     .home-stat-icon.is-complete { background: transparent; }
-    .home-stat h2 { font-size: 11px; line-height: 18px; }
-    .home-stat p { font-size: 26px; }
+    .home-stat-nome { font-size: 11px; line-height: 18px; }
+    .home-stat-valor { font-size: 26px; }
     .home-columns { margin-top: 24px; gap: 28px; }
     .home-section-heading h2 { font-size: 16px; }
     .home-recent { padding: 16px 12px; }

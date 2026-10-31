@@ -16,6 +16,8 @@
 .historico-texto { min-width:0; }
 .historico-status { display:inline-block; margin:8px 0 0; font-size:12px; color:var(--home-accent); }
 .concluida .historico-status { color:#a5c48e; }
+.historico-item .historico-etapa { margin:10px 0 4px; color:var(--beige); font-size:14px; font-weight:500; }
+.historico-item progress { width:220px; }
 .historico-acoes { display:flex; gap:10px; flex-shrink:0; flex-wrap:wrap; }
 .historico-acoes button { font:inherit; font-size:14px; }
 .historico-paginacao { display:flex; justify-content:center; align-items:center; gap:16px; font-size:14px; }

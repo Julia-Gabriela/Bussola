@@ -142,6 +142,52 @@
             + " foi alterada. Se quiser, confira as notas dessa alternativa. Essa revisão não é obrigatória.";
     }
 
+    const CATEGORIAS_IDEIAS = [
+        ["FAVORAVEL", "Pontos positivos"], ["DESFAVORAVEL", "Pontos negativos"], ["DUVIDA", "Dúvidas"]
+    ];
+
+    /**
+     * Mostra as ideias do Brainstorming na seção recolhível "Suas ideias".
+     *
+     * Usa a leitura existente GET /decisoes/{id}/ideias (liberada a partir da
+     * etapa 2). As ideias aparecem só como referência, em três listas por
+     * categoria; não há botões nem cliques que copiem o texto para os campos
+     * de nome ou descrição. Ideias antigas sem categoria entram em "Sem
+     * categoria". Sem ideias, ou se a leitura falhar, a seção fica oculta e o
+     * formulário continua funcionando normalmente.
+     *
+     * @returns {Promise<void>} Resolve depois de preencher ou ocultar a seção.
+     */
+    async function carregarIdeias() {
+        const secao = el("suas-ideias");
+        try {
+            const ideias = await requisitar("/decisoes/" + id + "/ideias");
+            if (!Array.isArray(ideias) || !ideias.length) { secao.hidden = true; return; }
+            const grupos = [...CATEGORIAS_IDEIAS, [null, "Sem categoria"]].map(([codigo, nome]) => {
+                const lista = ideias.filter(ideia => codigo ? ideia.categoria === codigo
+                    : !CATEGORIAS_IDEIAS.some(([outro]) => outro === ideia.categoria));
+                if (!lista.length) return null;
+                const bloco = document.createElement("section");
+                bloco.className = "opcoes-ideias-grupo" + (codigo ? " " + codigo.toLowerCase() : "");
+                const titulo = document.createElement("h3");
+                titulo.textContent = nome + " (" + lista.length + ")";
+                const itens = document.createElement("ul");
+                itens.append(...lista.map(ideia => {
+                    const item = document.createElement("li");
+                    item.textContent = ideia.conteudo;
+                    return item;
+                }));
+                bloco.append(titulo, itens);
+                return bloco;
+            }).filter(Boolean);
+            el("ideias-colunas").replaceChildren(...grupos);
+            el("ideias-total").textContent = "(" + ideias.length + ")";
+            secao.hidden = false;
+        } catch {
+            secao.hidden = true;
+        }
+    }
+
     async function carregar() {
         if (ocupado || !lerSessao()) return;
         if (!id || !/^[1-9]\d*$/.test(id)) {
@@ -161,6 +207,7 @@
             el("perfil-botao").disabled = false;
             renderizar(await requisitar("/decisoes/" + id + "/opcoes"));
             limparErros();
+            carregarIdeias();
         } catch (erro) {
             decisao = null;
             el("mensagem").textContent = erro.message;

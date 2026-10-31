@@ -24,9 +24,9 @@ const ETAPAS = [
 ];
 const NOMES_ETAPAS = ["Contextualização", "Brainstorming", "Opções", "Critérios", "Pesos", "Análise"];
 const CATEGORIAS = [
-    { codigo: "FAVORAVEL", nome: "Favorável", classe: "favoravel" },
-    { codigo: "DESFAVORAVEL", nome: "Desfavorável", classe: "desfavoravel" },
-    { codigo: "DUVIDA", nome: "Dúvida", classe: "duvida" }
+    { codigo: "FAVORAVEL", nome: "Pontos positivos", classe: "favoravel" },
+    { codigo: "DESFAVORAVEL", nome: "Pontos negativos", classe: "desfavoravel" },
+    { codigo: "DUVIDA", nome: "Dúvidas", classe: "duvida" }
 ];
 const NIVEIS_PESO = ["", "Baixo", "Moderado", "Médio", "Alto", "Essencial"];
 const PRAZOS = [

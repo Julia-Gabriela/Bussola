@@ -7,19 +7,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style/landing-page.css">
-    <link rel="stylesheet" href="../style/home.css">
+    <link rel="stylesheet" href="../style/landing-page.css?v=2">
+    <link rel="stylesheet" href="../style/home.css?v=2">
     <link rel="stylesheet" href="../style/fluxo-decisao.css?v=2">
-    <link rel="stylesheet" href="../style/metodo-101010.css">
-    <link rel="stylesheet" href="../style/revisao-etapa.css?v=3">
+    <link rel="stylesheet" href="../style/metodo-101010.css?v=2">
+    <link rel="stylesheet" href="../style/revisao-etapa.css?v=5">
     <link rel="stylesheet" href="../style/confirmacao-etapa.css">
     <script src="../js/shared/alteracoes-nao-salvas.js?v=3" defer></script>
     <script src="../js/shared/confirmacao-etapa.js" defer></script>
     <script src="../js/shared/revisao-etapa.js?v=4" defer></script>
     <script src="../js/pages/metodo-101010-integracoes.js" defer></script>
-    <script src="../js/pages/metodo-101010.js?v=2" type="module"></script>
-    <link rel="stylesheet" href="../style/fluxo-compacto.css">
-    <link rel="stylesheet" href="../style/tecnicas-nav.css?v=2">
+    <script src="../js/pages/metodo-101010.js?v=3" type="module"></script>
+    <link rel="stylesheet" href="../style/fluxo-compacto.css?v=4">
+    <link rel="stylesheet" href="../style/tecnicas-nav.css?v=4">
 </head>
 <body class="home-page fluxo-page metodo-page">
     <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
@@ -59,10 +59,10 @@
     <button type="button" class="fluxo-salvar" id="recarregar" hidden>Recarregar dados</button>
     <div id="metodo" hidden>
         <nav class="tecnicas-nav" aria-label="Técnicas de análise">
-            <a id="tecnica-pros" href="analise.html"><span>Prós e Contras</span><small>Clássico</small></a>
-            <a id="tecnica-gut" href="analise.html"><span>Matriz GUT</span><small>Prioridade</small></a>
-            <a href="#reflexoes-form" aria-current="page"><span>Técnica 10/10/10</span><small>Temporal</small></a>
-            <button type="button" id="tecnica-inversao"><span>Inversão</span><small>Antifrágil</small></button>
+            <a id="tecnica-pros" data-tecnica="pros" href="analise.html"><span>Prós e Contras</span><small>Clássico</small></a>
+            <a id="tecnica-gut" data-tecnica="gut" href="analise.html"><span>Matriz GUT</span><small>Prioridade</small></a>
+            <a href="#reflexoes-form" data-tecnica="101010" aria-current="page"><span>Técnica 10/10/10</span><small>Temporal</small></a>
+            <button type="button" id="tecnica-inversao" data-tecnica="inversao"><span>Inversão</span><small>Antifrágil</small></button>
         </nav>
         <form id="reflexoes-form" novalidate>
             <fieldset id="reflexoes-campos" disabled>
@@ -71,45 +71,48 @@
                     <p class="reflexoes-pergunta">Como você se sentirá em relação a cada opção daqui a <strong>10 minutos</strong>, <strong>10 meses</strong> e <strong>10 anos</strong>?</p>
             <section class="reflexao-prazo" aria-labelledby="curtoPrazo-titulo">
                 <h2 id="curtoPrazo-titulo"><span aria-hidden="true">⏱️</span> Daqui a 10 minutos</h2>
+                <p class="reflexao-guia" id="curtoPrazo-guia">Como você se sentiria logo após escolher esse caminho?</p>
                 <div class="reflexoes-par">
                     <div class="reflexao-opcao opcao-a">
                         <label for="curtoPrazo-a">Opção A — <span data-nome="a">…</span><span class="fluxo-sr-only">, daqui a 10 minutos</span></label>
-                        <textarea id="curtoPrazo-a" name="curtoPrazo-a" rows="3" maxlength="16000" placeholder="Como você se sentiria logo após escolher esse caminho?" aria-describedby="curtoPrazo-a-erro"></textarea>
+                        <textarea id="curtoPrazo-a" name="curtoPrazo-a" rows="3" maxlength="16000" placeholder="Ex.: Aliviado, mas um pouco inseguro." aria-describedby="curtoPrazo-guia curtoPrazo-a-erro"></textarea>
                         <p class="fluxo-erro-campo" id="curtoPrazo-a-erro"></p>
                     </div>
                     <div class="reflexao-opcao opcao-b">
                         <label for="curtoPrazo-b">Opção B — <span data-nome="b">…</span><span class="fluxo-sr-only">, daqui a 10 minutos</span></label>
-                        <textarea id="curtoPrazo-b" name="curtoPrazo-b" rows="3" maxlength="16000" placeholder="Como você se sentiria logo após escolher esse caminho?" aria-describedby="curtoPrazo-b-erro"></textarea>
+                        <textarea id="curtoPrazo-b" name="curtoPrazo-b" rows="3" maxlength="16000" placeholder="Ex.: Aliviado, mas um pouco inseguro." aria-describedby="curtoPrazo-guia curtoPrazo-b-erro"></textarea>
                         <p class="fluxo-erro-campo" id="curtoPrazo-b-erro"></p>
                     </div>
                 </div>
             </section>
             <section class="reflexao-prazo" aria-labelledby="medioPrazo-titulo">
                 <h2 id="medioPrazo-titulo"><span aria-hidden="true">📅</span> Daqui a 10 meses</h2>
+                <p class="reflexao-guia" id="medioPrazo-guia">O que poderia mudar na sua rotina nos próximos meses?</p>
                 <div class="reflexoes-par">
                     <div class="reflexao-opcao opcao-a">
                         <label for="medioPrazo-a">Opção A — <span data-nome="a">…</span><span class="fluxo-sr-only">, daqui a 10 meses</span></label>
-                        <textarea id="medioPrazo-a" name="medioPrazo-a" rows="3" maxlength="16000" placeholder="O que poderia mudar na sua rotina nos próximos meses?" aria-describedby="medioPrazo-a-erro"></textarea>
+                        <textarea id="medioPrazo-a" name="medioPrazo-a" rows="3" maxlength="16000" placeholder="Ex.: Teria menos tempo livre, mas mais estabilidade." aria-describedby="medioPrazo-guia medioPrazo-a-erro"></textarea>
                         <p class="fluxo-erro-campo" id="medioPrazo-a-erro"></p>
                     </div>
                     <div class="reflexao-opcao opcao-b">
                         <label for="medioPrazo-b">Opção B — <span data-nome="b">…</span><span class="fluxo-sr-only">, daqui a 10 meses</span></label>
-                        <textarea id="medioPrazo-b" name="medioPrazo-b" rows="3" maxlength="16000" placeholder="O que poderia mudar na sua rotina nos próximos meses?" aria-describedby="medioPrazo-b-erro"></textarea>
+                        <textarea id="medioPrazo-b" name="medioPrazo-b" rows="3" maxlength="16000" placeholder="Ex.: Teria menos tempo livre, mas mais estabilidade." aria-describedby="medioPrazo-guia medioPrazo-b-erro"></textarea>
                         <p class="fluxo-erro-campo" id="medioPrazo-b-erro"></p>
                     </div>
                 </div>
             </section>
             <section class="reflexao-prazo" aria-labelledby="longoPrazo-titulo">
                 <h2 id="longoPrazo-titulo"><span aria-hidden="true">🌏</span> Daqui a 10 anos</h2>
+                <p class="reflexao-guia" id="longoPrazo-guia">Como essa escolha poderia se conectar à vida que você deseja?</p>
                 <div class="reflexoes-par">
                     <div class="reflexao-opcao opcao-a">
                         <label for="longoPrazo-a">Opção A — <span data-nome="a">…</span><span class="fluxo-sr-only">, daqui a 10 anos</span></label>
-                        <textarea id="longoPrazo-a" name="longoPrazo-a" rows="3" maxlength="16000" placeholder="Como essa escolha poderia se conectar à vida que você deseja?" aria-describedby="longoPrazo-a-erro"></textarea>
+                        <textarea id="longoPrazo-a" name="longoPrazo-a" rows="3" maxlength="16000" placeholder="Ex.: Estaria mais perto do trabalho que eu quero." aria-describedby="longoPrazo-guia longoPrazo-a-erro"></textarea>
                         <p class="fluxo-erro-campo" id="longoPrazo-a-erro"></p>
                     </div>
                     <div class="reflexao-opcao opcao-b">
                         <label for="longoPrazo-b">Opção B — <span data-nome="b">…</span><span class="fluxo-sr-only">, daqui a 10 anos</span></label>
-                        <textarea id="longoPrazo-b" name="longoPrazo-b" rows="3" maxlength="16000" placeholder="Como essa escolha poderia se conectar à vida que você deseja?" aria-describedby="longoPrazo-b-erro"></textarea>
+                        <textarea id="longoPrazo-b" name="longoPrazo-b" rows="3" maxlength="16000" placeholder="Ex.: Estaria mais perto do trabalho que eu quero." aria-describedby="longoPrazo-guia longoPrazo-b-erro"></textarea>
                         <p class="fluxo-erro-campo" id="longoPrazo-b-erro"></p>
                     </div>
                 </div>

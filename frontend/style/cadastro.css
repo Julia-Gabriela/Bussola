@@ -92,7 +92,7 @@
 
 .tagline {
     margin: 6px 0 0;
-    color: #6a5840;
+    color: #a99a82;
     font-size: 14px;
     font-weight: 400;
     line-height: 23.8px;
@@ -115,7 +115,7 @@
     align-items: center;
     justify-content: center;
     border-radius: 8px;
-    color: #6a5840;
+    color: #a99a82;
     font-size: 14px;
     font-weight: 400;
     line-height: 21px;
@@ -130,7 +130,7 @@
 
 a.tab,
 a.tab:visited {
-    color: #6a5840;
+    color: #a99a82;
     text-decoration: none;
     cursor: pointer;
     transition: transform 180ms ease;
@@ -174,7 +174,7 @@ a.tab:hover {
 .field label {
     display: block;
     margin-bottom: 7px;
-    color: #6a5840;
+    color: #a99a82;
     font-size: 13px;
     font-weight: 500;
     line-height: 20.8px;
@@ -447,7 +447,7 @@ a.tab:focus-visible,
 
 .legal-versao {
     margin: 2px 0 16px;
-    color: #8a7860;
+    color: #a08d72;
     font-size: 13px;
     line-height: 20px;
     text-align: center;

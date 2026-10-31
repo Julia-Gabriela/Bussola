@@ -7,19 +7,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style/landing-page.css">
-    <link rel="stylesheet" href="../style/home.css">
+    <link rel="stylesheet" href="../style/landing-page.css?v=2">
+    <link rel="stylesheet" href="../style/home.css?v=2">
     <link rel="stylesheet" href="../style/fluxo-decisao.css?v=2">
-    <link rel="stylesheet" href="../style/metodo-101010.css">
-    <link rel="stylesheet" href="../style/revisao-etapa.css?v=3">
+    <link rel="stylesheet" href="../style/metodo-101010.css?v=2">
+    <link rel="stylesheet" href="../style/revisao-etapa.css?v=5">
     <link rel="stylesheet" href="../style/confirmacao-etapa.css">
     <script src="../js/shared/alteracoes-nao-salvas.js?v=3" defer></script>
     <script src="../js/shared/confirmacao-etapa.js" defer></script>
     <script src="../js/shared/revisao-etapa.js?v=4" defer></script>
     <script src="../js/pages/inversao-integracoes.js" defer></script>
-    <script src="../js/pages/inversao.js?v=5" type="module"></script>
-    <link rel="stylesheet" href="../style/fluxo-compacto.css">
-    <link rel="stylesheet" href="../style/tecnicas-nav.css?v=3">
+    <script src="../js/pages/inversao.js?v=6" type="module"></script>
+    <link rel="stylesheet" href="../style/fluxo-compacto.css?v=4">
+    <link rel="stylesheet" href="../style/tecnicas-nav.css?v=4">
     <link rel="stylesheet" href="../style/inversao.css?v=2">
 </head>
 <body class="home-page fluxo-page metodo-page inversao-page">
@@ -60,16 +60,16 @@
     <button type="button" class="fluxo-salvar" id="recarregar" hidden>Recarregar dados</button>
     <div id="metodo" hidden>
         <nav class="tecnicas-nav" aria-label="Técnicas de análise">
-            <a id="tecnica-pros" href="analise.html"><span>Prós e Contras</span><small>Clássico</small></a>
-            <a id="tecnica-gut" href="analise.html"><span>Matriz GUT</span><small>Prioridade</small></a>
-            <a id="tecnica-101010" href="metodo-101010.html"><span>Técnica 10/10/10</span><small>Temporal</small></a>
-            <a href="#reflexoes-form" aria-current="page"><span>Inversão</span><small>Antifrágil</small></a>
+            <a id="tecnica-pros" data-tecnica="pros" href="analise.html"><span>Prós e Contras</span><small>Clássico</small></a>
+            <a id="tecnica-gut" data-tecnica="gut" href="analise.html"><span>Matriz GUT</span><small>Prioridade</small></a>
+            <a id="tecnica-101010" data-tecnica="101010" href="metodo-101010.html"><span>Técnica 10/10/10</span><small>Temporal</small></a>
+            <a href="#reflexoes-form" data-tecnica="inversao" aria-current="page"><span>Inversão</span><small>Antifrágil</small></a>
         </nav>
         <form id="reflexoes-form" novalidate>
             <fieldset id="reflexoes-campos" disabled>
                 <legend class="fluxo-sr-only">Reflexões da técnica de Inversão</legend>
                 <div class="reflexoes-painel">
-                    <p class="reflexoes-pergunta">Para cada alternativa, imagine <strong>o que poderia dar errado</strong> e pense em <strong>ações que ajudariam a evitar esses problemas</strong>.</p>
+                    <p class="reflexoes-pergunta">Pense no que poderia levar ao pior resultado e depois considere como evitar isso.</p>
 
                     <section class="inversao-alternativa alternativa-a" aria-labelledby="titulo-a">
                         <h2 class="inversao-titulo"><span class="inversao-letra" aria-hidden="true">A</span><span id="titulo-a" class="inversao-nome">Alternativa A — <span data-nome="a">…</span></span><small id="progresso-a">0 de 2 preenchidos</small></h2>
@@ -81,7 +81,7 @@
                                 <p class="fluxo-erro-campo" id="fracassos-a-erro"></p>
                             </div>
                             <div class="inversao-campo inversao-prevencoes">
-                                <label for="prevencoes-a">Como evitar esses fracassos?<span class="fluxo-sr-only"> (alternativa A)</span></label>
+                                <label for="prevencoes-a">Como evitar esses problemas?<span class="fluxo-sr-only"> (alternativa A)</span></label>
                                 <p id="prevencoes-a-ajuda">Para cada problema, registre uma ação concreta que ajudaria a preveni-lo.</p>
                                 <textarea id="prevencoes-a" rows="5" maxlength="16000" placeholder="Ex.: Conversar com quem já passou por essa mudança." aria-describedby="prevencoes-a-ajuda prevencoes-a-erro"></textarea>
                                 <p class="fluxo-erro-campo" id="prevencoes-a-erro"></p>
@@ -99,7 +99,7 @@
                                 <p class="fluxo-erro-campo" id="fracassos-b-erro"></p>
                             </div>
                             <div class="inversao-campo inversao-prevencoes">
-                                <label for="prevencoes-b">Como evitar esses fracassos?<span class="fluxo-sr-only"> (alternativa B)</span></label>
+                                <label for="prevencoes-b">Como evitar esses problemas?<span class="fluxo-sr-only"> (alternativa B)</span></label>
                                 <p id="prevencoes-b-ajuda">Para cada problema, registre uma ação concreta que ajudaria a preveni-lo.</p>
                                 <textarea id="prevencoes-b" rows="5" maxlength="16000" placeholder="Ex.: Definir uma meta de crescimento para os próximos meses." aria-describedby="prevencoes-b-ajuda prevencoes-b-erro"></textarea>
                                 <p class="fluxo-erro-campo" id="prevencoes-b-erro"></p>

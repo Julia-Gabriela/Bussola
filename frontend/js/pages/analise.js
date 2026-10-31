@@ -1,6 +1,7 @@
 import { criarApi } from "../shared/api.js";
 import { configurarConta } from "../shared/conta.js";
 import { requisitosAnalise, marcarRequisito } from "../shared/requisitos-resultado.js";
+import { estadoTecnicas, marcarNavegacao } from "../shared/tecnicas-estado.js?v=1";
 
 const el = id => document.getElementById(id);
 const id = new URLSearchParams(location.search).get("decisaoId");
@@ -200,6 +201,32 @@ function atualizarPendencias() {
     const situacao = requisitosAnalise(dados);
     for (const requisito of ["pros", "gut"])
         marcarRequisito(el("pendencias"), requisito, situacao[requisito].pronto, situacao[requisito].texto);
+    marcarNavegacao(document.querySelector(".tecnicas-nav"), { pros: situacao.pros.pronto, gut: situacao.gut.pronto });
+}
+
+const TEXTOS_EXTERNOS = {
+    "101010": ["concluída.", "falta concluir: preencha as seis reflexões e use “Próxima: Inversão”."],
+    inversao: ["concluída.", "falta concluir: preencha as quatro reflexões e use “Ver resultado comparativo”."]
+};
+
+/**
+ * Lê se o 10/10/10 e a Inversão estão concluídos e atualiza a barra de
+ * técnicas e a lista "Para liberar o resultado comparativo".
+ *
+ * Usa GET /reflexoes-101010 e GET /inversao (campo `concluida`), sem gravar
+ * nada. Se a leitura falhar, o item diz que não foi possível verificar.
+ * As condições continuam as mesmas que o backend já exige para o Resultado.
+ *
+ * @returns {Promise<void>} Resolve depois de atualizar a tela.
+ */
+async function atualizarTecnicasExternas() {
+    const estado = await estadoTecnicas(api, id, dados);
+    const externas = { "101010": estado["101010"], inversao: estado.inversao };
+    for (const [tecnica, concluida] of Object.entries(externas)) {
+        marcarRequisito(el("pendencias"), tecnica, concluida === true,
+            concluida === null ? "não foi possível verificar agora." : TEXTOS_EXTERNOS[tecnica][concluida ? 0 : 1]);
+    }
+    marcarNavegacao(document.querySelector(".tecnicas-nav"), externas);
 }
 
 /**
@@ -215,6 +242,7 @@ function acoes(item, tipo, letra) {
     if (!editavel()) return div;
     const excluir = criar("button", "Excluir");
     excluir.type = "button";
+    excluir.className = "botao-perigo";
     excluir.setAttribute("aria-label", "Excluir " + item.descricao);
     if (tipo === "argumento") {
         const editar = criar("button", "Editar");
@@ -314,22 +342,97 @@ const notasCompletas = notas => CAMPOS_GUT.every(campo => notas[campo] !== "");
  * @returns {void}
  */
 function atualizarLinhaGut(chave) {
-    const linha = document.querySelector(`#gut-grupos tr[data-chave="${chave}"]`);
+    const linha = document.querySelector(`#gut-grupos [data-chave="${chave}"]`);
     if (!linha) return;
     const notas = notasNaTela(chave);
-    linha.querySelector(".gut-pontos").textContent = notasCompletas(notas)
+    const pontos = notasCompletas(notas)
         ? String(CAMPOS_GUT.reduce((produto, campo) => produto * Number(notas[campo]), 1)) : "—";
+    linha.querySelector(".gut-conta").textContent = CAMPOS_GUT.map(campo => notas[campo] || "—").join(" × ") + " = ";
+    linha.querySelector(".gut-pontos").textContent = pontos;
+    for (const campo of CAMPOS_GUT) {
+        const marcado = linha.querySelector(`input[data-campo="${campo}"]:checked`);
+        if ((marcado?.value ?? "") !== notas[campo]) linha.querySelectorAll(`input[data-campo="${campo}"]`).forEach(input => { input.checked = input.value === notas[campo]; });
+    }
+    linha.querySelector(".gut-desfazer").hidden = !editavel() || !rascunhosGut.has(chave) || Boolean(filaPorItem.get(chave));
     const situacao = linha.querySelector(".gut-situacao");
     const erro = errosGut.get(chave);
     let texto, tipo = "";
     if (filaPorItem.get(chave)) texto = "Salvando…";
     else if (erro) { texto = "Não salvo: " + erro; tipo = "erro"; }
     else if (rascunhosGut.has(chave)) { texto = "Escolha as três notas para salvar."; tipo = "erro"; }
-    else if (fatorSalvo(chave)) { texto = "Classificação salva."; tipo = "sucesso"; }
-    else texto = "Ainda não classificado.";
+    else if (recemSalvos.has(chave)) { texto = "✓ Salvo"; tipo = "sucesso"; }
+    else texto = "";
     situacao.textContent = texto;
     situacao.dataset.tipo = tipo;
     linha.classList.toggle("gut-pendente", rascunhosGut.has(chave) && !filaPorItem.get(chave));
+    atualizarProgressoGut();
+}
+
+/**
+ * Atualiza o indicador "X de Y itens classificados." da Matriz GUT.
+ *
+ * Conta como classificado o item que tem classificação salva no servidor
+ * (o mesmo dado que a lista de requisitos usa). Notas ainda não salvas não
+ * contam. Y inclui os prós e contras das duas alternativas e os fatores
+ * antigos. Não muda a regra de conclusão: para o Resultado, continua
+ * bastando ao menos um item classificado.
+ *
+ * @returns {void}
+ */
+function atualizarProgressoGut() {
+    const chaves = [...document.querySelectorAll("#gut-grupos [data-chave]")].map(linha => linha.dataset.chave);
+    const classificados = chaves.filter(chave => fatorSalvo(chave)).length;
+    el("gut-progresso").hidden = !chaves.length;
+    el("gut-progresso").textContent = textoProgressoGut(classificados, chaves.length);
+}
+
+/**
+ * Monta a frase de progresso da Matriz GUT.
+ *
+ * @param {number} classificados quantidade de itens com classificação salva no servidor
+ * @param {number} total quantidade de itens exibidos na Matriz GUT
+ * @returns {string} frase como "3 de 10 itens classificados."
+ */
+const textoProgressoGut = (classificados, total) =>
+    classificados + " de " + total + (total === 1 ? " item classificado." : " itens classificados.");
+
+/** Itens cujo salvamento acabou de ser confirmado pelo servidor e ainda mostram "✓ Salvo". */
+const recemSalvos = new Map();
+const DURACAO_SALVO_MS = 2500;
+
+/**
+ * Mostra "✓ Salvo" por alguns segundos no cartão cujo salvamento o servidor
+ * acabou de confirmar e anuncia uma única vez, para leitores de tela, a
+ * confirmação com o progresso atualizado.
+ *
+ * Só deve ser chamada depois da resposta de sucesso da API. Passado o tempo,
+ * o texto some do cartão; os dados salvos e a pontuação continuam na tela.
+ * Um novo salvamento do mesmo item reinicia o tempo.
+ *
+ * @param {string} chave chave do item salvo ("p{id}" ou "f{id}")
+ * @returns {void}
+ */
+function confirmarSalvo(chave) {
+    clearTimeout(recemSalvos.get(chave));
+    recemSalvos.set(chave, setTimeout(() => { recemSalvos.delete(chave); atualizarLinhaGut(chave); }, DURACAO_SALVO_MS));
+    const total = document.querySelectorAll("#gut-grupos [data-chave]").length;
+    const classificados = [...document.querySelectorAll("#gut-grupos [data-chave]")].filter(linha => fatorSalvo(linha.dataset.chave)).length;
+    anunciarGut("Classificação salva. " + textoProgressoGut(classificados, total));
+}
+
+/**
+ * Escreve uma mensagem na região viva oculta da Matriz GUT, lida por leitores de tela.
+ *
+ * A região é limpa antes de receber o texto, para que a mesma frase possa ser
+ * anunciada de novo em um salvamento posterior.
+ *
+ * @param {string} texto mensagem a anunciar
+ * @returns {void}
+ */
+function anunciarGut(texto) {
+    const regiao = el("gut-anuncio");
+    regiao.textContent = "";
+    requestAnimationFrame(() => { regiao.textContent = texto; });
 }
 
 /**
@@ -341,14 +444,14 @@ function atualizarLinhaGut(chave) {
 function atualizarDestaques() {
     const fatores = dados.fatoresGut;
     const maior = fatores.length > 1 ? Math.max(...fatores.map(item => item.prioridade)) : null;
-    document.querySelectorAll("#gut-grupos tr[data-chave]").forEach(linha => {
+    document.querySelectorAll("#gut-grupos [data-chave]").forEach(linha => {
         const fator = fatorSalvo(linha.dataset.chave);
         const topo = maior !== null && fator?.prioridade === maior && !rascunhosGut.has(linha.dataset.chave);
         linha.classList.toggle("gut-topo", topo);
         linha.querySelector(".gut-selo")?.remove();
         if (topo) {
-            const selo = criar("span", "Maior prioridade"); selo.className = "gut-selo";
-            linha.querySelector(".gut-item").append(selo);
+            const selo = criar("span", "★ Maior prioridade"); selo.className = "gut-selo";
+            linha.querySelector(".gut-card-cabecalho").append(selo);
         }
     });
 }
@@ -358,11 +461,11 @@ function atualizarDestaques() {
  * quando as três notas estão escolhidas.
  *
  * @param {string} chave chave do item
- * @param {HTMLTableRowElement} linha linha com os três seletores
+ * @param {HTMLElement} linha cartão com os três grupos de botões de 1 a 5
  * @returns {void}
  */
 function alterarGut(chave, linha) {
-    const notas = Object.fromEntries(CAMPOS_GUT.map(campo => [campo, linha.querySelector(`select[data-campo="${campo}"]`).value]));
+    const notas = Object.fromEntries(CAMPOS_GUT.map(campo => [campo, linha.querySelector(`input[data-campo="${campo}"]:checked`)?.value ?? ""]));
     if (notasIguais(notas, notasSalvas(chave))) rascunhosGut.delete(chave);
     else rascunhosGut.set(chave, notas);
     errosGut.delete(chave); limparRetornos();
@@ -413,10 +516,13 @@ async function salvarGut(chave) {
         const atual = rascunhosGut.get(chave);
         if (atual && notasIguais(atual, notasSalvas(chave))) rascunhosGut.delete(chave);
         errosGut.delete(chave);
+        if (!rascunhosGut.has(chave)) confirmarSalvo(chave);
         atualizarPendencias();
     } catch (erro) {
         if (encerrada) return;
         errosGut.set(chave, erro.status ? erro.message : "não foi possível falar com o servidor.");
+        clearTimeout(recemSalvos.get(chave)); recemSalvos.delete(chave);
+        el("gut-anuncio").textContent = "";
         if (erro.status === 404 || erro.status === 409) {
             bloqueado = true; el("recarregar").hidden = false; estado(ocupado);
             el("mensagem").textContent = erro.message + " Recarregue os dados antes de continuar.";
@@ -426,61 +532,148 @@ async function salvarGut(chave) {
     }
 }
 
+/** Perguntas-guia de cada fator; só orientam, a escala de 1 a 5 continua a mesma. */
+const PERGUNTAS_GUT = {
+    gravidade: "Qual é o tamanho do impacto?",
+    urgencia: "Quão rapidamente isso precisa de atenção?",
+    tendencia: "Qual é a chance de piorar com o tempo?"
+};
+/** Significado das extremidades da escala de cada fator, iguais para prós e contras. */
+const EXTREMOS_GUT = {
+    gravidade: ["1 = pouco impacto", "5 = muito impacto"],
+    urgencia: ["1 = pode esperar", "5 = precisa de atenção agora"],
+    tendencia: ["1 = não tende a piorar", "5 = tende a piorar rapidamente"]
+};
+let sequenciaCartao = 0;
+
 /**
- * Cria a linha de um item da GUT, com um seletor de 1 a 5 para cada letra.
+ * Cria o cartão de um item da GUT, com botões de 1 a 5 para cada fator.
  *
- * @param {string} chave chave do item
+ * O cartão mostra se é Pró ou Contra, a descrição, os três fatores com nome
+ * completo, pergunta-guia e o significado das notas 1 e 5, a conta G × U × T
+ * com as notas atuais e a situação do salvamento. O nome da alternativa não
+ * aparece no cartão porque já está no título da seção; para leitores de
+ * tela, ele entra no nome acessível do cartão e de cada grupo de notas.
+ *
+ * Cada fator é um grupo de botões de opção (radio) com o mesmo `name`: Tab
+ * entra no grupo e as setas do teclado mudam a nota, como em qualquer grupo
+ * de rádio nativo. Mudar uma nota chama `alterarGut`, que mantém o
+ * salvamento automático existente. "Desfazer" volta às notas salvas (ou a
+ * nenhuma nota), já que um botão de opção não pode ser desmarcado.
+ *
+ * @param {string} chave chave do item ("p{id}" ou "f{id}")
  * @param {string} descricao texto do pró/contra (ou do fator antigo)
  * @param {"PRO"|"CONTRA"|null} tipo tipo do pró/contra; null para fator antigo
  * @param {object|null} fatorAntigo fator antigo, para o botão Excluir; null nos prós/contras
- * @returns {HTMLTableRowElement} linha pronta para a tabela
+ * @param {string} [alternativa=""] rótulo da alternativa, como "Alternativa A — Nome"; vazio para fator antigo
+ * @returns {HTMLElement} cartão pronto para a lista
  */
-function linhaGut(chave, descricao, tipo, fatorAntigo) {
-    const linha = document.createElement("tr"); linha.dataset.chave = chave;
-    const item = document.createElement("td"); item.className = "gut-item";
-    if (tipo) { const marca = criar("span", tipo === "PRO" ? "Pró" : "Contra"); marca.className = "gut-tipo " + (tipo === "PRO" ? "lista-pros" : "lista-contras"); item.append(marca); }
-    item.append(criar("span", descricao));
-    const situacao = criar("small", ""); situacao.className = "gut-situacao"; item.append(situacao);
-    linha.append(item);
+function linhaGut(chave, descricao, tipo, fatorAntigo, alternativa = "") {
+    const linha = document.createElement("article"); linha.className = "gut-card"; linha.dataset.chave = chave;
+    const sequencia = ++sequenciaCartao;
+    const idDescricao = "gut-desc-" + sequencia, idTipo = "gut-tipo-" + sequencia, idAlternativa = "gut-alt-" + sequencia;
+    const cabecalho = document.createElement("div"); cabecalho.className = "gut-card-cabecalho";
+    if (alternativa) { const alt = criar("span", alternativa + ","); alt.className = "fluxo-sr-only"; alt.id = idAlternativa; cabecalho.append(alt); }
+    const nomeTipo = tipo === "PRO" ? "Pró" : tipo === "CONTRA" ? "Contra" : "Fator antigo";
+    const marca = criar("span", nomeTipo); marca.id = idTipo;
+    marca.className = "gut-tipo" + (tipo === "PRO" ? " lista-pros" : tipo === "CONTRA" ? " lista-contras" : "");
+    cabecalho.append(marca);
+    linha.setAttribute("aria-labelledby", (alternativa ? idAlternativa + " " : "") + idTipo + " " + idDescricao);
+    const texto = criar("p", descricao); texto.className = "gut-descricao"; texto.id = idDescricao;
+    linha.append(cabecalho, texto);
+    const fatores = document.createElement("div"); fatores.className = "gut-fatores";
     const notas = notasNaTela(chave);
+    const contextoItem = nomeTipo + (alternativa ? " da " + alternativa : "") + ": " + descricao;
     for (const campo of CAMPOS_GUT) {
-        const celula = document.createElement("td"); celula.className = "gut-nota"; celula.dataset.rotulo = campo[0].toUpperCase();
-        const seletor = document.createElement("select"); seletor.dataset.campo = campo;
-        seletor.setAttribute("aria-label", NOMES_GUT[campo] + " de: " + descricao);
-        seletor.append(new Option("—", ""), ...[1, 2, 3, 4, 5].map(nota => new Option(String(nota), String(nota))));
-        seletor.value = notas[campo];
-        seletor.addEventListener("change", () => alterarGut(chave, linha));
-        celula.append(seletor); linha.append(celula);
+        const grupo = document.createElement("fieldset"); grupo.className = "gut-fator";
+        const [minimo, maximo] = EXTREMOS_GUT[campo];
+        const legenda = criar("legend", NOMES_GUT[campo] + ": " + PERGUNTAS_GUT[campo] + " " + minimo + "; " + maximo + ". " + contextoItem);
+        legenda.className = "fluxo-sr-only";
+        const corpo = document.createElement("div"); corpo.className = "gut-fator-corpo";
+        const pergunta = document.createElement("div"); pergunta.className = "gut-fator-texto"; pergunta.setAttribute("aria-hidden", "true");
+        pergunta.append(criar("strong", NOMES_GUT[campo]), criar("span", PERGUNTAS_GUT[campo]));
+        const controle = document.createElement("div"); controle.className = "gut-fator-controle";
+        const botoes = document.createElement("div"); botoes.className = "gut-botoes";
+        for (let nota = 1; nota <= 5; nota++) {
+            const rotulo = document.createElement("label"); rotulo.className = "gut-nota-item";
+            const input = document.createElement("input"); input.type = "radio";
+            input.name = "gut-" + chave + "-" + campo; input.value = String(nota); input.dataset.campo = campo;
+            input.checked = notas[campo] === String(nota);
+            input.addEventListener("change", () => alterarGut(chave, linha));
+            rotulo.append(input, criar("span", String(nota)));
+            botoes.append(rotulo);
+        }
+        botoes.addEventListener("keydown", navegarNotas);
+        const escala = document.createElement("div"); escala.className = "gut-escala"; escala.setAttribute("aria-hidden", "true");
+        escala.append(criar("span", minimo), criar("span", maximo));
+        controle.append(botoes, escala);
+        corpo.append(pergunta, controle);
+        grupo.append(legenda, corpo); fatores.append(grupo);
     }
-    const pontos = document.createElement("td"); pontos.className = "gut-nota"; pontos.dataset.rotulo = "GUT";
-    const valor = criar("strong", "—"); valor.className = "gut-pontos"; pontos.append(valor); linha.append(pontos);
-    if (fatorAntigo) { const celula = document.createElement("td"); celula.append(acoes(fatorAntigo, "gut")); linha.append(celula); }
+    linha.append(fatores);
+    const rodape = document.createElement("div"); rodape.className = "gut-card-rodape";
+    const calculo = document.createElement("p"); calculo.className = "gut-calculo";
+    const rotuloConta = criar("span", "Pontuação: "); rotuloConta.className = "fluxo-sr-only";
+    const conta = criar("span", ""); conta.className = "gut-conta";
+    const valor = criar("strong", "—"); valor.className = "gut-pontos";
+    calculo.append(rotuloConta, conta, valor);
+    const situacao = criar("small", ""); situacao.className = "gut-situacao";
+    const desfazer = criar("button", "Desfazer"); desfazer.type = "button"; desfazer.className = "gut-desfazer"; desfazer.hidden = true;
+    desfazer.setAttribute("aria-label", "Desfazer as notas não salvas de: " + descricao);
+    desfazer.addEventListener("click", () => {
+        if (ocupado || filaPorItem.get(chave)) return;
+        const salvas = notasSalvas(chave);
+        linha.querySelectorAll("input[data-campo]").forEach(input => { input.checked = input.value === salvas[input.dataset.campo]; });
+        alterarGut(chave, linha);
+        (linha.querySelector("input:checked") || linha.querySelector("input"))?.focus();
+    });
+    rodape.append(calculo, situacao, desfazer);
+    if (fatorAntigo) rodape.append(acoes(fatorAntigo, "gut"));
+    linha.append(rodape);
     return linha;
 }
 
 /**
- * Monta uma tabela da GUT.
+ * Trata o teclado dentro de um grupo de notas de 1 a 5, seguindo o padrão de
+ * grupo de rádio: seta para a direita ou para baixo escolhe a próxima nota
+ * (da 5 volta para a 1), seta para a esquerda ou para cima escolhe a anterior
+ * (da 1 vai para a 5), Home escolhe 1, End escolhe 5 e Espaço marca a nota em
+ * foco.
  *
- * @param {string} legenda descrição da tabela para leitores de tela
- * @param {HTMLTableRowElement[]} linhas linhas dos itens
- * @param {boolean} comAcoes inclui a coluna Ações (fatores antigos)
- * @returns {HTMLDivElement} contêiner com rolagem horizontal
+ * O comportamento nativo do navegador é cancelado para que a nota mude uma
+ * única vez por tecla. A nota escolhida recebe o foco e dispara o mesmo
+ * evento "change" de um clique, então o salvamento automático continua
+ * passando por `alterarGut`. Nada acontece com o grupo desativado.
+ *
+ * @param {KeyboardEvent} evento tecla pressionada com o foco em um dos botões de nota
+ * @returns {void}
  */
-function tabelaGut(legenda, linhas, comAcoes) {
-    const contem = document.createElement("div"); contem.className = "gut-tabela";
-    const tabela = document.createElement("table");
-    const caption = criar("caption", legenda); caption.className = "fluxo-sr-only";
-    const cabeca = document.createElement("tr");
-    const titulos = [["Item", ""], ["G", "Gravidade"], ["U", "Urgência"], ["T", "Tendência"], ["GUT", "Prioridade: G × U × T"]];
-    if (comAcoes) titulos.push(["Ações", ""]);
-    for (const [texto, titulo] of titulos) {
-        const th = document.createElement("th"); th.scope = "col";
-        if (titulo) { const abbr = criar("abbr", texto); abbr.title = titulo; th.append(abbr); } else th.textContent = texto;
-        cabeca.append(th);
-    }
-    const thead = document.createElement("thead"); thead.append(cabeca);
-    const tbody = document.createElement("tbody"); tbody.append(...linhas);
-    tabela.append(caption, thead, tbody); contem.append(tabela);
+function navegarNotas(evento) {
+    const opcoes = [...evento.currentTarget.querySelectorAll("input[type=radio]")];
+    const atual = opcoes.indexOf(evento.target);
+    if (atual < 0 || evento.altKey || evento.ctrlKey || evento.metaKey) return;
+    const destinos = { ArrowRight: atual + 1, ArrowDown: atual + 1, ArrowLeft: atual - 1, ArrowUp: atual - 1, Home: 0, End: opcoes.length - 1, " ": atual };
+    if (!(evento.key in destinos)) return;
+    evento.preventDefault();
+    if (evento.target.disabled) return;
+    const alvo = opcoes[(destinos[evento.key] + opcoes.length) % opcoes.length];
+    alvo.focus();
+    if (alvo.checked) return;
+    alvo.checked = true;
+    alvo.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+/**
+ * Agrupa os cartões da GUT em uma lista responsiva.
+ *
+ * @param {string} legenda descrição da lista para leitores de tela
+ * @param {HTMLElement[]} linhas cartões dos itens
+ * @returns {HTMLDivElement} contêiner com os cartões
+ */
+function tabelaGut(legenda, linhas) {
+    const contem = document.createElement("div"); contem.className = "gut-cartoes";
+    contem.setAttribute("role", "group"); contem.setAttribute("aria-label", legenda);
+    contem.append(...linhas);
     return contem;
 }
 
@@ -521,7 +714,7 @@ function renderizarGut() {
         titulo.append(marca, nome); grupo.setAttribute("aria-labelledby", titulo.id); grupo.append(titulo);
         const itens = [...opcao.prosContras.filter(item => item.tipo === "PRO"), ...opcao.prosContras.filter(item => item.tipo === "CONTRA")];
         if (itens.length) grupo.append(tabelaGut("Classificação GUT dos prós e contras da alternativa " + letra.toUpperCase(),
-            itens.map(item => linhaGut("p" + item.id, item.descricao, item.tipo, null)), false));
+            itens.map(item => linhaGut("p" + item.id, item.descricao, item.tipo, null, "Alternativa " + letra.toUpperCase() + " — " + opcao.nome))));
         else grupo.append(criar("p", "Nenhum pró ou contra cadastrado nesta alternativa."));
         grupos.push(grupo);
     });
@@ -529,11 +722,12 @@ function renderizarGut() {
         const grupo = document.createElement("section"); grupo.className = "gut-grupo gut-antigos"; grupo.setAttribute("aria-labelledby", "gut-titulo-antigos");
         const titulo = criar("h3", "Fatores cadastrados antes da integração"); titulo.id = "gut-titulo-antigos"; titulo.className = "argumentos-titulo";
         grupo.append(titulo, criar("p", "Estes fatores foram digitados diretamente na Matriz GUT, antes de ela usar seus prós e contras. Eles foram preservados: você pode ajustar as notas ou excluí-los."));
-        grupo.append(tabelaGut("Fatores GUT cadastrados antes da integração", antigos.map(fator => linhaGut(chaveFator(fator), fator.descricao, null, fator)), true));
+        grupo.append(tabelaGut("Fatores GUT cadastrados antes da integração", antigos.map(fator => linhaGut(chaveFator(fator), fator.descricao, null, fator))));
         grupos.push(grupo);
     }
     el("gut-grupos").replaceChildren(...grupos);
-    document.querySelectorAll("#gut-grupos tr[data-chave]").forEach(linha => atualizarLinhaGut(linha.dataset.chave));
+    document.querySelectorAll("#gut-grupos [data-chave]").forEach(linha => atualizarLinhaGut(linha.dataset.chave));
+    atualizarProgressoGut();
     atualizarDestaques();
 }
 
@@ -565,6 +759,7 @@ async function carregar() {
     } catch (erro) { bloqueado = true; el("analise").hidden = true; el("recarregar").hidden = false; el("mensagem").textContent = erro.message; }
     finally { estado(false); }
     if (dados && !bloqueado && new URLSearchParams(location.search).get("tecnica") === "gut") abrirAba("gut");
+    if (dados && !bloqueado) atualizarTecnicasExternas();
 }
 /**
  * Envia uma alteração de Prós e Contras (ou a exclusão de um fator GUT antigo) e atualiza a tela.
@@ -610,7 +805,7 @@ async function salvar(caminho, metodo, corpo, painel, sucesso) {
         abrirArgumento(proximo.letra, proximo.tipo, null, cartao(proximo.letra, proximo.tipo).querySelector(".argumentos-adicionar"));
         retorno("pros", sucesso + " Escreva o próximo ou clique em Cancelar.", "sucesso");
     }
-    else if (confirmado) (painel === "gut" ? document.querySelector("#gut-grupos select") : card?.querySelector(".argumentos-adicionar"))?.focus();
+    else if (confirmado) (painel === "gut" ? document.querySelector("#gut-grupos input") : card?.querySelector(".argumentos-adicionar"))?.focus();
 }
 el("argumento-descricao").addEventListener("input", () => el("argumento-descricao").setCustomValidity(""));
 el("argumento-form").addEventListener("input", limparRetornos);
@@ -653,7 +848,7 @@ function avisarRascunho(destino) {
     el("aviso").addEventListener("close", () => {
         if (sujoArgumento()) { el("argumento-descricao").focus(); return; }
         const chave = [...rascunhosGut.keys()].find(item => !filaPorItem.get(item));
-        document.querySelector(`#gut-grupos tr[data-chave="${chave}"] select`)?.focus();
+        document.querySelector(`#gut-grupos [data-chave="${chave}"] input`)?.focus();
     }, { once: true });
 }
 

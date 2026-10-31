@@ -40,12 +40,12 @@ function renderizar() {
         const li=document.createElement("li");li.className="historico-item"+(item.status==="CONCLUIDA"?" concluida":"");
         const texto=document.createElement("div");texto.className="historico-texto";
         texto.append(criar("h2",item.titulo));const status=criar("span",item.status==="CONCLUIDA"?"Concluída":"Em andamento");status.className="historico-status";texto.append(status);
-        if(item.status!=="CONCLUIDA") { const progresso=document.createElement("progress");progresso.max=100;progresso.value=item.progressoPercentual;progresso.setAttribute("aria-label","Progresso da decisão");texto.append(progresso,criar("p",`${window.BussolaProgresso.descrever(item)} · ${item.progressoPercentual}%`)); }
+        if(item.status!=="CONCLUIDA") { const progresso=document.createElement("progress");progresso.max=100;progresso.value=item.progressoPercentual;progresso.setAttribute("aria-label","Progresso da decisão");const etapa=criar("p",window.BussolaProgresso.descrever(item));etapa.className="historico-etapa";texto.append(etapa,progresso,criar("p",`Progresso do caminho: ${item.progressoPercentual}%`)); }
         const concluida=item.status==="CONCLUIDA";
         const data=new Date(concluida&&item.finalizadaEm?item.finalizadaEm:item.dataAtualizacao);texto.append(criar("p",(concluida?"Finalizada em ":"Atualizada em ")+(Number.isNaN(data.getTime())?"data indisponível":new Intl.DateTimeFormat("pt-BR",{dateStyle:"medium"}).format(data))));
         const acoes=document.createElement("div");acoes.className="historico-acoes";
         const continuar=criar("button",concluida?"Visualizar resultado":"Continuar decisão");continuar.type="button";continuar.className="fluxo-proxima";continuar.addEventListener("click",()=>abrir(item));
-        const excluir=criar("button",concluida?"Excluir decisão":"Excluir");excluir.type="button";excluir.className="fluxo-salvar";excluir.setAttribute("aria-label","Excluir decisão: "+item.titulo);
+        const excluir=criar("button",concluida?"Excluir decisão":"Excluir");excluir.type="button";excluir.className="fluxo-salvar botao-perigo";excluir.setAttribute("aria-label","Excluir decisão: "+item.titulo);
         excluir.addEventListener("click",()=>{if(ocupado)return;selecionada=item;abridorExclusao=excluir;el("exclusao-nome").textContent=item.titulo;el("exclusao").showModal();el("cancelar-exclusao").focus();});
         acoes.append(continuar,excluir);li.append(texto,acoes);return li;
     }));

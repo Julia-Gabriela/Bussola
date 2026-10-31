@@ -7,19 +7,21 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style/landing-page.css">
-    <link rel="stylesheet" href="../style/home.css">
-    <link rel="stylesheet" href="../style/brainstorming.css?v=2">
+    <link rel="stylesheet" href="../style/landing-page.css?v=2">
+    <link rel="stylesheet" href="../style/home.css?v=2">
+    <link rel="stylesheet" href="../style/brainstorming.css?v=7">
+    <link rel="stylesheet" href="../style/ajuda-contextual.css?v=1">
     <link rel="stylesheet" href="../style/fluxo-decisao.css?v=2">
-    <link rel="stylesheet" href="../style/revisao-etapa.css?v=3">
+    <link rel="stylesheet" href="../style/revisao-etapa.css?v=5">
     <link rel="stylesheet" href="../style/confirmacao-etapa.css">
     <script src="../js/shared/confirmacao-etapa.js" defer></script>
     <script src="../js/shared/alteracoes-nao-salvas.js?v=3" defer></script>
     <script src="../js/pages/decisao-api.js" defer></script>
     <script src="../js/shared/cabecalho.js" defer></script>
     <script src="../js/shared/revisao-etapa.js?v=4" defer></script>
-    <script src="../js/pages/brainstorming.js?v=3" defer></script>
-    <link rel="stylesheet" href="../style/fluxo-compacto.css?v=2">
+    <script src="../js/shared/ajuda-contextual.js?v=1" defer></script>
+    <script src="../js/pages/brainstorming.js?v=8" defer></script>
+    <link rel="stylesheet" href="../style/fluxo-compacto.css?v=4">
 </head>
 <body class="home-page">
     <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
@@ -48,9 +50,15 @@
     </header>
     <main id="conteudo" class="brainstorming">
         <ol class="fluxo-etapas" id="indicador-etapas" aria-label="Etapas da decisão"></ol>
-        <p class="etapa" id="etapa">Brainstorming</p>
         <h1>Brainstorming</h1>
-        <p class="introducao">Lance aqui seus pensamentos sobre a decisão: <strong id="decisao-titulo"></strong></p>
+        <p class="introducao">Anote livremente o que você pensa sobre: <strong id="decisao-titulo"></strong></p>
+        <p class="brain-proposito">Aqui você solta ideias. Elas ajudam a pensar nas opções e não entram na pontuação.<button type="button" class="ajuda-botao" aria-expanded="false" aria-controls="ajuda-brainstorming"><span aria-hidden="true">?</span><span class="ajuda-sr">Como usar o brainstorming</span></button></p>
+        <div class="ajuda-painel" id="ajuda-brainstorming" hidden>
+            <p>Não existe ideia certa ou errada: anote o que vier à mente, mesmo que pareça pequeno.</p>
+            <p>Escolha a categoria, escreva e clique em <strong>+ Adicionar</strong>. <strong>Enter</strong> também adiciona; <strong>Shift + Enter</strong> quebra a linha.</p>
+            <p>Para corrigir o texto ou mudar a categoria depois, use <strong>Editar</strong> no cartão da ideia.</p>
+            <button type="button" class="ajuda-fechar" aria-label="Fechar ajuda">×</button>
+        </div>
         <details id="contexto-painel" hidden><summary>Contexto da decisão</summary><p id="decisao-contexto"></p></details>
         <p id="mensagem" role="status" aria-live="polite">Carregando sua decisão…</p>
         <button id="recarregar" class="home-secondary" type="button" hidden>Recarregar dados</button>
@@ -60,26 +68,33 @@
             <a id="continuar-decisao" href="home.html" class="home-primary">Continuar decisão</a>
             <a href="home.html" class="home-secondary">Ir para a Home</a>
         </section>
-        <form id="ideia-form" class="brain-card">
+        <form id="ideia-form" class="brain-card brain-form" novalidate>
             <fieldset id="campos" disabled>
-                <legend id="form-titulo">Adicionar ideia</legend>
-                <div class="categorias" role="radiogroup" aria-label="Classificação da ideia" aria-required="true" aria-describedby="categoria-dica">
-                    <label class="favoravel"><input type="radio" name="categoria" value="FAVORAVEL"> Favorável</label>
-                    <label class="desfavoravel"><input type="radio" name="categoria" value="DESFAVORAVEL"> Desfavorável</label>
-                    <label class="duvida"><input type="radio" name="categoria" value="DUVIDA"> Dúvida</label>
-                </div>
-                <p class="categoria-dica" id="categoria-dica">Escolha uma classificação para a ideia antes de adicioná-la.</p>
-                <label for="conteudo-ideia" class="texto-label">Seu pensamento</label>
-                <div class="entrada-ideia">
-                    <textarea id="conteudo-ideia" name="conteudo" rows="2" required maxlength="16000" placeholder="Ex.: Posso aprender na prática o que vejo em teoria…"></textarea>
+                <fieldset class="brain-categorias" aria-describedby="erro-categoria">
+                    <legend class="brain-form-rotulo">1. Escolha onde a ideia se encaixa</legend>
+                    <div class="categorias">
+                        <label class="categoria-opcao favoravel"><input type="radio" name="categoria" value="FAVORAVEL"><span>Ponto positivo</span></label>
+                        <label class="categoria-opcao desfavoravel"><input type="radio" name="categoria" value="DESFAVORAVEL"><span>Ponto negativo</span></label>
+                        <label class="categoria-opcao duvida"><input type="radio" name="categoria" value="DUVIDA"><span>Dúvida</span></label>
+                    </div>
+                </fieldset>
+                <label for="conteudo-ideia" class="brain-form-rotulo">2. Escreva sua ideia</label>
+                <textarea id="conteudo-ideia" name="conteudo" rows="3" maxlength="16000" placeholder="Ex.: Posso aprender na prática o que vejo em teoria…" aria-describedby="erro-conteudo"></textarea>
+                <p class="campo-erro" id="erro-conteudo" hidden></p>
+                <div class="brain-form-acoes">
                     <button class="home-primary" type="submit" id="salvar-ideia">+ Adicionar</button>
+                    <p class="campo-erro" id="erro-categoria" hidden></p>
+                    <p class="brain-form-estado" id="estado-form" role="status" aria-live="polite"></p>
                 </div>
-                <button class="home-secondary" id="cancelar-edicao" type="button" hidden>Cancelar edição</button>
             </fieldset>
         </form>
-        <section aria-label="Ideias organizadas por categoria" id="ideias"></section>
-        <p class="aviso-revisao" id="aviso-revisao" hidden><img src="../assets/images/revisao/aviso.svg" alt="" width="15" height="15">Suas alterações podem atualizar o resultado desta análise.</p>
-        <div class="acoes-etapa"><button id="concluir" type="button" class="home-primary" disabled>Próxima etapa →</button></div>
+        <div id="ideias" class="brain-colunas"></div>
+        <section id="sem-categoria" class="brain-coluna brain-sem-categoria" aria-labelledby="sem-categoria-titulo" hidden>
+            <h2 id="sem-categoria-titulo">Sem categoria</h2>
+            <p class="coluna-dica">Ideias antigas sem categoria. Use Editar para escolher uma.</p>
+            <ul class="coluna-lista" id="lista-sem-categoria"></ul>
+        </section>
+        <div class="acoes-etapa"><button id="concluir" type="button" class="home-primary" disabled>Continuar para Opções →</button></div>
     </main>
     <dialog class="home-dialog" id="aviso-integracao" aria-labelledby="aviso-titulo" aria-describedby="aviso-texto">
         <h2 id="aviso-titulo">Em breve</h2><p id="aviso-texto"></p>
@@ -88,7 +103,7 @@
     <dialog id="confirmar-exclusao" class="home-dialog" aria-labelledby="exclusao-titulo">
         <h2 id="exclusao-titulo">Excluir esta ideia?</h2>
         <p id="ideia-excluir"></p>
-        <div class="dialog-acoes"><button id="cancelar-exclusao" class="home-secondary" type="button">Cancelar</button><button id="excluir" class="home-primary" type="button">Excluir ideia</button></div>
+        <div class="dialog-acoes"><button id="cancelar-exclusao" class="home-secondary" type="button">Cancelar</button><button id="excluir" class="home-primary botao-perigo is-forte" type="button">Excluir ideia</button></div>
     </dialog>
 </body>
 </html>

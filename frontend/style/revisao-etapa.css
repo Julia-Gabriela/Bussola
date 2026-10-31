@@ -57,7 +57,7 @@
     border: 1px solid rgba(196, 147, 63, 0.2);
     border-radius: 8px;
     background: rgba(196, 147, 63, 0.06);
-    color: #8a7860;
+    color: #a08d72;
     font-size: 14px;
     line-height: 22px;
     letter-spacing: 0.16px;
@@ -164,7 +164,7 @@
     border: 1px solid rgba(196, 147, 63, 0.2);
     border-radius: 8px;
     background: rgba(196, 147, 63, 0.06);
-    color: #8a7860;
+    color: #a08d72;
     font-size: 13px;
     line-height: 22.1px;
     letter-spacing: 0.16px;
@@ -201,7 +201,7 @@
 
 .revisao-etapa p {
     margin: 10px 0 0;
-    color: #8a7860;
+    color: #a08d72;
     font: 400 14px/23.1px var(--font-ui, Inter, sans-serif);
     letter-spacing: 0.16px;
 }
@@ -220,7 +220,7 @@
     border: 1px solid rgba(196, 147, 63, 0.2);
     border-radius: 8px;
     background: transparent;
-    color: #8a7860;
+    color: #a08d72;
     font: 500 14px/21px var(--font-ui, Inter, sans-serif);
     letter-spacing: 0.16px;
     cursor: pointer;

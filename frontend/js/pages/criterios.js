@@ -25,7 +25,11 @@ function estado(valor) {
     ocupado = valor;
     el("conteudo").setAttribute("aria-busy", String(valor));
     const formularioBloqueado = valor || !editavel() || encerrada;
-    el("criterios-campos").disabled = formularioBloqueado;
+    el("criterios-campos").disabled = valor || encerrada;
+    el("criterios-campos").querySelectorAll("input, textarea, select, button:not(.ajuda-botao):not(.ajuda-fechar):not(#adicionar)")
+        .forEach(controle => { controle.disabled = formularioBloqueado; });
+    if (formularioBloqueado) el("adicionar").disabled = true;
+    else el("adicionar").disabled = itens.length >= 20;
     el("salvar-criterios").disabled = formularioBloqueado;
     el("avancar").disabled = formularioBloqueado;
     for (const nome of ["recarregar", "ir-pesos", "sair", "confirmar-a", "confirmar-b", "voltar-retorno"]) el(nome).disabled = valor;
@@ -57,7 +61,7 @@ function grupoNotas(item, indice, letra) {
     for (let nota = 1; nota <= 5; nota++) {
         const label = criar("label", "nota-item" + (item[campo] >= nota ? " preenchida" : ""));
         const input = criar("input"); input.type = "radio"; input.name = "nota-" + indice + "-" + letra;
-        input.value = nota; input.checked = item[campo] === nota;
+        input.value = nota; input.checked = item[campo] === nota; input.disabled = ocupado || !editavel() || encerrada;
         input.setAttribute("aria-label", String(nota) + (item.sentido === "MENOR_MELHOR"
             ? nota === 1 ? " — menor risco" : nota === 5 ? " — maior risco" : ""
             : nota === 1 ? " — menos favorável" : nota === 5 ? " — mais favorável" : ""));
@@ -79,8 +83,11 @@ function tabela() {
         const titulo = criar("h2", "criterio-titulo"); titulo.id = "criterio-" + indice;
         if (["seguranca", "crescimento", "risco", "emocional", "valores"].includes(item.codigo)) titulo.append(icone(item.codigo));
         titulo.append(criar("span", "", item.nome));
+        const ajuda = criarAjuda(item, indice);
         linha.setAttribute("aria-labelledby", titulo.id);
-        texto.append(titulo, criar("p", "criterio-descricao", item.descricao || "Critério personalizado"));
+        const tituloLinha = criar("div", "criterio-titulo-linha");
+        tituloLinha.append(titulo, ajuda.botao);
+        texto.append(tituloLinha, ajuda.painel, criar("p", "criterio-descricao", item.descricao || "Critério personalizado"));
         if (item.sentido === "MENOR_MELHOR") {
             const sentido = criar("span", "criterio-sentido", "1 = menor risco · 5 = maior risco"); sentido.id = "risco-sentido"; texto.append(sentido);
         }
@@ -99,17 +106,59 @@ function tabela() {
     el("adicionar").hidden = !editavel(); el("adicionar").disabled = itens.length >= 20;
     totais();
 }
+/**
+ * Atualiza o indicador "X de Y avaliações preenchidas.".
+ *
+ * Conta uma avaliação por critério e por alternativa (A e B), incluindo os
+ * critérios personalizados ainda não salvos. Não soma notas nem indica qual
+ * alternativa está à frente: o resultado só aparece depois dos pesos.
+ *
+ * @returns {void}
+ */
 function totais() {
-    let preenchidas = 0;
-    for (const letra of ["a", "b"]) {
-        const valores = itens.map(i => i["nota" + letra.toUpperCase()]);
-        preenchidas += valores.filter(v => v !== null).length;
-        el("total-" + letra).textContent = valores.reduce((s, v) => s + (v || 0), 0);
-        el("maximo-" + letra).textContent = " / " + itens.length * 5;
-    }
-    const completa = preenchidas === itens.length * 2;
-    el("total-rotulo").textContent = completa ? "Total (sem pesos)" : "Total parcial (sem pesos)";
-    el("progresso").textContent = preenchidas + " de " + itens.length * 2 + " avaliações preenchidas";
+    const total = itens.length * 2;
+    const preenchidas = itens.reduce((soma, item) => soma + (item.notaA !== null ? 1 : 0) + (item.notaB !== null ? 1 : 0), 0);
+    el("progresso").textContent = preenchidas + " de " + total + " avaliações preenchidas.";
+    el("progresso-barra").style.width = (total ? preenchidas / total * 100 : 0) + "%";
+}
+const AJUDAS = {
+    seguranca: ["Quão estável e previsível é essa opção?", "Ex.: renda fixa e horários definidos podem justificar nota alta."],
+    crescimento: ["Quanto essa opção favorece seu aprendizado e desenvolvimento?", "Ex.: novas oportunidades de aprendizado podem justificar nota alta."],
+    risco: ["Quão arriscada ou incerta é essa opção?", "Ex.: quanto maior a incerteza, maior a nota de risco."],
+    emocional: ["Quanto essa opção favorece seu bem-estar?", "Ex.: uma rotina equilibrada pode receber nota alta."],
+    valores: ["Quanto essa opção combina com o que é importante para você?", "Ex.: a mesma oportunidade pode receber notas diferentes conforme os valores pessoais."]
+};
+const AJUDA_PERSONALIZADO = ["Quanto essa opção atende a este critério?", "Neste critério, 5 é sempre o mais favorável."];
+/**
+ * Cria o botão "?" com a pergunta-guia e o exemplo de um critério.
+ *
+ * Usa o componente compartilhado de ajuda contextual. A ajuda só orienta:
+ * nenhuma nota é preenchida automaticamente. Critérios personalizados
+ * recebem uma pergunta genérica.
+ *
+ * @param {{codigo: string, nome: string, personalizado?: boolean}} item critério da linha
+ * @param {number} indice posição do critério na lista (forma o id do painel)
+ * @returns {{botao: HTMLButtonElement, painel: HTMLDivElement}} elementos a inserir na linha
+ */
+function criarAjuda(item, indice) {
+    const idPainel = "ajuda-criterio-" + indice;
+    const botao = criar("button", "ajuda-botao");
+    botao.type = "button";
+    botao.setAttribute("aria-expanded", "false");
+    botao.setAttribute("aria-controls", idPainel);
+    const simbolo = criar("span", "", "?");
+    simbolo.setAttribute("aria-hidden", "true");
+    botao.append(simbolo, criar("span", "ajuda-sr", "Como avaliar " + item.nome));
+    const painel = criar("div", "ajuda-painel");
+    painel.id = idPainel;
+    painel.hidden = true;
+    const [pergunta, exemplo] = (!item.personalizado && AJUDAS[item.codigo]) || AJUDA_PERSONALIZADO;
+    painel.append(criar("p", "ajuda-pergunta", pergunta), criar("p", "", exemplo));
+    const fechar = criar("button", "ajuda-fechar", "×");
+    fechar.type = "button";
+    fechar.setAttribute("aria-label", "Fechar ajuda");
+    painel.append(fechar);
+    return { botao, painel };
 }
 /**
  * Fotografa nomes, descrições e notas, inclusive critérios adicionados ou removidos.

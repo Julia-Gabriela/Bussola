@@ -5,83 +5,157 @@
     const formulario = el("ideia-form");
     const conteudo = el("conteudo-ideia");
     const dialogo = el("confirmar-exclusao");
+    /* `codigo` é o valor gravado no backend e não muda; `nome` (coluna) e `singular` (formulário) são só rótulos. */
     const categorias = [
-        { codigo: "FAVORAVEL", nome: "Favorável", classe: "favoravel" },
-        { codigo: "DESFAVORAVEL", nome: "Desfavorável", classe: "desfavoravel" },
-        { codigo: "DUVIDA", nome: "Dúvida", classe: "duvida" },
-        { codigo: null, nome: "Sem categoria", classe: "" }
+        { codigo: "FAVORAVEL", nome: "Pontos positivos", singular: "Ponto positivo", classe: "favoravel",
+            dica: "O que você ganha ou gosta nesta decisão.", exemplo: "Ex.: Posso aprender na prática." },
+        { codigo: "DESFAVORAVEL", nome: "Pontos negativos", singular: "Ponto negativo", classe: "desfavoravel",
+            dica: "Perdas, custos ou receios.", exemplo: "Ex.: Pode custar mais do que planejei." },
+        { codigo: "DUVIDA", nome: "Dúvidas", singular: "Dúvida", classe: "duvida",
+            dica: "O que você ainda precisa descobrir.", exemplo: "Ex.: Será que consigo me adaptar?" }
     ];
+    const colunas = {};
     let id;
     let decisao;
     let ideias = [];
+    /** Ideia em edição: `{ id, conteudo, categoria, original: { conteudo, categoria } }`, ou null. */
     let editando = null;
     let excluindo = null;
+    /** Retorno da última ação, mostrado dentro da coluna: `{ codigo, texto, erro }`, ou null. */
+    let retorno = null;
+    /** Id da ideia recém-adicionada ou salva, destacada discretamente até a próxima ação. */
+    let destaque = null;
     let ocupado = true;
     let bloqueado = false;
-    let referenciaForm = null;
 
     /**
-     * Fotografa o rascunho da ideia, inclusive a edição ainda aberta.
+     * Cria um elemento com classe e texto opcionais.
      *
-     * Numa ideia nova sem texto, a classificação escolhida sozinha não conta
-     * como rascunho: não há o que perder ao sair.
-     *
-     * @returns {string} texto, categoria e ideia em edição
+     * @param {string} tag nome da tag HTML
+     * @param {string} [classe] classes CSS separadas por espaço
+     * @param {string} [texto] texto inserido com textContent (nunca como HTML)
+     * @returns {HTMLElement} o elemento criado, ainda fora do documento
      */
-    function fotoFormulario() {
-        const temRascunho = editando !== null || conteudo.value.trim() !== "";
-        return JSON.stringify({
-            editando,
-            conteudo: conteudo.value,
-            categoria: temRascunho ? formulario.elements.categoria.value : ""
+    function criar(tag, classe, texto) {
+        const elemento = document.createElement(tag);
+        if (classe) elemento.className = classe;
+        if (texto !== undefined) elemento.textContent = texto;
+        return elemento;
+    }
+
+    /**
+     * Procura a categoria pelo código gravado no backend.
+     *
+     * @param {(string|null)} codigo FAVORAVEL, DESFAVORAVEL, DUVIDA ou null
+     * @returns {(object|undefined)} a categoria correspondente, ou undefined para
+     *          ideias antigas sem categoria
+     */
+    const categoriaDe = codigo => categorias.find(categoria => categoria.codigo === codigo);
+
+    /**
+     * Monta, uma única vez, as três colunas de visualização das ideias.
+     *
+     * Ordem de cada coluna: título com contagem, descrição, retorno da última
+     * ação (região anunciada por leitores de tela), exemplo quando vazia e a
+     * lista de ideias. Guarda as referências em `colunas`, indexadas pelo código
+     * da categoria (FAVORAVEL, DESFAVORAVEL, DUVIDA).
+     *
+     * @returns {void}
+     */
+    function montarColunas() {
+        const destino = el("ideias");
+        categorias.forEach(categoria => {
+            const secao = criar("section", `brain-coluna ${categoria.classe}`);
+            const tituloId = `titulo-${categoria.classe}`;
+            secao.setAttribute("aria-labelledby", tituloId);
+            const titulo = criar("h2", "", categoria.nome);
+            titulo.id = tituloId;
+            const contagem = criar("span", "coluna-contagem");
+            titulo.append(" ", contagem);
+            const aviso = criar("p", "coluna-retorno");
+            aviso.setAttribute("role", "status");
+            aviso.setAttribute("aria-live", "polite");
+            const vazia = criar("p", "coluna-vazia", categoria.exemplo);
+            const lista = criar("ul", "coluna-lista");
+            secao.append(titulo, criar("p", "coluna-dica", categoria.dica), aviso, vazia, lista);
+            destino.append(secao);
+            colunas[categoria.codigo] = { secao, contagem, aviso, vazia, lista };
         });
     }
 
     /**
-     * Marca a classificação informada ou deixa todas desmarcadas.
+     * Envia o formulário com Enter; Shift + Enter continua quebrando a linha.
      *
-     * @param {string|null} codigo FAVORAVEL, DESFAVORAVEL, DUVIDA ou null/vazio para nenhuma
+     * Ignora o Enter usado para confirmar acentos ou sugestões do teclado
+     * (composição de texto). O envio passa pelas mesmas validações do botão,
+     * então uma ideia sem texto ou sem categoria nunca é enviada.
+     *
+     * @param {KeyboardEvent} evento tecla pressionada no campo
+     * @param {HTMLFormElement} alvo formulário a enviar
      * @returns {void}
      */
-    function selecionarCategoria(codigo) {
-        formulario.querySelectorAll("input[name='categoria']").forEach(radio => { radio.checked = radio.value === codigo; });
-        sinalizarCategoria(false);
+    function enviarComEnter(evento, alvo) {
+        if (evento.key !== "Enter" || evento.shiftKey || evento.isComposing) return;
+        evento.preventDefault();
+        alvo.requestSubmit();
     }
 
     /**
-     * Destaca (ou limpa o destaque) da orientação para escolher a classificação.
+     * Mostra ou esconde uma mensagem de validação junto ao campo correspondente.
      *
-     * @param {boolean} invalida true quando a pessoa tentou adicionar sem classificação
+     * @param {string} idErro id do parágrafo de erro (`erro-conteudo` ou `erro-categoria`)
+     * @param {string} texto mensagem a exibir; texto vazio esconde o parágrafo
      * @returns {void}
      */
-    function sinalizarCategoria(invalida) {
-        formulario.querySelector(".categorias").classList.toggle("invalida", invalida);
-        el("categoria-dica").classList.toggle("invalida", invalida);
-        el("categoria-dica").textContent = invalida
-            ? "Escolha se a ideia é Favorável, Desfavorável ou Dúvida antes de adicioná-la."
-            : "Escolha uma classificação para a ideia antes de adicioná-la.";
-        formulario.querySelector("input[name='categoria']").setCustomValidity(invalida
-            ? "Escolha se a ideia é Favorável, Desfavorável ou Dúvida." : "");
+    function mostrarErro(idErro, texto) {
+        const erro = el(idErro);
+        erro.textContent = texto;
+        erro.hidden = !texto;
+        if (texto) erro.setAttribute("role", "alert");
+        else erro.removeAttribute("role");
+        if (idErro === "erro-conteudo") conteudo.setAttribute("aria-invalid", String(Boolean(texto)));
+        if (idErro === "erro-categoria") formulario.querySelector(".categorias").classList.toggle("invalida", Boolean(texto));
     }
 
     /**
-     * Indica rascunho diferente do último estado estável ou exclusão ainda não confirmada.
-     * Ideias já gravadas pelo botão Adicionar, Salvar ou Excluir não entram aqui.
+     * Mostra o estado do envio junto ao botão + Adicionar.
      *
-     * @returns {boolean} true quando sair perderia o que está no formulário ou na exclusão aberta
+     * O mesmo lugar recebe o aviso "Alterações ainda não salvas." (via
+     * `BussolaAlteracoes.refletir`), para que ele apareça sem deslocar o
+     * formulário nem as colunas enquanto a pessoa digita.
+     *
+     * @param {string} texto "Salvando…", mensagem de erro ou vazio para limpar
+     * @param {boolean} [erro=false] true para o visual de erro
+     * @returns {void}
+     */
+    function estadoFormulario(texto, erro = false) {
+        const estado = el("estado-form");
+        estado.textContent = texto;
+        estado.classList.toggle("erro", erro);
+    }
+
+    const categoriaEscolhida = () => formulario.elements.categoria.value;
+    const temRascunho = () => conteudo.value.trim() !== "";
+
+    /**
+     * Indica se a ideia em edição foi alterada em relação ao que está salvo.
+     *
+     * @returns {boolean} true quando o texto ou a categoria da edição aberta mudou
+     */
+    function edicaoAlterada() {
+        return editando !== null && (editando.conteudo !== editando.original.conteudo
+            || editando.categoria !== editando.original.categoria);
+    }
+
+    /**
+     * Indica alterações que seriam perdidas ao sair da tela: texto ainda não
+     * adicionado, edição alterada ou exclusão aberta e não confirmada. A
+     * categoria escolhida sem texto não conta: não há o que perder.
+     *
+     * @returns {boolean} true quando sair perderia algo
      */
     function sujo() {
-        return excluindo !== null || (referenciaForm !== null && fotoFormulario() !== referenciaForm);
-    }
-
-    /**
-     * Considera o formulário atual como já compatível com o que está salvo.
-     *
-     * @returns {void}
-     */
-    function gravarReferencia() {
-        referenciaForm = fotoFormulario();
-        window.BussolaAlteracoes.refletir(el("mensagem"), false);
+        return excluindo !== null || temRascunho() || edicaoAlterada();
     }
 
     window.BussolaAlteracoes.registrar({ sujo, ocupado: () => ocupado });
@@ -89,93 +163,223 @@
     const emRevisao = () => window.BussolaRevisao.emRevisao(decisao?.etapaAtual, 2) && decisao?.status === "EM_ANDAMENTO";
     const editavel = () => decisao?.status === "EM_ANDAMENTO" && (decisao.etapaAtual === 2 || emRevisao());
 
+    /**
+     * Habilita ou bloqueia campos e botões conforme o estado da tela.
+     *
+     * Durante um salvamento o campo de texto fica só leitura (e não
+     * desabilitado), para que o foco continue onde a pessoa estava escrevendo.
+     *
+     * @returns {void}
+     */
     function atualizarControles() {
         const desabilitado = ocupado || bloqueado || !editavel();
-        el("campos").disabled = desabilitado;
+        el("campos").disabled = bloqueado || !editavel();
+        conteudo.readOnly = ocupado;
+        el("salvar-ideia").disabled = desabilitado;
         const semIdeias = ideias.length === 0 && !emRevisao();
-        el("concluir").disabled = desabilitado || semIdeias || editando !== null || conteudo.value.trim() !== "";
+        const pendente = editando !== null || temRascunho();
+        el("concluir").disabled = desabilitado || semIdeias || pendente;
         el("concluir").title = semIdeias ? "Adicione pelo menos uma ideia para avançar."
-            : editando !== null || conteudo.value.trim() !== "" ? "Salve ou cancele sua ideia antes de avançar." : "";
-        document.querySelectorAll("#ideias button").forEach(botao => { botao.disabled = desabilitado; });
+            : pendente ? "Adicione, salve ou apague o texto ainda não salvo antes de avançar." : "";
+        document.querySelectorAll(".coluna-lista button, .coluna-lista select, .coluna-lista textarea").forEach(controle => {
+            controle.disabled = desabilitado;
+        });
         el("excluir").disabled = desabilitado;
         el("recarregar").disabled = ocupado;
     }
 
-    function limparFormulario() {
-        editando = null;
-        formulario.reset();
-        selecionarCategoria(null);
-        conteudo.setCustomValidity("");
-        el("form-titulo").textContent = "Adicionar ideia";
-        el("salvar-ideia").textContent = "+ Adicionar";
-        el("cancelar-edicao").hidden = true;
-        atualizarControles();
-        gravarReferencia();
+    /**
+     * Registra o retorno de uma ação para exibi-lo dentro da coluna afetada.
+     *
+     * @param {(string|null)} codigo categoria da coluna; para ideias sem categoria
+     *        a mensagem vai para o status geral da página
+     * @param {string} texto mensagem curta
+     * @param {boolean} [erro=false] true para o visual de erro
+     * @returns {void}
+     */
+    function avisar(codigo, texto, erro = false) {
+        if (!colunas[codigo]) {
+            retorno = null;
+            el("mensagem").textContent = texto;
+            return;
+        }
+        retorno = { codigo, texto, erro };
     }
 
-    function renderizar() {
-        const destino = el("ideias");
-        destino.replaceChildren();
-        if (!ideias.length) {
-            const vazio = document.createElement("p");
-            vazio.textContent = "Nenhuma ideia registrada. Escreva o que vem à mente sobre essa decisão.";
-            destino.append(vazio);
+    /**
+     * Cria o cartão de uma ideia salva, com Editar e Excluir quando a etapa
+     * pode ser alterada.
+     *
+     * @param {{id: number, conteudo: string, categoria: (string|null)}} ideia ideia vinda da API
+     * @returns {HTMLLIElement} item pronto para entrar na lista da coluna
+     */
+    function itemIdeia(ideia) {
+        const item = criar("li", "ideia" + (ideia.id === destaque ? " recente" : ""));
+        item.dataset.id = ideia.id;
+        item.append(criar("p", "", ideia.conteudo));
+        if (!editavel()) return item;
+        const acoes = criar("div", "ideia-acoes");
+        const editar = criar("button", "ideia-acao ideia-editar", "Editar");
+        editar.type = "button";
+        editar.setAttribute("aria-label", `Editar ideia: ${ideia.conteudo}`);
+        editar.addEventListener("click", () => iniciarEdicao(ideia));
+        const excluir = criar("button", "ideia-acao ideia-excluir", "Excluir");
+        excluir.type = "button";
+        excluir.setAttribute("aria-label", `Excluir ideia: ${ideia.conteudo}`);
+        excluir.addEventListener("click", () => {
+            if (ocupado || bloqueado) return;
+            excluindo = ideia.id;
+            el("ideia-excluir").textContent = ideia.conteudo;
+            window.BussolaAlteracoes.refletir(el("estado-form"), true);
+            dialogo.showModal();
+        });
+        acoes.append(editar, excluir);
+        item.append(acoes);
+        return item;
+    }
+
+    /**
+     * Cria o editor da ideia aberta para edição: texto, categoria e os botões
+     * Salvar e Cancelar. O rascunho fica em `editando`, então o editor pode ser
+     * redesenhado sem perder o que já foi digitado.
+     *
+     * @returns {HTMLLIElement} item em modo de edição
+     */
+    function itemEdicao() {
+        const item = criar("li", "ideia editando");
+        item.dataset.id = editando.id;
+        const form = criar("form", "ideia-edicao");
+        const rotuloTexto = criar("label", "ajuda-sr", "Texto da ideia");
+        rotuloTexto.htmlFor = "editar-conteudo";
+        const texto = criar("textarea");
+        texto.id = "editar-conteudo";
+        texto.rows = 3;
+        texto.maxLength = 16000;
+        texto.value = editando.conteudo;
+        const rotuloCategoria = criar("label", "ideia-edicao-rotulo", "Categoria");
+        rotuloCategoria.htmlFor = "editar-categoria";
+        const seletor = criar("select");
+        seletor.id = "editar-categoria";
+        if (!categoriaDe(editando.categoria)) {
+            const vazio = criar("option", "", "Escolha uma categoria");
+            vazio.value = "";
+            seletor.append(vazio);
         }
         categorias.forEach(categoria => {
-            const itens = ideias.filter(ideia => categoria.codigo === null
-                ? !categorias.some(c => c.codigo !== null && c.codigo === ideia.categoria)
-                : ideia.categoria === categoria.codigo);
-            if (!itens.length) return;
-            const grupo = document.createElement("section");
-            grupo.className = `grupo-ideias ${categoria.classe}`;
-            const titulo = document.createElement("h2");
-            titulo.textContent = `${categoria.nome} (${itens.length})`;
-            const lista = document.createElement("ul");
-            itens.forEach(ideia => {
-                const item = document.createElement("li");
-                item.className = "ideia";
-                const texto = document.createElement("p");
-                texto.textContent = ideia.conteudo;
-                item.append(texto);
-                if (editavel()) {
-                    const editar = document.createElement("button");
-                    editar.type = "button";
-                    editar.textContent = "Editar";
-                    editar.setAttribute("aria-label", `Editar ideia: ${ideia.conteudo}`);
-                    editar.addEventListener("click", () => {
-                        if (ocupado || bloqueado) return;
-                        if ((editando !== null || conteudo.value.trim()) && !window.confirm("Descartar o texto ainda não salvo para editar esta ideia?")) return;
-                        editando = ideia.id;
-                        conteudo.value = ideia.conteudo;
-                        selecionarCategoria(categorias.some(c => c.codigo === ideia.categoria && c.codigo !== null) ? ideia.categoria : null);
-                        el("form-titulo").textContent = "Editar ideia e categoria";
-                        el("salvar-ideia").textContent = "Salvar alteração";
-                        el("cancelar-edicao").hidden = false;
-                        conteudo.setCustomValidity("");
-                        atualizarControles();
-                        gravarReferencia();
-                        conteudo.focus();
-                    });
-                    const excluir = document.createElement("button");
-                    excluir.type = "button";
-                    excluir.textContent = "Excluir";
-                    excluir.setAttribute("aria-label", `Excluir ideia: ${ideia.conteudo}`);
-                    excluir.addEventListener("click", () => {
-                        if (ocupado || bloqueado) return;
-                        excluindo = ideia.id;
-                        el("ideia-excluir").textContent = ideia.conteudo;
-                        window.BussolaAlteracoes.refletir(el("mensagem"), true);
-                        dialogo.showModal();
-                    });
-                    item.append(editar, excluir);
-                }
-                lista.append(item);
-            });
-            grupo.append(titulo, lista);
-            destino.append(grupo);
+            const opcao = criar("option", "", categoria.singular);
+            opcao.value = categoria.codigo;
+            seletor.append(opcao);
         });
-        const somenteConsulta = !editavel();
-        if (editavel() && ideias.length === 0 && !emRevisao()) {
+        seletor.value = editando.categoria || "";
+        const acoes = criar("div", "ideia-edicao-acoes");
+        const salvar = criar("button", "home-primary", "Salvar");
+        salvar.type = "submit";
+        const cancelar = criar("button", "home-secondary", "Cancelar");
+        cancelar.type = "button";
+        acoes.append(salvar, cancelar);
+        form.append(rotuloTexto, texto, rotuloCategoria, seletor, acoes);
+        item.append(form);
+
+        texto.addEventListener("input", () => {
+            editando.conteudo = texto.value;
+            texto.setCustomValidity("");
+            window.BussolaAlteracoes.refletir(el("estado-form"), sujo());
+        });
+        texto.addEventListener("keydown", evento => {
+            if (evento.key === "Escape") { evento.preventDefault(); cancelarEdicao(); return; }
+            enviarComEnter(evento, form);
+        });
+        seletor.addEventListener("change", () => {
+            editando.categoria = seletor.value || null;
+            seletor.setCustomValidity("");
+            window.BussolaAlteracoes.refletir(el("estado-form"), sujo());
+        });
+        cancelar.addEventListener("click", cancelarEdicao);
+        form.addEventListener("submit", evento => {
+            evento.preventDefault();
+            texto.setCustomValidity(texto.value.trim() ? "" : "Escreva a ideia antes de salvar.");
+            seletor.setCustomValidity(seletor.value ? "" : "Escolha a categoria da ideia.");
+            if (!form.reportValidity()) return;
+            salvarEdicao();
+        });
+        return item;
+    }
+
+    /**
+     * Abre uma ideia para edição no próprio cartão.
+     *
+     * Se outra ideia estava em edição com mudanças, pede confirmação antes de
+     * descartá-las. O texto do formulário de nova ideia não é afetado.
+     *
+     * @param {{id: number, conteudo: string, categoria: (string|null)}} ideia ideia a editar
+     * @returns {void}
+     */
+    function iniciarEdicao(ideia) {
+        if (ocupado || bloqueado) return;
+        if (edicaoAlterada() && !window.confirm("Descartar as mudanças ainda não salvas na outra ideia?")) return;
+        editando = { id: ideia.id, conteudo: ideia.conteudo, categoria: ideia.categoria,
+            original: { conteudo: ideia.conteudo, categoria: ideia.categoria } };
+        renderizar();
+        window.BussolaAlteracoes.refletir(el("estado-form"), sujo());
+        el("editar-conteudo")?.focus();
+    }
+
+    /**
+     * Fecha a edição aberta, confirmando antes se houver mudanças não salvas,
+     * e devolve o foco ao botão Editar da mesma ideia.
+     *
+     * @returns {void}
+     */
+    function cancelarEdicao() {
+        if (editando === null) return;
+        if (edicaoAlterada() && !window.confirm("Descartar as mudanças desta ideia?")) return;
+        const ideiaId = editando.id;
+        editando = null;
+        renderizar();
+        window.BussolaAlteracoes.refletir(el("estado-form"), sujo());
+        focarEditar(ideiaId);
+    }
+
+    /**
+     * Coloca o foco no botão Editar de uma ideia, se ela ainda estiver na tela.
+     *
+     * @param {number} ideiaId id da ideia
+     * @returns {void}
+     */
+    function focarEditar(ideiaId) {
+        document.querySelector(`.ideia[data-id="${ideiaId}"] .ideia-editar`)?.focus();
+    }
+
+    /**
+     * Redesenha as listas das colunas, as contagens, o retorno da última ação e
+     * o estado da etapa.
+     *
+     * Colunas vazias continuam visíveis: em edição mostram um exemplo discreto;
+     * em consulta, avisam que não há ideias naquela categoria. Ideias antigas sem
+     * categoria aparecem num bloco separado, abaixo das colunas.
+     *
+     * @returns {void}
+     */
+    function renderizar() {
+        const podeEditar = editavel();
+        const desenhar = ideia => editando?.id === ideia.id ? itemEdicao() : itemIdeia(ideia);
+        categorias.forEach(categoria => {
+            const coluna = colunas[categoria.codigo];
+            const itens = ideias.filter(ideia => ideia.categoria === categoria.codigo);
+            coluna.lista.replaceChildren(...itens.map(desenhar));
+            coluna.contagem.textContent = `(${itens.length})`;
+            coluna.vazia.hidden = itens.length > 0;
+            coluna.vazia.textContent = podeEditar ? categoria.exemplo : "Nenhuma ideia nesta categoria.";
+            const texto = retorno?.codigo === categoria.codigo ? retorno.texto : "";
+            if (coluna.aviso.textContent !== texto) coluna.aviso.textContent = texto;
+            coluna.aviso.classList.toggle("erro", Boolean(texto && retorno.erro));
+        });
+        const semCategoria = ideias.filter(ideia => !categoriaDe(ideia.categoria));
+        el("lista-sem-categoria").replaceChildren(...semCategoria.map(desenhar));
+        el("sem-categoria").hidden = semCategoria.length === 0;
+
+        const somenteConsulta = !podeEditar;
+        if (podeEditar && ideias.length === 0 && !emRevisao()) {
             el("mensagem").textContent = "Adicione pelo menos uma ideia para liberar a próxima etapa.";
         }
         formulario.hidden = somenteConsulta;
@@ -188,7 +392,6 @@
         if (somenteConsulta && (decisao.status === "CONCLUIDA" || decisao.etapaAtual > 3)) {
             el("proxima-descricao").textContent = "Essas são as ideias salvas da sua decisão. A consulta não altera seu progresso.";
         }
-        el("etapa").textContent = "Etapa 2 de 6 · Brainstorming";
         atualizarControles();
     }
 
@@ -212,77 +415,145 @@
         return "brainstorming.html";
     }
 
-    async function executar(acao, sucesso) {
-        if (ocupado || bloqueado || !editavel()) return;
+    /**
+     * Executa uma gravação na API e mostra o andamento onde a pessoa está agindo.
+     *
+     * Nada de sucesso é exibido aqui: a própria `acao`, depois que a API
+     * confirma, troca o "Salvando…" pela mensagem final. Em erro, os dados
+     * digitados continuam onde estavam.
+     *
+     * @param {function(): Promise<void>} acao chamada à API e atualização de `ideias`
+     * @param {function(string, boolean): void} mostrar exibe o andamento ("Salvando…")
+     *        ou o erro (segundo argumento true) no lugar certo da tela
+     * @returns {Promise<boolean>} true se a gravação deu certo; false se foi
+     *          ignorada (tela ocupada, bloqueada ou só leitura) ou falhou
+     */
+    async function executar(acao, mostrar) {
+        if (ocupado || bloqueado || !editavel()) return false;
         ocupado = true;
-        el("mensagem").textContent = "Salvando…";
+        retorno = null;
+        destaque = null;
+        if (el("mensagem").textContent === "Adicione pelo menos uma ideia para liberar a próxima etapa.") el("mensagem").textContent = "";
+        mostrar("Salvando…", false);
         atualizarControles();
         try {
             await acao();
-            el("mensagem").textContent = sucesso;
             renderizar();
+            return true;
         } catch (erro) {
             bloqueado = Boolean(erro.status === 404 || api.encerrada);
-            el("mensagem").textContent = erro.message;
-            el("recarregar").hidden = false;
+            mostrar(erro.message || "Não foi possível salvar. Tente novamente.", true);
+            if (bloqueado) {
+                el("mensagem").textContent = erro.message;
+                el("recarregar").hidden = false;
+            }
+            renderizar();
+            return false;
         } finally {
             ocupado = false;
             atualizarControles();
         }
     }
 
+    /**
+     * Valida e grava a ideia do formulário único.
+     *
+     * Sem categoria, avisa junto ao botão; sem texto, avisa junto ao campo. O
+     * texto digitado nunca é apagado por uma validação ou por um erro da API.
+     * Depois de salvar, limpa só o texto (a categoria escolhida continua
+     * marcada para a próxima ideia) e anuncia o resultado na coluna de destino.
+     *
+     * @returns {Promise<void>}
+     */
+    async function adicionar() {
+        const texto = conteudo.value.trim();
+        const codigo = categoriaEscolhida();
+        mostrarErro("erro-conteudo", texto ? "" : "Escreva sua ideia antes de adicionar.");
+        mostrarErro("erro-categoria", codigo ? "" : "Escolha uma categoria para adicionar.");
+        if (!codigo) { formulario.querySelector("input[name='categoria']").focus(); return; }
+        if (!texto) { conteudo.focus(); return; }
+        estadoFormulario("");
+        let nova;
+        const salvou = await executar(async () => {
+            nova = await api.requisitar(`/decisoes/${id}/ideias`, "POST", { conteudo: texto, categoria: codigo });
+            ideias.push(nova);
+            conteudo.value = "";
+            estadoFormulario("");
+            avisar(codigo, `Adicionada em ${categoriaDe(codigo).nome}.`);
+            destaque = nova.id;
+        }, estadoFormulario);
+        if (!salvou) return;
+        window.BussolaAlteracoes.refletir(el("estado-form"), sujo());
+        atualizarControles();
+        conteudo.focus();
+    }
+
+    /**
+     * Grava a ideia em edição (texto e categoria). Se a categoria mudar, o
+     * cartão passa para a coluna correspondente e o retorno aparece lá.
+     *
+     * @returns {Promise<void>}
+     */
+    async function salvarEdicao() {
+        const ideiaId = editando.id;
+        const anterior = editando.original.categoria;
+        const dados = { conteudo: editando.conteudo.trim(), categoria: editando.categoria };
+        const salvou = await executar(async () => {
+            const ideia = await api.requisitar(`/decisoes/${id}/ideias/${ideiaId}`, "PUT", dados);
+            ideias = ideias.map(item => item.id === ideiaId ? ideia : item);
+            editando = null;
+            const nome = categoriaDe(ideia.categoria)?.nome;
+            avisar(ideia.categoria, ideia.categoria !== anterior ? `Movida para ${nome}.` : "Alteração salva.");
+            destaque = ideia.id;
+        }, (texto, erro) => avisar(anterior, texto, erro));
+        if (salvou) {
+            window.BussolaAlteracoes.refletir(el("estado-form"), sujo());
+            focarEditar(ideiaId);
+        }
+    }
+
     formulario.addEventListener("submit", evento => {
         evento.preventDefault();
-        conteudo.setCustomValidity(conteudo.value.trim() ? "" : "Escreva uma ideia antes de salvar.");
-        sinalizarCategoria(conteudo.value.trim() !== "" && !formulario.elements.categoria.value);
-        if (!formulario.reportValidity()) {
-            if (conteudo.value.trim()) el("mensagem").textContent = "Escolha a classificação da ideia: Favorável, Desfavorável ou Dúvida.";
-            return;
-        }
-        const dados = { conteudo: conteudo.value.trim(), categoria: formulario.elements.categoria.value };
-        executar(async () => {
-            const ideia = await api.requisitar(`/decisoes/${id}/ideias${editando === null ? "" : `/${editando}`}`, editando === null ? "POST" : "PUT", dados);
-            if (editando === null) ideias.push(ideia);
-            else ideias = ideias.map(item => item.id === editando ? ideia : item);
-            limparFormulario();
-        }, "Ideia salva.");
+        adicionar();
     });
+    conteudo.addEventListener("keydown", evento => enviarComEnter(evento, formulario));
     conteudo.addEventListener("input", () => {
-        conteudo.setCustomValidity("");
-        el("cancelar-edicao").hidden = editando === null && conteudo.value === "";
+        if (conteudo.value.trim()) mostrarErro("erro-conteudo", "");
+        if (el("estado-form").classList.contains("erro")) estadoFormulario("");
         atualizarControles();
-        window.BussolaAlteracoes.refletir(el("mensagem"), sujo());
+        window.BussolaAlteracoes.refletir(el("estado-form"), sujo());
     });
     formulario.addEventListener("change", evento => {
-        if (evento.target.name === "categoria") {
-            sinalizarCategoria(false);
-            if (el("mensagem").textContent.startsWith("Escolha a classificação")) el("mensagem").textContent = "";
-        }
-        window.BussolaAlteracoes.refletir(el("mensagem"), sujo());
+        if (evento.target.name === "categoria") mostrarErro("erro-categoria", "");
     });
-    el("cancelar-edicao").addEventListener("click", limparFormulario);
     el("cancelar-exclusao").addEventListener("click", () => {
         excluindo = null;
         dialogo.close();
-        window.BussolaAlteracoes.refletir(el("mensagem"), sujo());
+        window.BussolaAlteracoes.refletir(el("estado-form"), sujo());
     });
     dialogo.addEventListener("close", () => {
         if (excluindo === null) return;
         excluindo = null;
-        window.BussolaAlteracoes.refletir(el("mensagem"), sujo());
+        window.BussolaAlteracoes.refletir(el("estado-form"), sujo());
     });
-    el("excluir").addEventListener("click", () => {
+    el("excluir").addEventListener("click", async () => {
         const ideiaId = excluindo;
+        const codigo = ideias.find(ideia => ideia.id === ideiaId)?.categoria ?? null;
         excluindo = null;
         dialogo.close();
-        executar(async () => {
+        const excluiu = await executar(async () => {
             await api.requisitar(`/decisoes/${id}/ideias/${ideiaId}`, "DELETE");
             ideias = ideias.filter(ideia => ideia.id !== ideiaId);
-            if (editando === ideiaId) limparFormulario();
-        }, "Ideia excluída.");
+            if (editando?.id === ideiaId) editando = null;
+            avisar(codigo, "Ideia excluída.");
+        }, (texto, erro) => avisar(codigo, texto, erro));
+        if (excluiu) {
+            window.BussolaAlteracoes.refletir(el("estado-form"), sujo());
+            conteudo.focus();
+        }
     });
     el("concluir").addEventListener("click", async () => {
-        if (ocupado || bloqueado || !editavel() || window.BussolaEtapas.aberta || editando !== null || conteudo.value.trim()) return;
+        if (ocupado || bloqueado || !editavel() || window.BussolaEtapas.aberta || editando !== null || temRascunho()) return;
         if (!emRevisao() && ideias.length === 0) {
             el("mensagem").textContent = "Adicione pelo menos uma ideia antes de avançar.";
             conteudo.focus();
@@ -297,7 +568,7 @@
         executar(async () => {
             decisao = await api.requisitar(`/decisoes/${id}/brainstorming/concluir`, "POST");
             window.BussolaAlteracoes.navegar("opcoes.html?decisaoId=" + encodeURIComponent(id));
-        }, "Brainstorming concluído. Suas ideias foram preservadas.");
+        }, texto => { el("mensagem").textContent = texto; });
     });
 
     async function carregar() {
@@ -319,7 +590,13 @@
             el("decisao-contexto").textContent = decisao.contexto || "";
             el("contexto-painel").hidden = !decisao.contexto;
             bloqueado = false;
-            limparFormulario();
+            editando = null;
+            retorno = null;
+            destaque = null;
+            formulario.reset();
+            mostrarErro("erro-conteudo", "");
+            mostrarErro("erro-categoria", "");
+            estadoFormulario("");
             renderizar();
             el("mensagem").textContent = "";
             el("recarregar").hidden = true;
@@ -332,6 +609,7 @@
             atualizarControles();
         }
     }
+    montarColunas();
     el("recarregar").addEventListener("click", carregar);
     window.addEventListener("pageshow", evento => { if (evento.persisted) window.location.reload(); });
     carregar();

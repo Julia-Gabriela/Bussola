@@ -11,17 +11,28 @@
     /**
      * Descreve em que ponto a decisão está, no formato padrão das telas.
      *
+     * Distingue quatro situações sem inventar estado: decisão finalizada
+     * (`status` CONCLUIDA), Resultado já aberto (`resultadoAlcancado === true`,
+     * registrado pelo backend quando o Resultado é exibido), análise em
+     * andamento (etapa 6 com `resultadoAlcancado === false`) e etapa alcançada
+     * nas demais. Estar na etapa 6 não basta para dizer "Resultado disponível":
+     * se o campo `resultadoAlcancado` não vier na resposta, o texto fica neutro
+     * ("Etapa 6 de 6 · Análise").
+     *
      * @param {{status: string, etapaAtual: number, totalEtapas?: number, resultadoAlcancado?: boolean}} decisao
      *        resumo devolvido pela API (Home ou Histórico)
-     * @returns {string} "Concluída" para decisões finalizadas; "Etapa 6 de 6 · Resultado disponível ·
-     *          falta finalizar" quando o resultado comparativo já foi aberto; nos demais casos
-     *          "Etapa N de 6 · Nome da etapa" (o nome é omitido se a etapa estiver fora de 1 a 6)
+     * @returns {string} "Concluída · decisão finalizada"; "Resultado disponível · falta finalizar";
+     *          "Etapa 6 de 6 · Análise em andamento"; ou "Etapa N de 6 · Nome da etapa"
+     *          (o nome é omitido se a etapa estiver fora de 1 a 6)
      */
     function descrever(decisao) {
-        if (decisao.status === "CONCLUIDA") return "Concluída";
+        if (decisao.status === "CONCLUIDA") return "Concluída · decisão finalizada";
         const total = decisao.totalEtapas || NOMES.length;
-        if (decisao.resultadoAlcancado) return `Etapa ${total} de ${total} · Resultado disponível · falta finalizar`;
+        if (decisao.resultadoAlcancado === true) return "Resultado disponível · falta finalizar";
         const nome = NOMES[decisao.etapaAtual - 1];
+        if (decisao.etapaAtual === total && decisao.resultadoAlcancado === false) {
+            return `Etapa ${total} de ${total} · Análise em andamento`;
+        }
         return `Etapa ${decisao.etapaAtual} de ${total}` + (nome ? ` · ${nome}` : "");
     }
 
