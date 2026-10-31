@@ -11,17 +11,18 @@ import { configurarConta } from "../shared/conta.js";
  */
 
 const ETAPAS = [
-    { chave: "contexto", nome: "Contextualização", curto: "Contexto" },
-    { chave: "brainstorming", nome: "Brainstorming", curto: "Brainstorm" },
-    { chave: "opcoes", nome: "Opções", curto: "Opções" },
-    { chave: "criterios", nome: "Critérios", curto: "Critérios" },
-    { chave: "pesos", nome: "Pesos", curto: "Pesos" },
-    { chave: "pros-contras", nome: "Prós e Contras", curto: "Prós e Contras" },
-    { chave: "gut", nome: "Matriz GUT", curto: "Matriz GUT" },
-    { chave: "101010", nome: "Método 10/10/10", curto: "10/10/10" },
-    { chave: "inversao", nome: "Inversão", curto: "Inversão" },
+    { chave: "contexto", nome: "Contextualização", curto: "Contexto", etapa: 1 },
+    { chave: "brainstorming", nome: "Brainstorming", curto: "Brainstorm", etapa: 2 },
+    { chave: "opcoes", nome: "Opções", curto: "Opções", etapa: 3 },
+    { chave: "criterios", nome: "Critérios", curto: "Critérios", etapa: 4 },
+    { chave: "pesos", nome: "Pesos", curto: "Pesos", etapa: 5 },
+    { chave: "pros-contras", nome: "Prós e Contras", curto: "Prós e Contras", etapa: 6 },
+    { chave: "gut", nome: "Matriz GUT", curto: "Matriz GUT", etapa: 6 },
+    { chave: "101010", nome: "Método 10/10/10", curto: "10/10/10", etapa: 6 },
+    { chave: "inversao", nome: "Inversão", curto: "Inversão", etapa: 6 },
     { chave: "resultado", nome: "Resultado comparativo", curto: "Resultado", pagina: "resultado.html" }
 ];
+const NOMES_ETAPAS = ["Contextualização", "Brainstorming", "Opções", "Critérios", "Pesos", "Análise"];
 const CATEGORIAS = [
     { codigo: "FAVORAVEL", nome: "Favorável", classe: "favoravel" },
     { codigo: "DESFAVORAVEL", nome: "Desfavorável", classe: "desfavoravel" },
@@ -375,7 +376,8 @@ function mostrar(chave, { historico = null, focar = false } = {}) {
     const indice = Math.max(0, ETAPAS.findIndex(etapa => etapa.chave === chave && !etapa.pagina));
     const etapa = ETAPAS[indice];
     atual = etapa.chave;
-    el("etapa-posicao").textContent = "Consulta · Etapa " + (indice + 1) + " de " + ETAPAS.length;
+    el("etapa-posicao").textContent = "Seção " + (indice + 1) + " de " + ETAPAS.length + " da consulta · Etapa "
+        + etapa.etapa + " de " + NOMES_ETAPAS.length + " · " + NOMES_ETAPAS[etapa.etapa - 1];
     el("etapa-titulo").textContent = etapa.nome;
     document.title = etapa.nome + " — Minha análise — Bússola";
     el("painel").replaceChildren(...RENDERIZADORES[etapa.chave]());
@@ -406,7 +408,7 @@ function navegar(evento) {
     else el("etapa-titulo").focus();
 }
 
-/** Monta o indicador com as 10 etapas, reaproveitando o círculo numerado das etapas. */
+/** Monta o indicador com as 10 seções da consulta, reaproveitando o círculo numerado das etapas. */
 function montarIndicador() {
     el("etapas").replaceChildren(...ETAPAS.map((etapa, indice) => {
         const item = criar("li", etapa.pagina ? "externa" : "");
@@ -415,7 +417,9 @@ function montarIndicador() {
         link.dataset.etapa = etapa.pagina ? "" : etapa.chave;
         link.append(criar("span", "etapa-circulo", indice + 1), criar("span", "", etapa.curto));
         link.querySelector(".etapa-circulo").setAttribute("aria-hidden", "true");
-        if (etapa.curto !== etapa.nome) link.setAttribute("aria-label", etapa.nome);
+        link.setAttribute("aria-label", etapa.etapa
+            ? etapa.nome + " — seção " + (indice + 1) + " de " + ETAPAS.length + ", etapa " + etapa.etapa + " de " + NOMES_ETAPAS.length
+            : etapa.nome + " — resultado da análise");
         item.append(link);
         return item;
     }));

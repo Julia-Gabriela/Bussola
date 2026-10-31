@@ -211,7 +211,7 @@
             const url = new URL(rota, window.location.href);
             url.searchParams.set("decisaoId", id);
             if (decisao.etapaAtual > 4) url.searchParams.set("revisao", "1");
-            window.location.assign(url.href);
+            window.BussolaAlteracoes.navegar(url.href);
         } else aviso("Opções salvas", "Suas alternativas estão guardadas. A etapa de critérios estará disponível em breve. Você pode sair e retomar pela Home.");
     }
 
@@ -285,7 +285,7 @@
             await requisitar("/auth/logout", "POST");
             referencia = null;
             sessionStorage.removeItem(chave);
-            window.location.assign("login.html");
+            window.BussolaAlteracoes.navegar("login.html");
         } catch (erro) {
             if (!encerrada) aviso("Não foi possível sair", "Confira sua conexão e tente sair novamente.");
         } finally { estado(false); }

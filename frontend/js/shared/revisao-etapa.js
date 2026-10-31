@@ -12,11 +12,12 @@
     "use strict";
 
     const PASSOS = [
-        { etapa: 2, numero: "1", nome: "Brainstorm", pagina: "brainstorming.html" },
-        { etapa: 3, numero: "2", nome: "Opções", pagina: "opcoes.html" },
-        { etapa: 4, numero: "3", nome: "Critérios", pagina: "criterios.html" },
-        { etapa: 5, numero: "4", nome: "Pesos", pagina: "pesos.html" },
-        { etapa: 6, numero: "5", nome: "Análise", pagina: "analise.html" }
+        { etapa: 1, numero: "1", nome: "Contexto", pagina: null },
+        { etapa: 2, numero: "2", nome: "Brainstorm", pagina: "brainstorming.html" },
+        { etapa: 3, numero: "3", nome: "Opções", pagina: "opcoes.html" },
+        { etapa: 4, numero: "4", nome: "Critérios", pagina: "criterios.html" },
+        { etapa: 5, numero: "5", nome: "Pesos", pagina: "pesos.html" },
+        { etapa: 6, numero: "6", nome: "Análise", pagina: "analise.html" }
     ];
 
     let dialogo;

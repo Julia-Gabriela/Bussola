@@ -154,7 +154,7 @@ O último comando deve mostrar `Apache Maven 3.9.16` e `Java version: 25...`. Se
     & "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p -e "CREATE DATABASE IF NOT EXISTS bussola CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
     ```
 
-4. **Tabelas:** não crie tabelas nem rode scripts SQL manualmente. As tabelas são criadas e atualizadas pelo **Flyway** automaticamente toda vez que o backend inicia, usando os arquivos de `backend/src/main/resources/db/migration` (V1 a V5). Nunca edite uma migration que já foi aplicada.
+4. **Tabelas:** não crie tabelas nem rode scripts SQL manualmente. As tabelas são criadas e atualizadas pelo **Flyway** automaticamente toda vez que o backend inicia, usando os arquivos de `backend/src/main/resources/db/migration` (V1 a V7). Nunca edite uma migration que já foi aplicada.
 
 ### 3. Configurar as variáveis de ambiente
 
@@ -339,7 +339,11 @@ Mantenha MySQL, backend e frontend ligados. Use uma decisão sua que já tenha p
 
 Nas telas de Contextualização, Brainstorming, Opções e Critérios, a página compara os campos com o último dado carregado ou salvo. Digitar e depois apagar até voltar ao mesmo texto libera a saída. Carregar a página não conta como alteração.
 
-Se houver diferença e você clicar no indicador, em Início, em Sair ou em outro link interno, abre o aviso **Alterações não salvas**, com o botão **Continuar editando**. Esc fecha o aviso e mantém o que foi digitado. Não há botão para descartar. **Salvar para depois** ou **Salvar alterações** grava e, se der certo, libera a navegação. Se o salvamento falhar, o texto permanece e a saída continua bloqueada.
+Se houver diferença e você clicar no indicador, em Início, em Sair ou em outro link interno, abre o aviso **Alterações não salvas**, com o botão **Continuar editando**. Esc fecha o aviso e mantém o que foi digitado. Nas etapas da decisão não há botão para descartar. **Salvar para depois** ou **Salvar alterações** grava e, se der certo, libera a navegação. Se o salvamento falhar, o texto permanece e a saída continua bloqueada.
+
+Em **Meu perfil**, o aviso **Alterações não salvas** diz "Você fez alterações no seu perfil que ainda não foram salvas. Deseja continuar editando ou descartá-las?" e tem dois botões: **Continuar editando** (fica na página com o que foi digitado) e **Descartar alterações** (descarta só o que não foi salvo, não envia nada ao banco e segue para o destino escolhido). Vale para **← Voltar ao início**, os links do cabeçalho, **Sair** e o botão Voltar do navegador. Sem alterações, a saída é direta. Se o popup ainda aparecer só com **Continuar editando**, o navegador está usando arquivos antigos guardados em cache: pressione **Ctrl + F5** na página do perfil.
+
+**Próxima etapa** (e **Confirmar e avançar**) salva e depois abre a etapa seguinte sem o aviso "Sair do site?" do navegador. Se um salvamento automático ainda estiver em andamento (por exemplo, uma classificação da Matriz GUT), a saída espera ele terminar.
 
 No Brainstorming, cada ideia adicionada, editada ou excluída já é gravada na hora. O bloqueio vale para o texto ainda no formulário e para uma exclusão que ainda não foi confirmada. Em Critérios, incluir ou remover um critério, ou mudar uma nota, bloqueia a saída até salvar. Confirmar notas pendentes não grava essas mudanças: a tela pede para salvar antes.
 
@@ -424,7 +428,7 @@ A tela **Defina suas opções** está em `frontend/pages/opcoes.html`. Ela exibe
 
 ### Pré-requisito: decisão na etapa de opções
 
-Opções corresponde a `etapa_atual = 3` no banco, depois da contextualização (1) e do brainstorming (2). O indicador do Figma mostra **Etapa 2 de 5** porque conta as cinco etapas da análise, sem a contextualização. A Home continua contando o fluxo completo de seis etapas.
+Opções corresponde a `etapa_atual = 3` no banco, depois da contextualização (1) e do brainstorming (2). Todas as telas usam a mesma contagem de seis etapas (Contextualização, Brainstorming, Opções, Critérios, Pesos e Análise): a tela mostra **Etapa 3 de 6 · Opções**, igual à Home e ao Histórico.
 
 O backend bloqueia o acesso antecipado com **409**. Criar uma decisão pela Home ainda a deixa na etapa 1; mudar o número na URL não libera etapas. Para chegar à etapa 3 pela interface, conclua a contextualização e o brainstorming conforme a seção anterior.
 
@@ -510,7 +514,7 @@ A página está em `frontend/pages/criterios.html`. **Continue usando os mesmos 
 7. Tente **Próxima etapa** com uma nota faltando: a tela deve focar o primeiro grupo incompleto e continuar na etapa atual. Depois, preencha A/B em todos os critérios, clique para avançar e escolha **Confirmar e avançar**. O backend salva e passa de **4 para 5**, mantendo a decisão **EM_ANDAMENTO**.
 8. Após concluir a avaliação, a tela abre Pesos. Ajuste cada critério de 1 a 5; a soma e a barra atualizam enquanto você move os controles. Próxima etapa salva os pesos e abre Análise. Para editar notas ou pesos depois, use Revisar uma etapa anterior; as alterações são salvas sem reiniciar o progresso.
 
-O indicador **Etapa 3 de 5** segue o Figma e conta as etapas da análise; o banco/Home contam também a contextualização, por isso Critérios é a etapa 4 de 6.
+O indicador mostra **Etapa 4 de 6 · Critérios**, a mesma numeração do banco, da Home e do Histórico (a contextualização conta como etapa 1).
 
 **Totais:** são somas brutas sem pesos, com indicação de parcial quando há notas faltantes. Não são uma recomendação: incluem a nota de Risco no sentido escolhido pelo usuário. O resultado comparativo interpreta `sentido: MENOR_MELHOR` (6 − nota) antes de comparar alternativas. Os pesos existentes não são redefinidos ao salvar notas.
 
@@ -556,7 +560,7 @@ Confirmar uma alternativa: `POST /decisoes/{decisaoId}/criterios/confirmacao`.
 
 ### Integração com as próximas telas
 
-- Brainstorming está integrada: sua conclusão persiste a etapa 3 e abre `opcoes.html?decisaoId=ID`. Ao consultar ideias de uma etapa já concluída, **Continuar decisão** retoma o estágio salvo pela API.
+- Brainstorming está integrada: sua conclusão persiste a etapa 3 e abre `opcoes.html?decisaoId=ID`. Ao consultar ideias de uma etapa já concluída, **Continuar decisão** abre direto a tela da etapa salva pela API (Opções, Critérios, Pesos, Análise ou Resultado), sem passar pela contextualização. O botão **Voltar** do navegador nessa tela retorna ao Brainstorming; voltar a partir do Brainstorming de uma decisão recém-criada leva à tela anterior (Home), sem reabrir a contextualização vazia.
 - Opções já abre Critérios. Os IDs de A/B são preservados: A é a opção de menor ID, B é a seguinte.
 - Critérios abre a página de Pesos após concluir a avaliação; o evento cancelável bussola:criterios-concluidos continua disponível.
 - A API retorna `criterios[].id`, `codigo`, `nome`, `descricao`, `personalizado`, `peso`, `sentido`, `notaA` e `notaB`. IDs são null somente para os cinco critérios ainda não gravados; depois de salvar, são os IDs reais para Pesos/Avaliações. O GET não cria registros.
@@ -612,23 +616,23 @@ Está descrita, passo a passo, em "Como executar o Bússola sem IntelliJ IDEA" (
 
 ## Prós e Contras e Matriz GUT
 
-Reinicie o backend e use **Ctrl + F5** no frontend. Não há dependências, variáveis ou migrations novas.
+Reinicie o backend e use **Ctrl + F5** no frontend. Não há dependências nem variáveis novas. Ao reiniciar, o Flyway aplica sozinho **V6__Gut_vinculada_pros_contras.sql**, que só acrescenta à tabela `itens_gut` uma coluna opcional ligando a classificação ao pró/contra. Nada é apagado e os fatores GUT antigos continuam lá. No log, a linha "Current version of schema `bussola`: 6" confirma que a migration foi aplicada.
 
-Pré-requisito: a decisão deve ter duas alternativas e estar na etapa interna 6 — Análise (visual 5 de 5). Conclua Critérios, defina os pesos e avance. Não altere o banco pessoal para pular etapas.
+Pré-requisito: a decisão deve ter duas alternativas e estar na etapa 6 — Análise (a tela mostra **Etapa 6 de 6 · Análise**). Conclua Critérios, defina os pesos e avance. Não altere o banco pessoal para pular etapas.
 
 Ao concluir Pesos, o backend libera a etapa 6 e a tela abre a página de Análise. A Home e o indicador retomam essa tela quando a API informa a etapa 6.
 
 ### Conferir pela tela, com uma decisão já liberada
 
 1. Na Home, clique em **Continuar** na decisão em Análise.
-2. Em **Prós e Contras**, as duas alternativas aparecem ao mesmo tempo: **Alternativa A — nome** e **Alternativa B — nome**, cada uma com os cards **Prós (n)** e **Contras (n)**. Clique em **+ Adicionar pró** ou **+ Adicionar contra** no card desejado. O formulário abre dentro do próprio card, já ligado àquela alternativa e àquele tipo. Escreva a descrição e clique em **Salvar**: o item aparece na lista e o contador aumenta. Em **Editar**, o mesmo card mostra o texto atual e o botão **Salvar alterações**. Confira que os outros três cards permanecem intactos.
+2. Em **Prós e Contras**, as duas alternativas aparecem ao mesmo tempo: **Alternativa A — nome** e **Alternativa B — nome**, cada uma com os cards **Prós (n)** e **Contras (n)**. Clique em **+ Adicionar pró** ou **+ Adicionar contra** no card desejado. O formulário abre no topo do próprio card, acima da lista, já ligado àquela alternativa e àquele tipo. Escreva a descrição e clique em **Adicionar**: o item aparece na lista, o contador aumenta e o formulário continua aberto e no mesmo lugar para o próximo item (clique em **Cancelar** para fechá-lo). A lista cresce para baixo. Em **Editar**, o mesmo card mostra o texto atual e o botão **Salvar alterações**. Confira que os outros três cards permanecem intactos.
 3. Exclua um registro: primeiro cancele a confirmação; depois confirme e confira a lista.
-4. Em **Matriz GUT**, cadastre um fator com notas 5, 4 e 3. A prioridade deve ser **60**. Edite para 1, 1 e 1: deve virar **1** e mudar de posição na lista.
+4. Em **Matriz GUT**, aparecem os prós e contras cadastrados, agrupados por alternativa (não há cadastro de texto livre). Escolha Gravidade, Urgência e Tendência de um item com 5, 4 e 3: ao completar as três notas a classificação é salva sozinha e a pontuação deve ser **60**, com o selo **Maior prioridade** no maior valor. Mude uma nota: a mesma classificação é atualizada, sem duplicar. Volte a Prós e Contras, edite o texto desse item e confira na GUT o texto novo com as mesmas notas; exclua um item classificado e confira que a classificação dele some. Se a decisão tiver fatores criados antes dessa mudança, eles aparecem em **Fatores cadastrados antes da integração**, com notas editáveis e botão **Excluir**.
 5. Recarregue a página para conferir os dados salvos. Um texto digitado e ainda não salvo (novo ou em **Editar**) impede trocar de técnica, avançar, sair ou abrir outro formulário até clicar em **Salvar** ou **Cancelar**; um formulário aberto sem alterações não bloqueia nada. Se o backend recusar a descrição, o texto continua no card para corrigir; falhas de conexão ou do servidor exigem clicar em **Recarregar dados** antes de tentar novamente, evitando duplicação.
-6. Na barra inferior, **Salvar para depois** grava o rascunho do formulário aberto pela mesma operação do botão **Salvar** (sem rascunho, apenas confirma que tudo já está salvo). **Próxima: Matriz GUT** abre a aba GUT e, nela, **Próxima: 10/10/10** abre o método 10/10/10. Nenhum dos dois altera a etapa da decisão.
+6. Na barra inferior, **Salvar para depois** grava o rascunho do formulário aberto pela mesma operação do botão **Adicionar**/**Salvar alterações** (sem rascunho, apenas confirma que tudo já está salvo). Na GUT, ele tenta de novo as classificações que não puderam ser salvas (por exemplo, com o backend desligado) e avisa sobre itens com notas incompletas. **Próxima: Matriz GUT** abre a aba GUT e, nela, **Próxima: 10/10/10** abre o método 10/10/10. Nenhum dos dois altera a etapa da decisão.
 7. Decisões concluídas são somente consultáveis. Salvar técnicas não conclui a decisão. O método 10–10–10 e a Inversão continuam acessíveis na barra de técnicas a qualquer momento. O botão **Ver resultado comparativo** fica só na Inversão, a última técnica da sequência Prós e Contras → Matriz GUT → 10/10/10 → Inversão.
 
-Prós/Contras pertencem à alternativa; os fatores GUT pertencem à decisão inteira. A prioridade é calculada pelo servidor como G × U × T (1–125), ordenada de forma decrescente, com desempate pelo ID. Essa prioridade organiza os fatores da Matriz GUT; o resultado comparativo usa as notas e os pesos dos critérios.
+Prós/Contras pertencem à alternativa; cada um pode ter no máximo uma classificação GUT, que usa a descrição dele e é excluída junto com ele. A prioridade é calculada pelo servidor como G × U × T (1–125), ordenada de forma decrescente, com desempate pelo ID. Essa prioridade organiza os itens da Matriz GUT; o resultado comparativo usa as notas e os pesos dos critérios. Para liberar o resultado, a GUT precisa de ao menos um item classificado.
 
 ### Conferir no Swagger
 
@@ -639,7 +643,8 @@ Autentique-se e use **Authorize** como explicado acima. Substitua os IDs pelos d
 | Consultar ambas as alternativas e GUT | `GET /decisoes/{id}/analise` |
 | Adicionar pró/contra | `POST /decisoes/{id}/opcoes/{opcaoId}/pros-contras` |
 | Editar ou excluir pró/contra | `PUT` ou `DELETE /decisoes/{id}/opcoes/{opcaoId}/pros-contras/{registroId}` |
-| Adicionar fator | `POST /decisoes/{id}/gut` |
+| Classificar um pró/contra (cria ou atualiza) | `PUT /decisoes/{id}/gut/pros-contras/{proContraId}` |
+| Adicionar fator avulso (rota antiga, sem uso na tela) | `POST /decisoes/{id}/gut` |
 | Editar ou excluir fator | `PUT` ou `DELETE /decisoes/{id}/gut/{registroId}` |
 
 Corpo de pró/contra (descrição obrigatória, até 300 caracteres; tipo `PRO` ou `CONTRA`):
@@ -648,7 +653,13 @@ Corpo de pró/contra (descrição obrigatória, até 300 caracteres; tipo `PRO` 
 {"tipo":"PRO","descricao":"Ganhar experiência profissional"}
 ```
 
-Corpo de fator GUT (descrição obrigatória, até 200 caracteres; três notas inteiras de 1 a 5):
+Corpo da classificação de um pró/contra (três notas inteiras de 1 a 5; a descrição vem do próprio pró/contra). Responde **200**; pró/contra que não pertence às alternativas da decisão responde **404**:
+
+```json
+{"gravidade":5,"urgencia":4,"tendencia":3}
+```
+
+Corpo de fator GUT avulso (descrição obrigatória, até 200 caracteres; três notas inteiras de 1 a 5):
 
 ```json
 {"descricao":"Prazo para inscrição","gravidade":5,"urgencia":4,"tendencia":3}
@@ -673,6 +684,7 @@ Reinicie o backend e atualize o navegador com **Ctrl + F5**. Na Home, clique em 
 - Pesquise pelo título e combine com Todas, Concluídas ou Em andamento. A busca trata `%` e `_` como texto, não como curingas.
 - Ordene por última atualização (mais recente ou mais antiga) ou título. A lista mostra 10 decisões por página; use Anterior/Próxima. Os totais do topo representam sua conta inteira, mesmo com filtros.
 - Continuar decisão abre a tela correspondente: Critérios na etapa 4, Pesos na etapa 5 e Análise na etapa 6.
+- Se a decisão em andamento já exibiu o **Resultado comparativo** alguma vez, **Continuar decisão** (no Histórico e na Home) abre direto `resultado.html?decisaoId=ID`. Isso fica gravado no banco (coluna `resultado_alcancado_em` da tabela `decisoes`, criada pela migration **V7__Resultado_alcancado.sql**), então vale depois de recarregar a página, sair e entrar de novo ou fechar o navegador. Ver o resultado **não** conclui a decisão nem muda a data "Atualizada em". Decisões que já estavam em andamento antes da V7 passam a ir para o Resultado depois que ele for aberto uma vez.
 - Decisões **concluídas** (finalizadas na página de Resultado) mostram **Concluída**, **Finalizada em** com a data, **Visualizar resultado** e **Excluir decisão**. Não têm **Continuar decisão**. **Visualizar resultado** abre `resultado.html?decisaoId=ID` (rota `resultadoDecisao` em `frontend/js/pages/historico-integracoes.js`; na Home, em `home-integracoes.js`). O evento cancelável `bussola:ver-resultado` continua disponível.
 - Uma decisão na etapa 6 de 6 (100%) continua **Em andamento** até ser finalizada explicitamente.
 - **Excluir** / **Excluir decisão** abre uma confirmação com o título e explica que a exclusão é permanente. Cancelar não altera nada. Confirmar apaga a decisão e todos os seus registros relacionados. Após excluir, a Home recalcula seus totais usando os registros restantes.
@@ -706,7 +718,9 @@ Este é um teste funcional: precisa de MySQL, backend e frontend ligados. Depois
 
 Use uma decisão de teste, não uma decisão real que você queira continuar editando: **finalizar não pode ser desfeito**.
 
-1. Leve uma decisão de teste até o resultado (Prós e Contras, Matriz GUT, 10–10–10 e Inversão concluídos, sem avaliações pendentes) e abra `http://127.0.0.1:8765/pages/resultado.html?decisaoId=ID_DA_DECISAO`. Só visualizar o resultado **não** finaliza nada: no Histórico ela continua **Em andamento**.
+1. Leve uma decisão de teste até o resultado (Prós e Contras, Matriz GUT, 10–10–10 e Inversão concluídos, sem avaliações pendentes) e abra `http://127.0.0.1:8765/pages/resultado.html?decisaoId=ID_DA_DECISAO`. Só visualizar o resultado **não** finaliza nada: no Histórico ela continua **Em andamento**, e **Continuar decisão** passa a abrir esta página.
+   - O cabeçalho é o mesmo da Home: clique no seu nome (avatar com a inicial e seta) para abrir o menu da conta, com nome, e-mail e **Meu perfil**. O menu fecha com outro clique no nome, com um clique fora dele ou com **Esc**. Abrir o menu não mostra nenhum aviso.
+   - Antes de finalizar, clique em **Início**, **Histórico**, **Ver no histórico**, na marca Bússola, em **Meu perfil** (no menu da conta) ou em **Sair**. Aparece o popup **Sua decisão ainda não foi finalizada**, com **Continuar analisando** (fecha e fica na página; **Esc** faz o mesmo) e **Sair por enquanto** (segue para o destino escolhido, com a decisão ainda em andamento e nada apagado). **Revisar análise** e **Finalizar decisão** não mostram esse aviso, nem decisões já concluídas. Se o cabeçalho ainda aparecer só com o nome, sem o botão e a seta, pressione **Ctrl + F5** na página do resultado.
 2. No fim da página, clique em **Finalizar decisão**. Abre o popup **Finalizar esta decisão?**, com o fundo escurecido e desfocado. O foco começa em **Continuar analisando**.
 3. **Continuar analisando** ou a tecla **Esc** fecham o popup sem alterar nada; o foco volta ao botão **Finalizar decisão**.
 4. **Finalizar** desabilita os dois botões ("Finalizando…") até o backend responder. Se der certo, o popup fecha e a página mostra **Decisão finalizada em … · somente consulta**, sem **Revisar análise** nem **Finalizar decisão**, com os botões **Visualizar minha análise** e **Voltar ao Histórico**. As pontuações exibidas são as mesmas.
@@ -752,7 +766,7 @@ Teste funcional: precisa de MySQL, backend e frontend ligados (a página só lê
 
 1. No **Histórico**, clique em **Visualizar resultado** de uma decisão **Concluída**.
 2. No fim da página de Resultado, clique em **Visualizar minha análise**. Abre `consulta.html?decisaoId=ID&etapa=contexto`.
-3. No topo aparece o aviso fixo **Decisão finalizada — somente leitura** e o indicador com as 10 etapas: Contexto, Brainstorm, Opções, Critérios (notas e critérios personalizados), Pesos, Prós e Contras, Matriz GUT, 10/10/10, Inversão e Resultado. A etapa atual fica destacada e o título mostra "Consulta · Etapa X de 10".
+3. No topo aparece o aviso fixo **Decisão finalizada — somente leitura**, explicando que a consulta tem **10 seções** e que a decisão passou pelas **6 etapas** do processo. O indicador mostra as 10 seções: Contexto, Brainstorm, Opções, Critérios (notas e critérios personalizados), Pesos, Prós e Contras, Matriz GUT, 10/10/10, Inversão e Resultado. A seção atual fica destacada e o texto acima do título mostra, por exemplo, "Seção 7 de 10 da consulta · Etapa 6 de 6 · Análise" (Prós e Contras, Matriz GUT, 10/10/10 e Inversão são técnicas da etapa Análise; o Resultado aparece como resultado da análise, não como etapa).
 4. Navegue clicando em qualquer etapa do indicador (em qualquer ordem) ou pelos botões **← Anterior** e **Próxima →** no fim da página. Os botões **Voltar** e **Avançar** do navegador também funcionam, e o endereço guarda a etapa (`&etapa=criterios`, por exemplo), então dá para recarregar ou compartilhar o link da etapa.
 5. **Resultado comparativo** (no topo) ou a etapa 10 voltam para `resultado.html`; **Voltar ao Histórico** volta à lista.
 6. Confira que não há campos, botões de salvar/editar/excluir/adicionar nem "Concluir": é só leitura. No Histórico, a decisão continua **Concluída** com a mesma data de finalização.

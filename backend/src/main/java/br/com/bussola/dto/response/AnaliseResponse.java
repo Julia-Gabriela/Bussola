@@ -14,10 +14,25 @@ public record AnaliseResponse(Long decisaoId, String titulo, int etapaAtual, Sta
             return new Argumento(item.getId(), item.getTipo(), item.getDescricao());
         }
     }
-    public record FatorGut(Long id, String descricao, int gravidade, int urgencia, int tendencia, int prioridade) {
+    /**
+     * Item da Matriz GUT. {@code proContraId} indica o pró/contra classificado
+     * (nulo nos fatores antigos, digitados à mão); nesse caso a descrição é a
+     * do próprio pró/contra, sempre atualizada.
+     */
+    public record FatorGut(Long id, Long proContraId, String descricao, int gravidade, int urgencia, int tendencia,
+            int prioridade) {
+        /**
+         * Converte a entidade em resposta, calculando a prioridade G × U × T.
+         *
+         * @param item item GUT persistido, vinculado ou não a um pró/contra
+         * @return resposta com a descrição atual do pró/contra vinculado, se houver
+         */
         public static FatorGut de(ItemGut item) {
-            return new FatorGut(item.getId(), item.getDescricao(), item.getGravidade(), item.getUrgencia(),
-                    item.getTendencia(), item.getGravidade() * item.getUrgencia() * item.getTendencia());
+            var vinculado = item.getProContra();
+            return new FatorGut(item.getId(), vinculado == null ? null : vinculado.getId(),
+                    vinculado == null ? item.getDescricao() : vinculado.getDescricao(),
+                    item.getGravidade(), item.getUrgencia(), item.getTendencia(),
+                    item.getGravidade() * item.getUrgencia() * item.getTendencia());
         }
     }
 }

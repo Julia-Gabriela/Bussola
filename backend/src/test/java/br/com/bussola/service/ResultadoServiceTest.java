@@ -229,6 +229,34 @@ class ResultadoServiceTest {
 
     @Test void consultarDecisaoDeOutraContaEhRecusado() {
         assertThrows(DecisaoNaoEncontradaException.class, () -> service.consultar(99L, 12L));
+        verify(decisoes, never()).registrarResultadoAlcancado(anyLong(), any(), any());
+    }
+
+    // ---------- Chegada ao resultado (Histórico continua no Resultado) ----------
+
+    @Test void primeiraConsultaEmAndamentoMarcaChegadaSemConcluir() {
+        var r = service.consultar(7L, 12L);
+        verify(decisoes).registrarResultadoAlcancado(eq(12L), eq(StatusDecisao.EM_ANDAMENTO), any(LocalDateTime.class));
+        assertEquals(StatusDecisao.EM_ANDAMENTO, r.status());
+        assertEquals(StatusDecisao.EM_ANDAMENTO, decisao.getStatus());
+    }
+
+    @Test void chegadaJaRegistradaNaoEhGravadaDeNovo() {
+        decisao.setResultadoAlcancadoEm(LocalDateTime.of(2026, 1, 2, 9, 0));
+        service.consultar(7L, 12L);
+        verify(decisoes, never()).registrarResultadoAlcancado(anyLong(), any(), any());
+    }
+
+    @Test void resultadoBloqueadoNaoMarcaChegada() {
+        when(pendencias.possuiPendencia(12L)).thenReturn(true);
+        assertThrows(EtapaInvalidaException.class, () -> service.consultar(7L, 12L));
+        verify(decisoes, never()).registrarResultadoAlcancado(anyLong(), any(), any());
+    }
+
+    @Test void decisaoConcluidaNaoMarcaChegada() {
+        service.finalizar(7L, 12L);
+        service.consultar(7L, 12L);
+        verify(decisoes, never()).registrarResultadoAlcancado(anyLong(), any(), any());
     }
 
     // ---------- Risco (MENOR_MELHOR) ----------

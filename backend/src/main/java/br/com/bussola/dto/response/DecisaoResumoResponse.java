@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 
 public record DecisaoResumoResponse(Long id, String titulo, StatusDecisao status,
         int etapaAtual, int totalEtapas, int progressoPercentual, LocalDateTime dataAtualizacao,
-        LocalDateTime finalizadaEm) {
+        LocalDateTime finalizadaEm, boolean resultadoAlcancado) {
     // O contrato acompanha chk_decisoes_etapa_atual da migration V1 (1 a 6).
     public static final int TOTAL_ETAPAS = 6;
 
@@ -17,6 +17,6 @@ public record DecisaoResumoResponse(Long id, String titulo, StatusDecisao status
         // Uma decisão concluída não aceita mais escritas, então a última atualização é a finalização.
         return new DecisaoResumoResponse(decisao.getId(), decisao.getTitulo(), decisao.getStatus(),
                 etapa, TOTAL_ETAPAS, progresso, decisao.getDataAtualizacao(),
-                concluida ? decisao.getDataAtualizacao() : null);
+                concluida ? decisao.getDataAtualizacao() : null, decisao.getResultadoAlcancadoEm() != null);
     }
 }

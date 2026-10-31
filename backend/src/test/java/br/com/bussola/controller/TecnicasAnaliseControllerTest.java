@@ -168,6 +168,71 @@ class TecnicasAnaliseControllerTest {
             .andExpect(status().isOk()).andExpect(header().string("Access-Control-Allow-Origin","http://127.0.0.1:8765"));
     }
 
+    private static final String NOTAS = "{\"gravidade\":5,\"urgencia\":4,\"tendencia\":2}";
+
+    @Test void classificaProContraUsandoADescricaoDeleSemDuplicar() throws Exception {
+        ProContra p=argumento(30L,a,"Aprender na prática");
+        when(argumentos.findByIdAndOpcaoId(30L,21L)).thenReturn(Optional.of(p));
+        mvc.perform(put("/decisoes/12/gut/pros-contras/30").header("Authorization",TOKEN).contentType(MediaType.APPLICATION_JSON).content(NOTAS))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.proContraId").value(30))
+            .andExpect(jsonPath("$.descricao").value("Aprender na prática")).andExpect(jsonPath("$.prioridade").value(40));
+        ItemGut existente=fator(40,1); existente.setProContra(p);
+        when(fatores.findByProContraId(30L)).thenReturn(Optional.of(existente));
+        mvc.perform(put("/decisoes/12/gut/pros-contras/30").header("Authorization",TOKEN).contentType(MediaType.APPLICATION_JSON).content(NOTAS))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.id").value(40)).andExpect(jsonPath("$.prioridade").value(40));
+        verify(fatores,times(2)).save(argThat(item -> item.getProContra()==p && item.getDecisao()==decisao));
+        assertEquals(5,existente.getGravidade()); assertEquals("Aprender na prática",existente.getDescricao());
+    }
+
+    @Test void naoClassificaProContraDeOutraDecisao() throws Exception {
+        mvc.perform(put("/decisoes/12/gut/pros-contras/99").header("Authorization",TOKEN).contentType(MediaType.APPLICATION_JSON).content(NOTAS))
+            .andExpect(status().isNotFound());
+        mvc.perform(put("/decisoes/99/gut/pros-contras/30").header("Authorization",TOKEN).contentType(MediaType.APPLICATION_JSON).content(NOTAS))
+            .andExpect(status().isNotFound());
+        verify(fatores,never()).save(any());
+    }
+
+    @ParameterizedTest @ValueSource(strings={"0","6","1.5","null"})
+    void rejeitaNotaInvalidaNaClassificacao(String nota) throws Exception {
+        mvc.perform(put("/decisoes/12/gut/pros-contras/30").header("Authorization",TOKEN).contentType(MediaType.APPLICATION_JSON)
+            .content(NOTAS.replace("\"urgencia\":4","\"urgencia\":"+nota))).andExpect(status().isBadRequest());
+        verifyNoInteractions(fatores);
+    }
+
+    @Test void editarProContraAtualizaADescricaoDaClassificacao() throws Exception {
+        ProContra p=argumento(30L,a,"Antigo");
+        ItemGut vinculado=fator(40,3); vinculado.setProContra(p); vinculado.setDescricao("Antigo");
+        when(argumentos.findByIdAndOpcaoId(30L,21L)).thenReturn(Optional.of(p));
+        when(fatores.findByProContraId(30L)).thenReturn(Optional.of(vinculado));
+        mvc.perform(put("/decisoes/12/opcoes/21/pros-contras/30").header("Authorization",TOKEN).contentType(MediaType.APPLICATION_JSON).content(ARGUMENTO))
+            .andExpect(status().isOk());
+        assertEquals("Aprender",vinculado.getDescricao()); assertEquals(3,vinculado.getGravidade());
+    }
+
+    @Test void excluirProContraExcluiASuaClassificacao() throws Exception {
+        ProContra p=argumento(30L,a,"Item");
+        ItemGut vinculado=fator(40,3); vinculado.setProContra(p);
+        when(argumentos.findByIdAndOpcaoId(30L,21L)).thenReturn(Optional.of(p));
+        when(fatores.findByProContraId(30L)).thenReturn(Optional.of(vinculado));
+        mvc.perform(delete("/decisoes/12/opcoes/21/pros-contras/30").header("Authorization",TOKEN)).andExpect(status().isNoContent());
+        var ordem=inOrder(fatores,argumentos);
+        ordem.verify(fatores).delete(vinculado); ordem.verify(argumentos).delete(p);
+    }
+
+    @Test void consultaMostraADescricaoAtualDoProContraVinculado() throws Exception {
+        ProContra p=argumento(30L,b,"Descrição editada");
+        ItemGut vinculado=fator(40,2); vinculado.setProContra(p); vinculado.setDescricao("Descrição antiga");
+        ItemGut avulso=fator(41,1);
+        when(fatores.findByDecisaoIdOrderByIdAsc(12L)).thenReturn(List.of(vinculado,avulso));
+        mvc.perform(get("/decisoes/12/analise").header("Authorization",TOKEN)).andExpect(status().isOk())
+            .andExpect(jsonPath("$.fatoresGut[0].proContraId").value(30)).andExpect(jsonPath("$.fatoresGut[0].descricao").value("Descrição editada"))
+            .andExpect(jsonPath("$.fatoresGut[1].proContraId").value(org.hamcrest.Matchers.nullValue())).andExpect(jsonPath("$.fatoresGut[1].descricao").value("Fator"));
+    }
+
+    private ProContra argumento(long id,Opcao opcao,String descricao) {
+        ProContra p=new ProContra(); p.setId(id); p.setOpcao(opcao); p.setTipo(br.com.bussola.model.enums.TipoProContra.PRO); p.setDescricao(descricao); return p;
+    }
+
     private ItemGut fator(long id,int nota) {
         ItemGut item=new ItemGut(); item.setId(id); item.setDecisao(decisao); item.setDescricao("Fator");
         item.setGravidade(nota); item.setUrgencia(nota); item.setTendencia(nota); return item;

@@ -121,7 +121,7 @@
         elemento("andamento-vazio").textContent = "Nenhuma decisão em andamento. Seu próximo passo começa em Nova decisão.";
         if (decisaoAtual) {
             elemento("andamento-nome").textContent = decisaoAtual.titulo;
-            elemento("andamento-etapa").textContent = `Etapa ${decisaoAtual.etapaAtual} de ${decisaoAtual.totalEtapas}`;
+            elemento("andamento-etapa").textContent = window.BussolaProgresso.descrever(decisaoAtual);
             elemento("andamento-percentual").textContent = `${decisaoAtual.progressoPercentual}%`;
             elemento("andamento-progresso").value = decisaoAtual.progressoPercentual;
         }
@@ -160,8 +160,10 @@
             status: decisao?.status ?? null };
         if (!window.dispatchEvent(new CustomEvent("bussola:navegar", { detail: detalhe, cancelable: true }))) return;
         let rota = window.BUSSOLA_HOME_ROTAS?.[destino];
+        const noResultado = destino === "continuarDecisao" && decisao?.resultadoAlcancado === true;
         if (destino === "continuarDecisao" && rota === "nova-decisao.html" && decisao) {
-            rota = decisao.etapaAtual === 6 ? "analise.html"
+            rota = noResultado ? (window.BUSSOLA_HOME_ROTAS?.resultadoDecisao || "resultado.html")
+                : decisao.etapaAtual === 6 ? "analise.html"
                 : decisao.etapaAtual === 5 ? "pesos.html"
                 : decisao.etapaAtual >= 4 ? "criterios.html"
                 : decisao.etapaAtual === 3 ? "opcoes.html"
@@ -172,7 +174,7 @@
                 const url = new URL(rota, window.location.href);
                 if (url.origin !== window.location.origin || !["http:", "https:"].includes(url.protocol)) throw new Error("Rota inválida");
                 if (decisao) url.searchParams.set("decisaoId", decisao.id);
-                if (destino === "continuarDecisao" && decisao) url.searchParams.set("etapa", decisao.etapaAtual);
+                if (destino === "continuarDecisao" && decisao && !noResultado) url.searchParams.set("etapa", decisao.etapaAtual);
                 window.location.assign(url.href);
                 return;
             } catch (_) { /* Uma configuração incorreta não deve abrir URLs externas. */ }

@@ -1,5 +1,5 @@
 import { criarApi } from "../shared/api.js";
-import { configurarConta } from "../shared/conta.js";
+import { configurarConta } from "../shared/conta.js?v=2";
 const el = id => document.getElementById(id);
 let ocupado = false, encerrada = false, resposta = null, selecionada = null, abridorExclusao = null, pagina = 0;
 const parametros = new URLSearchParams(location.search);
@@ -28,7 +28,7 @@ function abrir(item) {
         if(!window.dispatchEvent(evento)) return;
         rota=window.BUSSOLA_HISTORICO_ROTAS?.resultadoDecisao;
         if(!rota) { aviso("Análise concluída","Sua decisão está registrada. A tela do resultado consolidado estará disponível em uma próxima entrega."); return; }
-    } else rota=item.etapaAtual===6?"analise.html":item.etapaAtual===5?"pesos.html"
+    } else rota=item.resultadoAlcancado?"resultado.html":item.etapaAtual===6?"analise.html":item.etapaAtual===5?"pesos.html"
         :item.etapaAtual>=4?"criterios.html":item.etapaAtual===3?"opcoes.html":item.etapaAtual===2?"brainstorming.html":"nova-decisao.html";
     const url=new URL(rota,location.href);
     if(url.origin!==location.origin || !["http:","https:"].includes(url.protocol)) { aviso("Página indisponível","Não foi possível abrir esta página."); return; }
@@ -40,7 +40,7 @@ function renderizar() {
         const li=document.createElement("li");li.className="historico-item"+(item.status==="CONCLUIDA"?" concluida":"");
         const texto=document.createElement("div");texto.className="historico-texto";
         texto.append(criar("h2",item.titulo));const status=criar("span",item.status==="CONCLUIDA"?"Concluída":"Em andamento");status.className="historico-status";texto.append(status);
-        if(item.status!=="CONCLUIDA") { const progresso=document.createElement("progress");progresso.max=100;progresso.value=item.progressoPercentual;progresso.setAttribute("aria-label","Progresso da decisão");texto.append(progresso,criar("p",`Etapa ${item.etapaAtual} de ${item.totalEtapas} · ${item.progressoPercentual}%`)); }
+        if(item.status!=="CONCLUIDA") { const progresso=document.createElement("progress");progresso.max=100;progresso.value=item.progressoPercentual;progresso.setAttribute("aria-label","Progresso da decisão");texto.append(progresso,criar("p",`${window.BussolaProgresso.descrever(item)} · ${item.progressoPercentual}%`)); }
         const concluida=item.status==="CONCLUIDA";
         const data=new Date(concluida&&item.finalizadaEm?item.finalizadaEm:item.dataAtualizacao);texto.append(criar("p",(concluida?"Finalizada em ":"Atualizada em ")+(Number.isNaN(data.getTime())?"data indisponível":new Intl.DateTimeFormat("pt-BR",{dateStyle:"medium"}).format(data))));
         const acoes=document.createElement("div");acoes.className="historico-acoes";

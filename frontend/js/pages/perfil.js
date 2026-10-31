@@ -1,5 +1,5 @@
 import { criarApi } from "../shared/api.js";
-import { configurarConta } from "../shared/conta.js";
+import { configurarConta } from "../shared/conta.js?v=2";
 
 const el = id => document.getElementById(id);
 let dados, referencia = "", ocupado = false, bloqueado = false, encerrada = false;
@@ -7,7 +7,12 @@ const foto = () => JSON.stringify([el("nome").value, el("nascimento").value, el(
 const dadosSujos = () => referencia !== "" && (foto() !== referencia || !!el("senha-email").value);
 const senhasSujas = () => ["senha-atual", "nova-senha", "confirmacao-senha"].some(id => el(id).value);
 const sujo = () => !encerrada && (dadosSujos() || senhasSujas() || !!el("senha-exclusao").value);
-window.BussolaAlteracoes.registrar({ sujo, ocupado: () => ocupado });
+window.BussolaAlteracoes.registrar({
+    sujo,
+    ocupado: () => ocupado,
+    descartavel: true,
+    mensagem: "Você fez alterações no seu perfil que ainda não foram salvas. Deseja continuar editando ou descartá-las?"
+});
 function sairParaLogin(motivo) {
     encerrada = true; ocupado = false; referencia = "";
     document.querySelectorAll('input[type="password"], #nova-senha, #senha-atual, #confirmacao-senha').forEach(c => { c.value = ""; });
