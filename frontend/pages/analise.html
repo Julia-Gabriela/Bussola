@@ -7,18 +7,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style/landing-page.css">
-    <link rel="stylesheet" href="../style/home.css">
+    <link rel="stylesheet" href="../style/landing-page.css?v=2">
+    <link rel="stylesheet" href="../style/home.css?v=2">
     <link rel="stylesheet" href="../style/fluxo-decisao.css?v=2">
-    <link rel="stylesheet" href="../style/analise.css?v=6">
-    <link rel="stylesheet" href="../style/revisao-etapa.css?v=3">
+    <link rel="stylesheet" href="../style/analise.css?v=12">
+    <link rel="stylesheet" href="../style/ajuda-contextual.css?v=1">
+    <script src="../js/shared/ajuda-contextual.js?v=1" defer></script>
+    <link rel="stylesheet" href="../style/revisao-etapa.css?v=5">
     <link rel="stylesheet" href="../style/confirmacao-etapa.css">
     <script src="../js/shared/alteracoes-nao-salvas.js?v=3" defer></script>
     <script src="../js/shared/confirmacao-etapa.js" defer></script>
     <script src="../js/shared/revisao-etapa.js?v=4" defer></script>
-    <script src="../js/pages/analise.js?v=7" type="module"></script>
-    <link rel="stylesheet" href="../style/fluxo-compacto.css">
-    <link rel="stylesheet" href="../style/tecnicas-nav.css?v=2">
+    <script src="../js/pages/analise.js?v=12" type="module"></script>
+    <link rel="stylesheet" href="../style/fluxo-compacto.css?v=4">
+    <link rel="stylesheet" href="../style/tecnicas-nav.css?v=4">
 </head>
 <body class="home-page fluxo-page analise-page">
     <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
@@ -53,13 +55,13 @@
 <button type="button" class="fluxo-salvar" id="recarregar" hidden>Recarregar dados</button>
 <div id="analise" hidden>
 <nav class="tecnicas-nav" aria-label="T&#233;cnicas de an&#225;lise">
-<button type="button" id="aba-pros" aria-controls="painel-pros" aria-current="true"><span>Pr&#243;s e Contras</span><small>Cl&#225;ssico</small></button>
-<button type="button" id="aba-gut" aria-controls="painel-gut"><span>Matriz GUT</span><small>Prioridade</small></button>
-<a id="abrir-101010" href="metodo-101010.html"><span>T&#233;cnica 10/10/10</span><small>Temporal</small></a>
-<a id="abrir-inversao" href="inversao.html"><span>Inversão</span><small>Antifrágil</small></a>
+<button type="button" id="aba-pros" data-tecnica="pros" aria-controls="painel-pros" aria-current="true"><span>Pr&#243;s e Contras</span><small>Cl&#225;ssico</small></button>
+<button type="button" id="aba-gut" data-tecnica="gut" aria-controls="painel-gut"><span>Matriz GUT</span><small>Prioridade</small></button>
+<a id="abrir-101010" data-tecnica="101010" href="metodo-101010.html"><span>T&#233;cnica 10/10/10</span><small>Temporal</small></a>
+<a id="abrir-inversao" data-tecnica="inversao" href="inversao.html"><span>Inversão</span><small>Antifrágil</small></a>
 </nav>
 <section id="painel-pros" aria-labelledby="aba-pros">
-<p class="analise-ajuda">Registre os pontos positivos e negativos de cada alternativa para comparar melhor suas possibilidades.</p>
+<p class="analise-ajuda">Anote os pontos positivos e negativos de cada alternativa. Eles também aparecem na Matriz GUT.</p>
 <section class="argumentos-alternativa" data-letra="a" aria-labelledby="argumentos-nome-a">
 <h2 class="argumentos-titulo"><span class="argumentos-letra" aria-hidden="true">A</span><span id="argumentos-nome-a">Alternativa A — <span data-nome-opcao>…</span></span></h2>
 <div class="argumentos-grade">
@@ -82,25 +84,29 @@
 </fieldset></form>
 </section>
 <section id="painel-gut" aria-labelledby="aba-gut" hidden>
-<p class="analise-ajuda">A Matriz GUT ajuda a priorizar os pontos da sua decisão. Os itens abaixo são os prós e contras que você cadastrou: para cada um, escolha uma nota de 1 a 5 em Gravidade, Urgência e Tendência. Quanto maior o resultado de G × U × T, maior a prioridade. Cada classificação é salva automaticamente quando as três notas estão escolhidas.</p>
-<ul class="gut-escalas" aria-label="O que significa cada nota">
-<li><strong>Gravidade</strong> intensidade do impacto: 1 sem gravidade · 5 extremamente grave.</li>
-<li><strong>Urgência</strong> necessidade de agir rápido: 1 pode esperar · 5 agir imediatamente.</li>
-<li><strong>Tendência</strong> chance de piorar com o tempo: 1 não deve piorar · 5 piora rapidamente.</li>
-</ul>
+<p class="analise-ajuda gut-intro">Descubra o que merece mais atenção. Dê uma nota de 1 a 5 para cada item.<button type="button" class="ajuda-botao" aria-expanded="false" aria-controls="ajuda-gut"><span aria-hidden="true">?</span><span class="ajuda-sr">Como funciona a Matriz GUT</span></button></p>
+<div class="ajuda-painel" id="ajuda-gut" hidden>
+<p>Os itens são os prós e contras que você cadastrou, das duas alternativas. Eles aparecem aqui automaticamente.</p>
+<p>A pontuação de cada item é <strong>Gravidade × Urgência × Tendência</strong>, de 1 a 125. Quanto maior, maior a prioridade.</p>
+<p>Cada classificação é salva automaticamente quando as três notas estão escolhidas.</p>
+<p>O selo <strong>Maior prioridade</strong> aparece quando há mais de um item classificado. Em caso de empate, todos os itens com a maior pontuação recebem o selo. Ele não muda a pontuação das alternativas no Resultado.</p>
+<button type="button" class="ajuda-fechar" aria-label="Fechar ajuda">×</button>
+</div>
+<div class="gut-status"><p class="gut-progresso" id="gut-progresso" hidden></p>
+<p class="gut-legenda"><span class="gut-selo">★ Maior prioridade</span> marca o item que merece mais atenção.</p></div>
+<p class="fluxo-sr-only" id="gut-anuncio" role="status" aria-live="polite"></p>
 <fieldset id="gut-campos" class="gut-campos" disabled><legend class="fluxo-sr-only">Classificação GUT dos prós e contras</legend>
 <div id="gut-grupos"></div>
 </fieldset>
 <p class="analise-feedback" id="feedback-gut" role="status" aria-live="polite"></p>
-<p class="gut-legenda"><strong>Maior GUT = maior prioridade.</strong> O item com a maior pontuação recebe o selo “Maior prioridade”. <span>G: Gravidade · U: Urgência · T: Tendência · GUT: G × U × T (1 a 125)</span></p>
 </section>
 <section class="analise-pendente" aria-labelledby="pendencias-titulo">
 <h2 id="pendencias-titulo">Para liberar o resultado comparativo</h2>
 <ul id="pendencias">
 <li data-requisito="pros"><span class="pendencia-marca" aria-hidden="true"></span><span><strong>Prós e Contras:</strong> <span class="pendencia-texto"></span></span></li>
 <li data-requisito="gut"><span class="pendencia-marca" aria-hidden="true"></span><span><strong>Matriz GUT:</strong> <span class="pendencia-texto"></span></span></li>
-<li data-requisito="externo"><span class="pendencia-marca" aria-hidden="true"></span><span><strong>Técnica 10/10/10:</strong> preencha as seis reflexões e conclua pelo botão “Próxima: Inversão”.</span></li>
-<li data-requisito="externo"><span class="pendencia-marca" aria-hidden="true"></span><span><strong>Inversão:</strong> preencha as quatro reflexões e conclua pelo botão “Ver resultado comparativo”.</span></li>
+<li data-requisito="101010"><span class="pendencia-marca" aria-hidden="true"></span><span><strong>Técnica 10/10/10:</strong> <span class="pendencia-texto">verificando…</span></span></li>
+<li data-requisito="inversao"><span class="pendencia-marca" aria-hidden="true"></span><span><strong>Inversão:</strong> <span class="pendencia-texto">verificando…</span></span></li>
 </ul>
 </section>
 <div class="fluxo-acoes" id="acoes-edicao">
@@ -109,5 +115,5 @@
 </div>
 </div></main>
 <dialog class="home-dialog" id="aviso" aria-labelledby="aviso-titulo"><h2 id="aviso-titulo"></h2><p id="aviso-texto"></p><form method="dialog"><button class="home-primary">Entendi</button></form></dialog>
-<dialog class="home-dialog" id="exclusao" aria-labelledby="exclusao-titulo"><h2 id="exclusao-titulo">Excluir este registro?</h2><p id="exclusao-texto"></p><div class="fluxo-acoes"><button class="fluxo-salvar" id="cancelar-exclusao" type="button">Cancelar</button><button class="fluxo-proxima" id="excluir" type="button">Excluir</button></div></dialog>
+<dialog class="home-dialog" id="exclusao" aria-labelledby="exclusao-titulo"><h2 id="exclusao-titulo">Excluir este registro?</h2><p id="exclusao-texto"></p><div class="fluxo-acoes"><button class="fluxo-salvar" id="cancelar-exclusao" type="button">Cancelar</button><button class="fluxo-proxima botao-perigo is-forte" id="excluir" type="button">Excluir</button></div></dialog>
 </body></html>

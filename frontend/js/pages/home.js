@@ -113,8 +113,9 @@
         const lista = elemento("decisoes-recentes");
         lista.replaceChildren(...dados.decisoesRecentes.map(renderizarDecisao));
         lista.hidden = dados.decisoesRecentes.length === 0;
-        elemento("decisoes-status").hidden = !lista.hidden;
-        elemento("decisoes-status").textContent = "Suas decisões aparecerão aqui. Comece quando estiver pronto para uma nova escolha.";
+        elemento("decisoes-vazio").hidden = !lista.hidden;
+        elemento("vazio-iniciar").hidden = !lista.hidden;
+        elemento("decisoes-status").textContent = "Você ainda não tem decisões. Comece descrevendo uma escolha que está pensando em fazer: o Bússola guia você em 6 etapas, uma de cada vez.";
         decisaoAtual = dados.decisaoEmAndamento;
         elemento("andamento-conteudo").hidden = !decisaoAtual;
         elemento("andamento-vazio").hidden = Boolean(decisaoAtual);
@@ -146,7 +147,7 @@
             if (elemento("usuario-nome").textContent === "…") {
                 elemento("resumo").textContent = "Seus dados estarão disponíveis quando a conexão for restabelecida.";
             }
-            if (!elemento("decisoes-status").hidden) elemento("decisoes-status").textContent = "Suas decisões não puderam ser carregadas.";
+            if (!elemento("decisoes-vazio").hidden) elemento("decisoes-status").textContent = "Suas decisões não puderam ser carregadas.";
             if (!decisaoAtual) elemento("andamento-vazio").textContent = "Seu progresso estará disponível quando a conexão for restabelecida.";
         } finally {
             carregando = false;

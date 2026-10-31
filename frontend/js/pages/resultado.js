@@ -36,20 +36,20 @@ function renderizar(dados) {
             const barra = criar("div", "resultado-progresso");
             const maximo = criterio.peso * 5;
             rotulo.append(
-                criar("span", "", criterio.nome + " (×" + criterio.peso + ")"),
+                criar("span", "", criterio.nome + " · peso " + criterio.peso),
                 criar("span", "", criterio.pontuacao + "/" + maximo)
             );
             barra.style.width = (maximo > 0 ? criterio.pontuacao / maximo * 100 : 0) + "%";
             trilho.append(barra);
             linha.append(rotulo, trilho);
-            if (criterio.sentido === "MENOR_MELHOR")
-                linha.append(criar("small", "resultado-ajuste", "Risco informado " + criterio.nota + " → conta "
-                    + criterio.notaAjustada + " (quanto menor o risco, mais pontos)"));
+            linha.append(criar("small", "resultado-ajuste", criterio.sentido === "MENOR_MELHOR"
+                ? "Nota informada " + criterio.nota + " · nota ajustada " + criterio.notaAjustada + " × peso " + criterio.peso
+                : "Nota " + criterio.notaAjustada + " × peso " + criterio.peso));
             card.append(linha);
         }
         const total = criar("div", "resultado-total");
         total.append(
-            criar("span", "", "Pontuação total"),
+            criar("span", "", "Pontuação ponderada"),
             criar("strong", "", opcao.pontuacao + "/" + dados.pontuacaoMaxima)
         );
         card.append(total);
@@ -65,9 +65,10 @@ function renderizar(dados) {
     segmentoB.style.width = (100 - percentualA) + "%";
     el("comparativo").replaceChildren(segmentoA, segmentoB);
     el("legendas").replaceChildren(
-        criar("span", "", "A — " + Math.round(percentualA) + "%"),
-        criar("span", "", "B — " + Math.round(100 - percentualA) + "%")
+        criar("span", "", "A — " + a.nome + ": " + Math.round(percentualA) + "%"),
+        criar("span", "", "B — " + b.nome + ": " + Math.round(100 - percentualA) + "%")
     );
+    renderizarInfluencias(dados);
     el("revisar").href = "analise.html?decisaoId=" + encodeURIComponent(decisaoId);
     aplicarStatus(dados);
     el("resultado").hidden = false;
@@ -91,11 +92,75 @@ function alternativaRecomendada(dados) {
         ?? (a.pontuacao > b.pontuacao ? a : b);
 }
 /**
+ * Escreve "N ponto" ou "N pontos", conforme o número.
+ *
+ * @param {number} valor quantidade de pontos (já em valor absoluto)
+ * @returns {string} texto como "1 ponto" ou "8 pontos"
+ */
+function pontos(valor) {
+    return valor + (valor === 1 ? " ponto" : " pontos");
+}
+/**
+ * Calcula, só para exibição, quanto cada critério favoreceu uma alternativa.
+ *
+ * Usa as pontuações ponderadas que a API já devolveu (nota ajustada × peso)
+ * e subtrai a de B da de A. Não recalcula notas nem pesos e não muda a
+ * fórmula do resultado. Os critérios são pareados pelo nome; se o nome não
+ * for encontrado em B, usa a mesma posição da lista.
+ *
+ * @param {{alternativas: Array<{criterios: Array<{nome: string, pontuacao: number}>}>}} dados resultado da API
+ * @returns {Array<{nome: string, diferenca: number}>} uma entrada por critério de A;
+ *          diferença positiva favorece A, negativa favorece B e zero não favorece ninguém.
+ *          A lista vem ordenada da maior para a menor diferença absoluta.
+ */
+function diferencasPorCriterio(dados) {
+    const [a, b] = dados.alternativas;
+    return a.criterios.map((criterio, indice) => {
+        const par = b.criterios.find(outro => outro.nome === criterio.nome) ?? b.criterios[indice];
+        return { nome: criterio.nome, diferenca: criterio.pontuacao - (par ? par.pontuacao : 0) };
+    }).sort((x, y) => Math.abs(y.diferenca) - Math.abs(x.diferenca));
+}
+/**
+ * Preenche "O que mais influenciou" com os critérios que mais separaram as alternativas.
+ *
+ * Mostra até três critérios com diferença diferente de zero, no formato
+ * "Segurança favoreceu a alternativa A (nome) em 8 pontos.". Critérios com
+ * diferença zero não aparecem na lista. O resumo abaixo trata os casos
+ * especiais: nenhuma diferença em critério algum, empate no total com
+ * diferenças que se compensam, e critérios restantes omitidos da lista.
+ *
+ * @param {{alternativas: Array<{nome: string, pontuacao: number, criterios: Array<{nome: string, pontuacao: number}>}>}} dados resultado da API
+ * @returns {void}
+ */
+function renderizarInfluencias(dados) {
+    const [a, b] = dados.alternativas;
+    const diferentes = diferencasPorCriterio(dados).filter(item => item.diferenca !== 0);
+    const mostrados = diferentes.slice(0, 3);
+    el("influencias").replaceChildren(...mostrados.map(item => {
+        const favorecida = item.diferenca > 0 ? "A (" + a.nome + ")" : "B (" + b.nome + ")";
+        const linha = criar("li", item.diferenca > 0 ? "favorece-a" : "favorece-b");
+        linha.append(criar("strong", "", item.nome), document.createTextNode(
+            " favoreceu a alternativa " + favorecida + " em " + pontos(Math.abs(item.diferenca)) + "."));
+        return linha;
+    }));
+    el("influencias").hidden = mostrados.length === 0;
+    let resumo = "";
+    if (diferentes.length === 0)
+        resumo = "Nenhum critério separou as alternativas: as duas tiveram a mesma pontuação em todos os critérios.";
+    else if (a.pontuacao === b.pontuacao)
+        resumo = "As diferenças entre os critérios se compensaram, e o total ficou empatado.";
+    else if (diferentes.length > mostrados.length)
+        resumo = "Os demais critérios tiveram diferenças menores.";
+    el("influencia-resumo").textContent = resumo;
+    el("influencia-resumo").hidden = !resumo;
+}
+/**
  * Preenche o quadro de destaque do topo do resultado.
  *
- * Com uma alternativa recomendada, mostra o nome, a pontuação e o selo
- * "Recomendada". Em empate, mostra "Empate entre as alternativas", a
- * pontuação comum e um selo neutro, sem destacar A nem B.
+ * Com uma alternativa de maior pontuação, mostra o nome, a frase "Com seus
+ * critérios e pesos, X teve a maior pontuação.", os pontos e o selo
+ * "Maior pontuação". Em empate, mostra uma mensagem neutra com a pontuação
+ * comum e um selo neutro, sem destacar A nem B.
  *
  * @param {{pontuacaoMaxima: number, alternativas: Array<{pontuacao: number}>}} dados resultado da API
  * @param {(object|null)} recomendada alternativa recomendada, ou null em empate
@@ -106,22 +171,23 @@ function renderizarRecomendacao(dados, recomendada) {
     const chamada = criar("div", "resultado-recomendacao-conteudo");
     quadro.classList.toggle("empate", !recomendada);
     if (!recomendada) {
-        const pontos = dados.alternativas[0].pontuacao;
+        const comum = dados.alternativas[0].pontuacao;
         chamada.append(
             criar("small", "", "Resultado comparativo"),
             criar("strong", "", "Empate entre as alternativas"),
-            criar("small", "", "As duas alternativas somaram " + pontos + " pontos de " + dados.pontuacaoMaxima
-                + " possíveis. Nenhuma é recomendada automaticamente: compare os critérios abaixo e as técnicas da sua análise.")
+            criar("p", "", "Com seus critérios e pesos, as duas alternativas tiveram a mesma pontuação: "
+                + comum + " de " + dados.pontuacaoMaxima + " pontos possíveis.")
         );
         quadro.replaceChildren(chamada, criar("span", "resultado-selo resultado-selo-empate", "= Empate"));
         return;
     }
     chamada.append(
-        criar("small", "", "Opção mais alinhada com seus valores e prioridades"),
+        criar("small", "", "Maior pontuação"),
         criar("strong", "", recomendada.nome),
-        criar("small", "", "Pontuação ponderada: " + recomendada.pontuacao + " pontos de " + dados.pontuacaoMaxima + " possíveis")
+        criar("p", "", "Com seus critérios e pesos, " + recomendada.nome + " teve a maior pontuação: "
+            + recomendada.pontuacao + " de " + dados.pontuacaoMaxima + " pontos possíveis.")
     );
-    quadro.replaceChildren(chamada, criar("span", "resultado-selo", "✦ Recomendada"));
+    quadro.replaceChildren(chamada, criar("span", "resultado-selo", "✦ Maior pontuação"));
 }
 /**
  * Ajusta a tela ao status da decisão vindo do backend.
@@ -141,7 +207,8 @@ function aplicarStatus(dados) {
     el("finalizar").hidden = concluida;
     el("visualizar-analise").hidden = !concluida;
     el("visualizar-analise").href = "consulta.html?decisaoId=" + encodeURIComponent(decisaoId) + "&etapa=contexto";
-    el("historico-rotulo").textContent = concluida ? "Voltar ao Histórico" : "Ver no histórico";
+    el("historico-rotulo").textContent = concluida ? "Voltar ao Histórico" : "Ver no Histórico";
+    el("autonomia").hidden = concluida;
     el("finalizada").hidden = !concluida;
     if (!concluida) return;
     const data = new Date(dados.finalizadaEm);
@@ -248,7 +315,6 @@ async function finalizar() {
         if (dados.status !== "CONCLUIDA") throw new Error("A decisão não foi finalizada. Tente novamente.");
         estadoFinalizacao(false);
         el("finalizar-dialogo").close();
-        el("mensagem").textContent = "Decisão finalizada. Ela está disponível no seu Histórico para consulta.";
         el("finalizada").focus();
     } catch (erro) {
         estadoFinalizacao(false);

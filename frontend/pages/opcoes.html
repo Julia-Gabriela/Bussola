@@ -7,18 +7,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style/landing-page.css">
-    <link rel="stylesheet" href="../style/home.css">
+    <link rel="stylesheet" href="../style/landing-page.css?v=2">
+    <link rel="stylesheet" href="../style/home.css?v=2">
     <link rel="stylesheet" href="../style/fluxo-decisao.css?v=2">
-    <link rel="stylesheet" href="../style/opcoes.css">
-    <link rel="stylesheet" href="../style/revisao-etapa.css?v=3">
+    <link rel="stylesheet" href="../style/opcoes.css?v=2">
+    <link rel="stylesheet" href="../style/ajuda-contextual.css?v=1">
+    <script src="../js/shared/ajuda-contextual.js?v=1" defer></script>
+    <link rel="stylesheet" href="../style/revisao-etapa.css?v=5">
     <link rel="stylesheet" href="../style/confirmacao-etapa.css">
     <script src="../js/shared/alteracoes-nao-salvas.js?v=3" defer></script>
     <script src="../js/shared/confirmacao-etapa.js" defer></script>
     <script src="../js/shared/revisao-etapa.js?v=4" defer></script>
     <script src="../js/pages/opcoes-integracoes.js" defer></script>
-    <script src="../js/pages/opcoes.js?v=2" defer></script>
-    <link rel="stylesheet" href="../style/fluxo-compacto.css">
+    <script src="../js/pages/opcoes.js?v=3" defer></script>
+    <link rel="stylesheet" href="../style/fluxo-compacto.css?v=4">
 </head>
 <body class="home-page fluxo-page opcoes-page">
     <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
@@ -51,23 +53,24 @@
         <div class="fluxo-intro">
             <span class="fluxo-badge" title="Terceira etapa da decisão, depois da Contextualização e do Brainstorming"><img src="../assets/images/opcoes/etapa.svg" alt="" width="13" height="13">Etapa 3 de 6 · Opções</span>
             <h1>Defina suas opções</h1>
-            <p>Dê um nome a cada alternativa e descreva o que ela envolve. Isso vai ajudar você a comparar os dois caminhos nas próximas etapas.</p>
+            <p>O Bússola compara duas alternativas por vez. Dê um nome a cada uma e, se quiser, descreva o que ela envolve.</p>
         </div>
         <form id="opcoes-form" novalidate>
             <fieldset id="opcoes-campos" disabled>
                 <legend class="fluxo-sr-only">Nome da decisão e alternativas</legend>
                 <div class="opcoes-decisao">
-                    <div class="opcoes-decisao-label"><span>Sua decisão</span><p>Nome definido na contextualização.</p></div>
+                    <div class="opcoes-decisao-label"><span>Sua decisão</span></div>
                     <p id="titulo" class="opcoes-decisao-titulo"></p>
                 </div>
+                <details class="opcoes-ideias" id="suas-ideias" hidden><summary>Suas ideias <span id="ideias-total"></span></summary><p class="opcoes-ideias-ajuda">O que você anotou no Brainstorming, só para consulta. Nada aqui é copiado para os campos.</p><div class="opcoes-ideias-colunas" id="ideias-colunas"></div></details>
                 <div class="opcoes-grid">
                     <section class="opcao-card opcao-a" aria-labelledby="opcao-a-titulo">
                         <h2 id="opcao-a-titulo"><span class="opcao-letra" aria-hidden="true">A</span>Opção A</h2>
                         <label for="opcao-a-nome">Nome da opção</label>
                         <input id="opcao-a-nome" name="opcaoA" required maxlength="200" placeholder="Ex.: aceitar o estágio" autocomplete="off" aria-describedby="opcao-a-erro">
                         <p class="fluxo-erro-campo" id="opcao-a-erro"></p>
-                        <label for="opcao-a-descricao">O que essa opção envolve? <span class="opcao-opcional">(opcional)</span></label>
-                        <textarea id="opcao-a-descricao" name="descricaoA" rows="5" maxlength="16000" placeholder="Pense nas mudanças, compromissos e possibilidades desse caminho." aria-describedby="descricao-a-erro"></textarea>
+                        <div class="opcao-rotulo"><label for="opcao-a-descricao">O que essa opção envolve? <span class="opcao-opcional">(opcional)</span></label><button type="button" class="ajuda-botao" aria-expanded="false" aria-controls="ajuda-descricao-a"><span aria-hidden="true">?</span><span class="ajuda-sr">Como descrever a opção A</span></button></div><div class="ajuda-painel" id="ajuda-descricao-a" hidden><p>Conte o que muda na sua rotina, os compromissos e as possibilidades desse caminho. Isso ajuda a avaliar com mais clareza depois.</p><p>Ex.: Estágio de 6 horas por dia, com bolsa, a 40 minutos de casa.</p><button type="button" class="ajuda-fechar" aria-label="Fechar ajuda">×</button></div>
+                        <textarea id="opcao-a-descricao" name="descricaoA" rows="5" maxlength="16000" placeholder="Ex.: Rotina mais puxada, mas com renda própria." aria-describedby="descricao-a-erro"></textarea>
                         <p class="fluxo-erro-campo" id="descricao-a-erro"></p>
                     </section>
                     <section class="opcao-card opcao-b" aria-labelledby="opcao-b-titulo">
@@ -75,8 +78,8 @@
                         <label for="opcao-b-nome">Nome da opção</label>
                         <input id="opcao-b-nome" name="opcaoB" required maxlength="200" placeholder="Ex.: focar na faculdade" autocomplete="off" aria-describedby="opcao-b-erro">
                         <p class="fluxo-erro-campo" id="opcao-b-erro"></p>
-                        <label for="opcao-b-descricao">O que essa opção envolve? <span class="opcao-opcional">(opcional)</span></label>
-                        <textarea id="opcao-b-descricao" name="descricaoB" rows="5" maxlength="16000" placeholder="Pense nas mudanças, compromissos e possibilidades desse caminho." aria-describedby="descricao-b-erro"></textarea>
+                        <div class="opcao-rotulo"><label for="opcao-b-descricao">O que essa opção envolve? <span class="opcao-opcional">(opcional)</span></label><button type="button" class="ajuda-botao" aria-expanded="false" aria-controls="ajuda-descricao-b"><span aria-hidden="true">?</span><span class="ajuda-sr">Como descrever a opção B</span></button></div><div class="ajuda-painel" id="ajuda-descricao-b" hidden><p>Conte o que muda na sua rotina, os compromissos e as possibilidades desse caminho. Isso ajuda a avaliar com mais clareza depois.</p><p>Ex.: Estágio de 6 horas por dia, com bolsa, a 40 minutos de casa.</p><button type="button" class="ajuda-fechar" aria-label="Fechar ajuda">×</button></div>
+                        <textarea id="opcao-b-descricao" name="descricaoB" rows="5" maxlength="16000" placeholder="Ex.: Rotina mais puxada, mas com renda própria." aria-describedby="descricao-b-erro"></textarea>
                         <p class="fluxo-erro-campo" id="descricao-b-erro"></p>
                     </section>
                 </div>

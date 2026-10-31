@@ -9,7 +9,7 @@
 .pesos-total-legenda strong { color:#e0b860; font-size:14px; }
 .pesos-total-barra { height:3px; overflow:hidden; border-radius:10px; background:#33291c; }
 .pesos-total-barra span { display:block; width:0; height:100%; border-radius:inherit; background:#d3a044; transition:width .16s ease; }
-.pesos-total-maximo { white-space:nowrap; color:#776b59; font-size:10px; }
+.pesos-total-maximo { white-space:nowrap; color:#a08d72; font-size:10px; }
 .pesos-lista { overflow:hidden; border:1px solid #c4933f24; border-radius:10px; background:#241d14ed; }
 .peso-criterio { min-height:102px; padding:16px 24px 12px; border-bottom:1px solid var(--pesos-linha); }
 .peso-criterio:last-child { border-bottom:0; }
@@ -17,7 +17,7 @@
 .peso-criterio-icone { width:16px; height:16px; object-fit:contain; opacity:.75; }
 .peso-criterio-texto { min-width:0; }
 .peso-criterio-texto h2 { margin:0; color:#eee6d7; font-size:14px; font-weight:500; line-height:20px; }
-.peso-criterio-texto p { overflow:hidden; margin:2px 0 0; color:#897b65; font-size:11px; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
+.peso-criterio-texto p { overflow:hidden; margin:2px 0 0; color:#a99a82; font-size:11px; line-height:16px; text-overflow:ellipsis; white-space:nowrap; }
 .peso-nivel { padding:3px 8px; border:1px solid #c4933f35; border-radius:14px; background:#c4933f0d; color:#d4ad68; font-size:10px; line-height:16px; white-space:nowrap; }
 .peso-valor { display:grid; place-items:center; width:40px; height:40px; border:1px solid #c4933f36; border-radius:9px; background:#332718; color:#e0b860; font-size:16px; font-weight:600; }
 .peso-controle { position:relative; margin:12px 0 0; }
@@ -56,4 +56,18 @@
     .pesos-acoes { margin-top:24px; }
     .pesos-acoes .fluxo-proxima { width:100%; }
 }
+.pesos-intro .pesos-certo { margin-top:6px; color:#e5d5b5; font-weight:600; }
+.pesos-diferenca { margin:16px 0 0; padding:12px 14px; border:1px solid #c4933f24; border-radius:9px; background:#241d14d9; color:#c9bba3; font-size:13px; line-height:20px; }
+.pesos-diferenca p { margin:0 0 6px; }
+.pesos-diferenca p:last-child { margin-bottom:0; }
+.pesos-diferenca strong { color:#e5d5b5; font-weight:600; }
+.peso-criterio-texto h2 { display:flex; align-items:center; }
+.peso-criterio-texto h2 .ajuda-botao { margin-left:8px; }
+.peso-criterio .ajuda-painel { margin:10px 0 0; }
+.peso-nivel { font-size:11px; }
+.peso-participacao { margin:6px 0 0; color:#c9bba3; font-size:12px; line-height:18px; }
+.pesos-acoes { gap:10px; flex-wrap:wrap; }
+.pesos-acoes .fluxo-salvar { min-height:46px; }
+.pesos-acoes [hidden] { display:none; }
+@media(max-width:620px) { .pesos-acoes .fluxo-salvar { width:100%; } .peso-criterio-cabecalho { grid-template-columns:16px minmax(0,1fr) 36px; } .peso-nivel { grid-column:2 / 4; justify-self:start; grid-row:2; } }
 @media(prefers-reduced-motion:reduce) { .pesos-total-barra span, .peso-trilho-progresso, .peso-trilho-marcador, .peso-trilho-ponto { transition:none; } }

@@ -1,5 +1,6 @@
 import { criarApi } from "../shared/api.js";
 import { configurarConta } from "../shared/conta.js";
+import { estadoTecnicas, marcarNavegacao } from "../shared/tecnicas-estado.js?v=1";
 
 const el = id => document.getElementById(id);
 const id = new URLSearchParams(location.search).get("decisaoId");
@@ -29,6 +30,7 @@ const preencherConta = configurarConta({ requisitar: api.requisitar, aviso,
 function progresso() {
     el("progresso").textContent = campos.filter(c => c.value.trim()).length + " de 6 reflexões preenchidas";
     el("situacao").textContent = dados?.concluida && !sujo() ? "Técnica concluída" : "Preencha os seis campos e use “Próxima: Inversão” para concluir.";
+    marcarNavegacao(document.querySelector(".tecnicas-nav"), { "101010": !!dados?.concluida && !sujo() });
 }
 function renderizar(resposta) {
     if (String(resposta.decisaoId) !== id || resposta.etapaAtual !== 6 || !resposta.opcaoA?.id || !resposta.opcaoB?.id
@@ -65,6 +67,10 @@ async function carregar() {
         el("mensagem").textContent = dados.status === "CONCLUIDA" ? "Decisão concluída: suas reflexões estão disponíveis apenas para consulta." : "";
     } catch (erro) { bloqueado = true; el("mensagem").textContent = erro.message; el("recarregar").hidden = encerrada || [404,409].includes(erro.status); }
     finally { estado(false); }
+    if (dados && !bloqueado) {
+        const { pros, gut, inversao } = await estadoTecnicas(api, id);
+        marcarNavegacao(document.querySelector(".tecnicas-nav"), { pros, gut, inversao });
+    }
 }
 function validar(completa) {
     let primeiro;

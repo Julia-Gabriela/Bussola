@@ -7,16 +7,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style/landing-page.css">
-    <link rel="stylesheet" href="../style/home.css">
-    <link rel="stylesheet" href="../style/nova-decisao.css">
+    <link rel="stylesheet" href="../style/landing-page.css?v=2">
+    <link rel="stylesheet" href="../style/home.css?v=2">
+    <link rel="stylesheet" href="../style/nova-decisao.css?v=2">
+    <link rel="stylesheet" href="../style/ajuda-contextual.css?v=1">
+    <script src="../js/shared/ajuda-contextual.js?v=1" defer></script>
     <link rel="stylesheet" href="../style/confirmacao-etapa.css">
     <script src="../js/shared/confirmacao-etapa.js?v=2" defer></script>
     <script src="../js/shared/alteracoes-nao-salvas.js?v=3" defer></script>
     <script src="../js/pages/decisao-api.js" defer></script>
     <script src="../js/shared/cabecalho.js" defer></script>
     <script src="../js/pages/nova-decisao.js?v=5" defer></script>
-    <link rel="stylesheet" href="../style/fluxo-compacto.css">
+    <link rel="stylesheet" href="../style/fluxo-compacto.css?v=4">
 </head>
 <body class="home-page">
     <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
@@ -49,14 +51,15 @@
     <main id="conteudo" class="nova-decisao">
         <p class="campo-ajuda">Etapa 1 de 6 · Contextualização</p>
         <h1>Qual decisão você quer explorar?</h1>
-        <p class="introducao">Escreva com suas próprias palavras — não precisa ser perfeito. A Bússola te ajuda a estruturar qualquer escolha difícil passo a passo.</p>
+        <p class="introducao">O Bússola compara <strong>duas alternativas por vez</strong>. Escreva com suas próprias palavras, de preferência citando os dois caminhos. Não precisa ser perfeito.</p>
         <form id="nova-decisao-form" class="decisao-card">
             <fieldset id="campos" disabled>
                 <label for="titulo">Descreva sua decisão</label>
-                <input id="titulo" name="titulo" required maxlength="200" placeholder="Aceitar o estágio ou focar na faculdade?" aria-describedby="titulo-ajuda">
-                <p id="titulo-ajuda" class="campo-ajuda">Tente formular como uma pergunta — fica mais fácil de analisar.</p>
-                <label for="contexto">Contexto <span>(opcional)</span></label>
-                <textarea id="contexto" name="contexto" maxlength="16000" rows="5" placeholder="Conte um pouco sobre sua situação e o que está em jogo."></textarea>
+                <input id="titulo" name="titulo" required maxlength="200" placeholder="Ex.: Opção 1 ou opção 2?" aria-describedby="titulo-ajuda">
+                <p id="titulo-ajuda" class="campo-ajuda">Tente formular como uma pergunta com as duas alternativas.</p>
+                <div class="campo-rotulo"><label for="contexto">Contexto <span>(opcional)</span></label><button type="button" class="ajuda-botao" aria-expanded="false" aria-controls="ajuda-contexto"><span aria-hidden="true">?</span><span class="ajuda-sr">O que escrever no contexto</span></button></div>
+                <div class="ajuda-painel" id="ajuda-contexto" hidden><p>O contexto ajuda você a lembrar o que está em jogo quando voltar à decisão.</p><p>Conte prazos, quem é afetado e o que você já tentou.</p><p>Ex.: Preciso responder até sexta. Minha família depende da minha renda. Já conversei com meu orientador.</p><button type="button" class="ajuda-fechar" aria-label="Fechar ajuda">×</button></div>
+                <textarea id="contexto" name="contexto" maxlength="16000" rows="5" placeholder="Conte prazos, quem é afetado e o que você já tentou."></textarea>
                 <button class="home-primary" type="submit" id="salvar">Salvar e continuar →</button>
                 <button class="home-secondary" type="submit" id="salvar-depois">Salvar para depois</button>
             </fieldset>
@@ -64,7 +67,7 @@
             <a id="ver-decisao" class="home-primary" href="home.html" hidden>Ver na Home</a>
         </form>
         <section class="exemplos" id="exemplos" aria-label="Exemplos de decisões">
-            <p>Não sabe por onde começar? Tente um exemplo:</p>
+            <p>Não sabe por onde começar?</p><p class="exemplos-ajuda">Clique em um exemplo para preencher o campo:</p>
             <button type="button">Aceitar o estágio ou focar na faculdade?</button>
             <button type="button">Mudar de cidade ou ficar perto da família?</button>
             <button type="button">Trocar de emprego ou pedir promoção?</button>

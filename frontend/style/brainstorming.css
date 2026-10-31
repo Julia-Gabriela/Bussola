@@ -1,44 +1,94 @@
 .brainstorming { position: relative; max-width: 850px; margin: 48px auto; padding: 0 24px; }
-.brainstorming h1 { font-size: 24px; color: var(--home-text); margin: 12px 0; }
-.etapa { display: inline-block; border: 1px solid #d4ad6833; border-radius: 24px; padding: 8px 14px; color: var(--home-accent); font-size: 13px; }
-.introducao { color: var(--muted); line-height: 1.7; overflow-wrap: anywhere; }
-.introducao strong { color: #d6c09a; }
+.brainstorming h1 { margin: 8px 0; color: var(--home-accent); font: 400 30px/1.15 var(--font-display); letter-spacing: -.7px; }
+.introducao { margin: 8px 0 4px; color: var(--muted); font-size: 15px; line-height: 1.6; overflow-wrap: anywhere; }
+.introducao strong { color: #e2cfa8; font-weight: 600; }
+.brain-proposito { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin: 0 0 12px; color: var(--muted); font-size: 14px; line-height: 1.5; }
 .brain-card { margin: 24px 0; padding: 24px; background: #211b14ed; border: 1px solid #d4ad6833; border-radius: 12px; }
 .brain-card h2 { font-size: 20px; }
 .brain-card p { line-height: 1.7; color: var(--muted); }
-.brain-card fieldset { margin: 0; padding: 0; min-width: 0; border: 0; }
-.brain-card legend { font-size: 14px; margin-bottom: 16px; color: var(--muted); }
-.categorias { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
-.brain-card .categoria-dica { margin: 0 0 18px; font-size: 13px; line-height: 1.5; }
-.brain-card .categoria-dica.invalida { color: #efb3ad; }
-.categorias.invalida label { outline: 1px dashed currentColor; outline-offset: 2px; }
-.categorias label { padding: 9px 12px; border: 1px solid currentColor; border-radius: 6px; cursor: pointer; font-size: 14px; }
-.categorias label:has(input:checked) { background: #ffffff10; outline: 1px solid currentColor; }
-.categorias input { accent-color: var(--home-accent); }
-.favoravel { color: #a5c48e; }
-.desfavoravel { color: #eea080; }
-.duvida { color: #e1bb65; }
-.texto-label { display: block; color: var(--muted); font-size: 13px; margin-bottom: 8px; }
-.entrada-ideia { display: flex; align-items: stretch; gap: 12px; }
-.entrada-ideia .home-primary, .acoes-etapa .home-primary { width: auto; flex-shrink: 0; padding-inline: 24px; }
-.entrada-ideia textarea { box-sizing: border-box; flex: 1; min-width: 0; resize: vertical; padding: 12px; font: inherit; color: var(--home-text); background: #2b2218; border: 1px solid #d4ad6833; border-radius: 8px; }
+
+/* Formulário único */
+.brain-form fieldset { margin: 0; padding: 0; min-width: 0; border: 0; }
+.brain-form-rotulo { display: block; margin: 0 0 10px; padding: 0; color: var(--home-text); font-size: 14px; font-weight: 600; }
+.brain-form label.brain-form-rotulo { margin-top: 18px; }
+.categorias { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.categoria-opcao { --cor-categoria: #c9bba3; position: relative; display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 10px 14px; border: 1px solid #d4ad6833; border-radius: 10px; background: #2b2218; color: var(--home-text); font-size: 14px; font-weight: 500; cursor: pointer; transition: border-color .15s ease, background .15s ease; }
+.categoria-opcao.favoravel { --cor-categoria: #a5c48e; }
+.categoria-opcao.desfavoravel { --cor-categoria: #eea080; }
+.categoria-opcao.duvida { --cor-categoria: #e1bb65; }
+.categoria-opcao input { flex-shrink: 0; width: 18px; height: 18px; margin: 0; accent-color: var(--cor-categoria); cursor: pointer; }
+.categoria-opcao:hover { border-color: var(--cor-categoria); background: #33291d; }
+.categoria-opcao:has(input:checked) { border-color: var(--cor-categoria); background: #ffffff0d; box-shadow: inset 0 0 0 1px var(--cor-categoria); }
+.categoria-opcao:has(input:checked) span { color: var(--cor-categoria); font-weight: 600; }
+.categoria-opcao:has(input:focus-visible) { outline: 2px solid var(--home-accent); outline-offset: 3px; }
+.categoria-opcao:has(input:disabled) { cursor: not-allowed; opacity: .6; }
+.categorias.invalida .categoria-opcao { border-style: dashed; border-color: #efb3ad; }
+.brain-form textarea { display: block; min-height: 84px; max-height: 260px; }
+.brain-form .campo-erro { margin: 6px 0 0; color: #efb3ad; font-size: 13px; font-weight: 500; line-height: 1.45; }
+.brain-form .campo-erro[hidden] { display: none; }
+.brain-form-acoes { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 12px; }
+.brain-form-acoes .home-primary { width: auto; min-height: 44px; padding: 10px 24px; font-weight: 600; }
+.brain-form .brain-form-acoes .campo-erro { margin: 0; }
+.brain-form .brain-form-estado { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+.brain-form .brain-form-estado:empty { display: none; }
+.brain-form .brain-form-estado.erro { color: #efb3ad; font-weight: 500; }
+
+/* Campos comuns (formulário e editor do cartão) */
+.brainstorming textarea, .brainstorming select { box-sizing: border-box; width: 100%; min-width: 0; padding: 10px 12px; font: inherit; font-size: 14px; color: var(--home-text); background: #2b2218; border: 1px solid #d4ad6833; border-radius: 8px; }
+.brainstorming textarea { resize: vertical; line-height: 1.45; }
+.brainstorming textarea::placeholder { color: #9d917f; }
+.brainstorming textarea[aria-invalid="true"] { border-color: #efb3ad; }
 .brainstorming :focus-visible { outline: 2px solid var(--home-accent); outline-offset: 3px; }
-.grupo-ideias { margin: 28px 0; }
-.grupo-ideias h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
-.grupo-ideias { min-width: 0; }
-.grupo-ideias ul { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-.ideia { width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 8px; background: #ffffff05; border: 1px solid currentColor; border-radius: 8px; padding: 8px 12px; }
-.ideia p { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; min-width: 0; line-height: 1.6; }
-.ideia button { flex-shrink: 0; font: inherit; font-size: 12px; color: inherit; background: transparent; border: 0; padding: 8px; cursor: pointer; text-decoration: underline; }
+
+/* Colunas de ideias */
+.brain-colunas { display: grid; gap: 16px; margin: 16px 0; }
+.brain-coluna { --cor-categoria: #c9bba3; min-width: 0; padding: 14px; background: #211b14ed; border: 1px solid #d4ad6826; border-top: 3px solid var(--cor-categoria); border-radius: 10px; }
+.brain-coluna.favoravel { --cor-categoria: #a5c48e; }
+.brain-coluna.desfavoravel { --cor-categoria: #eea080; }
+.brain-coluna.duvida { --cor-categoria: #e1bb65; }
+.brain-coluna h2 { margin: 0; color: var(--cor-categoria); font-size: 15px; font-weight: 600; }
+.coluna-contagem { color: var(--muted); font-size: 13px; font-weight: 400; }
+.coluna-dica { margin: 4px 0 10px; color: var(--muted); font-size: 13px; line-height: 1.45; }
+.coluna-retorno { margin: 0 0 8px; color: var(--cor-categoria); font-size: 13px; font-weight: 500; line-height: 1.45; }
+.coluna-retorno:empty { display: none; }
+.coluna-retorno.erro { color: #efb3ad; }
+.coluna-lista { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.coluna-lista:empty { display: none; }
+.coluna-vazia { margin: 0; padding: 10px 12px; border: 1px dashed #d4ad6833; border-radius: 8px; color: var(--muted); font-size: 13px; font-style: italic; line-height: 1.45; }
+.coluna-vazia[hidden] { display: none; }
+.ideia { box-sizing: border-box; width: 100%; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 10px 10px 6px 12px; background: #ffffff05; border: 1px solid #d4ad6826; border-left: 3px solid var(--cor-categoria); border-radius: 8px; color: var(--home-text); transition: background .4s ease, box-shadow .4s ease; }
+.ideia.recente { background: #ffffff0d; box-shadow: 0 0 0 1px var(--cor-categoria); }
+.ideia p { flex-basis: 100%; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; min-width: 0; font-size: 14px; line-height: 1.5; }
+.ideia-acoes { display: flex; gap: 6px; margin-left: auto; }
+.ideia-acao { min-height: 36px; padding: 6px 12px; font: inherit; font-size: 13px; font-weight: 500; color: #d9cdb8; background: transparent; border: 1px solid transparent; border-radius: 6px; cursor: pointer; }
+.ideia-acao:hover:not(:disabled) { color: var(--home-text); background: #ffffff0d; border-color: #d4ad6833; }
+.ideia-excluir { color: #f4bea8; }
+.ideia-excluir:hover:not(:disabled) { color: #f4bea8; background: #ba604418; border-color: #d4937866; }
+.ideia.editando { display: block; padding-bottom: 10px; }
+.ideia-edicao { display: flex; flex-direction: column; gap: 8px; }
+.ideia-edicao-rotulo { color: var(--muted); font-size: 12px; }
+.ideia-edicao-acoes { display: flex; flex-wrap: wrap; gap: 8px; }
+.ideia-edicao-acoes button { width: auto; flex: 1; min-height: 40px; padding: 6px 12px; font-size: 13px; }
+.brain-sem-categoria { margin: 16px 0; }
+
 .acoes-etapa { display: flex; justify-content: flex-end; margin: 32px 0; }
+.acoes-etapa .home-primary { width: auto; flex-shrink: 0; min-height: 44px; padding-inline: 24px; }
 #mensagem { line-height: 1.6; }
 #mensagem:empty { display: none; }
-#contexto-painel { color: var(--muted); }
+#contexto-painel { color: var(--muted); margin-bottom: 8px; }
 #decisao-contexto, #ideia-excluir { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 250px; overflow: auto; }
-#cancelar-edicao { margin-top: 12px; }
 .dialog-acoes { display: flex; flex-wrap: wrap; gap: 12px; }
 .dialog-acoes button { width: auto; flex: 1; }
 .brainstorming .fluxo-etapas { margin-bottom: 28px; }
 .brainstorming button:disabled { opacity: .5; cursor: not-allowed; }
 .brainstorming .fluxo-etapas button:disabled { opacity: 1; cursor: pointer; }
-@media (max-width: 600px) { .brainstorming { margin: 28px auto; padding: 0 16px; } .brain-card { padding: 16px; } .entrada-ideia { flex-direction: column; } .ideia { flex-wrap: wrap; } .ideia p { flex-basis: 100%; } }
+@media (min-width: 701px) { .brain-colunas { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; } }
+@media (max-width: 600px) {
+    .brainstorming { margin: 28px auto; padding: 0 16px; }
+    .brain-card { padding: 16px; }
+    .brainstorming h1 { font-size: 28px; }
+    .categorias { grid-template-columns: 1fr; }
+    .brain-form-acoes .home-primary { width: 100%; }
+    .ideia-acao { min-height: 44px; padding: 8px 14px; }
+    .acoes-etapa .home-primary { width: 100%; }
+}

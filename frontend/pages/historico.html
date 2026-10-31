@@ -7,19 +7,19 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style/landing-page.css">
-    <link rel="stylesheet" href="../style/home.css">
+    <link rel="stylesheet" href="../style/landing-page.css?v=2">
+    <link rel="stylesheet" href="../style/home.css?v=2">
     <link rel="stylesheet" href="../style/fluxo-decisao.css?v=2">
-    <link rel="stylesheet" href="../style/historico.css">
-    <link rel="stylesheet" href="../style/revisao-etapa.css?v=3">
+    <link rel="stylesheet" href="../style/historico.css?v=2">
+    <link rel="stylesheet" href="../style/revisao-etapa.css?v=5">
     <link rel="stylesheet" href="../style/confirmacao-etapa.css">
     <script src="../js/shared/alteracoes-nao-salvas.js?v=3" defer></script>
     <script src="../js/shared/confirmacao-etapa.js" defer></script>
     <script src="../js/shared/revisao-etapa.js?v=4" defer></script>
     <script src="../js/pages/historico-integracoes.js?v=2" defer></script>
-    <script src="../js/shared/progresso-etapas.js" defer></script>
-    <script src="../js/pages/historico.js?v=4" type="module"></script>
-    <link rel="stylesheet" href="../style/fluxo-compacto.css">
+    <script src="../js/shared/progresso-etapas.js?v=2" defer></script>
+    <script src="../js/pages/historico.js?v=5" type="module"></script>
+    <link rel="stylesheet" href="../style/fluxo-compacto.css?v=4">
 </head>
 <body class="home-page fluxo-page historico-page">
     <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
@@ -60,5 +60,5 @@
 <nav class="historico-paginacao" aria-label="Páginas do histórico"><button type="button" class="fluxo-salvar" id="anterior" disabled>Anterior</button><span id="pagina" aria-live="polite"></span><button type="button" class="fluxo-salvar" id="proxima" disabled>Próxima</button></nav>
 </main>
 <dialog class="home-dialog" id="aviso" aria-labelledby="aviso-titulo"><h2 id="aviso-titulo"></h2><p id="aviso-texto"></p><form method="dialog"><button class="home-primary">Entendi</button></form></dialog>
-<dialog class="home-dialog" id="exclusao" aria-labelledby="exclusao-titulo"><h2 id="exclusao-titulo">Excluir esta decisão?</h2><p id="exclusao-nome"></p><p>A exclusão é permanente: a decisão e todos os registros relacionados serão apagados e não poderão ser recuperados.</p><div class="fluxo-acoes"><button class="fluxo-salvar" id="cancelar-exclusao" type="button">Cancelar</button><button class="fluxo-proxima" id="excluir" type="button">Excluir decisão</button></div></dialog>
+<dialog class="home-dialog" id="exclusao" aria-labelledby="exclusao-titulo"><h2 id="exclusao-titulo">Excluir esta decisão?</h2><p id="exclusao-nome"></p><p>A exclusão é permanente: a decisão e todos os registros relacionados serão apagados e não poderão ser recuperados.</p><div class="fluxo-acoes"><button class="fluxo-salvar" id="cancelar-exclusao" type="button">Cancelar</button><button class="fluxo-proxima botao-perigo is-forte" id="excluir" type="button">Excluir decisão</button></div></dialog>
 </body></html>

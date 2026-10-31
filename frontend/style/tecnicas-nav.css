@@ -17,6 +17,9 @@
 .pendencia-marca { flex-shrink:0; width:10px; height:10px; margin-top:6px; border:1px solid #c4933f99; border-radius:50%; }
 .analise-pendente li.pronto .pendencia-marca { border-color:#a5c48e; background:#a5c48e; }
 .analise-pendente li[data-requisito="externo"] .pendencia-marca { border-style:dashed; }
+.tecnicas-nav .tecnica-status { margin-top:2px; color:#a5c48e; font-size:11px; font-weight:600; line-height:1.2; }
+.tecnicas-nav [aria-current] .tecnica-status { color:#2c4a1c; }
+.tecnicas-nav .concluida:not([aria-current]) { box-shadow:inset 0 0 0 1px #a5c48e55; }
 @media(max-width:680px) {
     .tecnicas-nav { grid-template-columns:repeat(2,minmax(0,1fr)); }
     .analise-pendente { padding:14px 16px; }

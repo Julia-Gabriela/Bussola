@@ -7,11 +7,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style/landing-page.css">
-    <link rel="stylesheet" href="../style/home.css">
+    <link rel="stylesheet" href="../style/landing-page.css?v=2">
+    <link rel="stylesheet" href="../style/home.css?v=2">
     <script src="../js/pages/home-integracoes.js?v=2" defer></script>
-    <script src="../js/shared/progresso-etapas.js" defer></script>
-    <script src="../js/pages/home.js?v=3" defer></script>
+    <script src="../js/shared/progresso-etapas.js?v=2" defer></script>
+    <script src="../js/pages/home.js?v=4" defer></script>
 </head>
 <body class="home-page">
     <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
@@ -54,14 +54,14 @@
             <p id="home-erro-texto"></p><button type="button" class="home-secondary" id="tentar-novamente">Tentar novamente</button>
         </div>
         <section class="home-stats" aria-label="Resumo das decisões">
-            <article class="home-stat">
+            <a class="home-stat home-stat-link" href="historico.html?status=CONCLUIDA">
                 <span class="home-stat-icon is-complete"><img src="../assets/images/home/concluidas.svg" alt="" width="22" height="22"></span>
-                <div><h2>Decisões concluídas</h2><p id="total-concluidas">—</p></div>
-            </article>
-            <article class="home-stat">
+                <span class="home-stat-texto"><span class="home-stat-nome">Decisões concluídas</span><span class="home-stat-valor" id="total-concluidas">—</span><span class="home-stat-ver">Ver no Histórico <span aria-hidden="true">→</span></span></span>
+            </a>
+            <a class="home-stat home-stat-link" href="historico.html?status=EM_ANDAMENTO">
                 <span class="home-stat-icon"><img src="../assets/images/home/relogio.svg" alt="" width="22" height="22"></span>
-                <div><h2>Em andamento</h2><p id="total-andamento">—</p></div>
-            </article>
+                <span class="home-stat-texto"><span class="home-stat-nome">Em andamento</span><span class="home-stat-valor" id="total-andamento">—</span><span class="home-stat-ver">Ver no Histórico <span aria-hidden="true">→</span></span></span>
+            </a>
         </section>
         <div class="home-columns">
             <section class="home-recent home-panel" aria-labelledby="recentes-titulo">
@@ -69,7 +69,10 @@
                     <h2 id="recentes-titulo">Decisões recentes</h2>
                     <button type="button" class="home-text-link" data-destino="historico">Ver todas <img src="../assets/images/home/seta-ver-todas.svg" alt="" width="14" height="14"></button>
                 </div>
-                <p id="decisoes-status" class="home-empty" role="status">Buscando suas decisões…</p>
+                <div class="home-empty" id="decisoes-vazio">
+                    <p id="decisoes-status" role="status">Buscando suas decisões…</p>
+                    <button type="button" class="home-primary home-empty-acao" id="vazio-iniciar" data-destino="novaDecisao" hidden><img src="../assets/images/home/mais.svg" alt="" width="16" height="16">Começar minha primeira decisão</button>
+                </div>
                 <ul class="home-recent-list" id="decisoes-recentes" hidden></ul>
             </section>
             <aside class="home-actions" aria-label="Acompanhar decisões">
@@ -91,6 +94,18 @@
                 </section>
             </aside>
         </div>
+        <section class="home-etapas home-panel" aria-labelledby="etapas-titulo">
+            <h2 id="etapas-titulo">Como o Bússola ajuda você</h2>
+            <p>Cada decisão passa por 6 etapas. Você compara duas alternativas por vez e pode salvar e continuar depois.</p>
+            <ol class="home-etapas-lista">
+                <li><strong>Contextualização</strong><span>Descreva a decisão e o que está em jogo.</span></li>
+                <li><strong>Brainstorming</strong><span>Anote ideias, pontos positivos, negativos e dúvidas.</span></li>
+                <li><strong>Opções</strong><span>Defina as duas alternativas.</span></li>
+                <li><strong>Critérios</strong><span>Dê uma nota a cada alternativa em cada critério.</span></li>
+                <li><strong>Pesos</strong><span>Diga o quanto cada critério importa para você.</span></li>
+                <li><strong>Análise</strong><span>Reflita com técnicas de apoio e veja a pontuação final.</span></li>
+            </ol>
+        </section>
     </main>
     <dialog class="home-dialog" id="aviso-integracao" aria-labelledby="aviso-titulo" aria-describedby="aviso-texto">
         <h2 id="aviso-titulo">Em breve</h2><p id="aviso-texto"></p>

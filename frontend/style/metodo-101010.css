@@ -35,3 +35,4 @@
     .reflexao-opcao { padding:12px; }
     .reflexao-opcao textarea { font-size:16px; }
 }
+.reflexao-guia { margin:-6px 0 14px; color:var(--fluxo-texto); font-size:14px; font-weight:500; line-height:1.5; }

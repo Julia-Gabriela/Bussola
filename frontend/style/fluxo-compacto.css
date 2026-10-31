@@ -24,13 +24,7 @@ body:has(.nova-decisao, .brainstorming, .fluxo-conteudo) .home-header-inner { mi
 .brainstorming .etapa { margin:0; padding:6px 12px; }
 .brainstorming .introducao { margin:8px 0 12px; line-height:1.5; }
 .brain-card { margin:16px 0; padding:16px; }
-.brain-card legend { margin-bottom:10px; }
-.categorias { margin-bottom:12px; }
-.grupo-ideias { margin:12px 0; }
-.grupo-ideias h2, .grupo-ideias ul { margin:8px 0; }
 .brainstorming .aviso-revisao { margin:12px 0; }
-.brainstorming .ideia { padding:6px 10px; }
-.brainstorming .ideia p { line-height:1.4; }
 .brainstorming .introducao { font-size:14px; }
 .acoes-etapa { margin:16px 0; }
 .nova-decisao { margin:24px auto; }
@@ -52,17 +46,7 @@ body:has(.nova-decisao, .brainstorming, .fluxo-conteudo) .home-header-inner { mi
     .criterio-titulo { font-size:15px; margin-bottom:4px; }
     .criterio-descricao { font-size:13px; line-height:20px; }
     .criterios-adicionar { min-height:44px; padding-block:12px; }
-    .criterios-totais { min-height:60px; padding-block:12px; }
-    .criterios-resumo { margin-top:12px; }
-}
-@media(min-width:701px) {
-    #ideias { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; align-items:start; }
-    #ideias > p, #ideias > .grupo-ideias:not(.favoravel, .desfavoravel, .duvida) { grid-column:1 / -1; }
-    #ideias > .grupo-ideias.favoravel { grid-column:1; }
-    #ideias > .grupo-ideias.desfavoravel { grid-column:2; }
-    #ideias > .grupo-ideias.duvida { grid-column:3; }
-    .ideia { flex-wrap:wrap; }
-    .ideia p { flex-basis:100%; }
+    .criterios-progresso { padding-block:12px; }
 }
 @media(max-width:680px) {
     .fluxo-intro h1 { font-size:28px; }
