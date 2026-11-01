@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="frontend/assets/images/home/marca.png" alt="Logo Bússola" width="400"/>
+  <img src="frontend/assets/images/icone-bussola.png" alt="Logo Bússola" width="320"/>
 </p>
 
 <p align="center">
