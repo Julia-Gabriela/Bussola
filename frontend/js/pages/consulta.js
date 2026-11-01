@@ -417,9 +417,10 @@ function montarIndicador() {
         link.dataset.etapa = etapa.pagina ? "" : etapa.chave;
         link.append(criar("span", "etapa-circulo", indice + 1), criar("span", "", etapa.curto));
         link.querySelector(".etapa-circulo").setAttribute("aria-hidden", "true");
-        link.setAttribute("aria-label", etapa.etapa
-            ? etapa.nome + " — seção " + (indice + 1) + " de " + ETAPAS.length + ", etapa " + etapa.etapa + " de " + NOMES_ETAPAS.length
-            : etapa.nome + " — resultado da análise");
+        const complemento = (etapa.curto !== etapa.nome ? " — " + etapa.nome : "") + (etapa.etapa
+            ? ", seção " + (indice + 1) + " de " + ETAPAS.length + ", etapa " + etapa.etapa + " de " + NOMES_ETAPAS.length
+            : ", resultado da análise");
+        link.append(criar("span", "fluxo-sr-only", complemento));
         item.append(link);
         return item;
     }));

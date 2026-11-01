@@ -12,8 +12,8 @@
     font-family: var(--font-ui, sans-serif);
 }
 .confirmacao-etapa::backdrop { background: #0f0c09b8; }
-.confirmacao-etapa h2 { margin: 0; font: 400 30px/1.2 var(--font-display, Georgia, serif); }
-.confirmacao-etapa p { margin: 18px 0 28px; color: #c5b59e; font-size: 16px; line-height: 1.65; }
+.confirmacao-etapa h2 { margin: 0; font: 400 1.875rem/1.2 var(--font-display, Georgia, serif); }
+.confirmacao-etapa p { margin: 18px 0 28px; color: #c5b59e; font-size: 1rem; line-height: 1.65; }
 .confirmacao-etapa-acoes { display: flex; flex-wrap: wrap; gap: 12px; }
 .confirmacao-etapa button {
     flex: 1;
@@ -23,7 +23,7 @@
     border-radius: 6px;
     background: transparent;
     color: #e8d9bf;
-    font: 500 14px/1.4 var(--font-ui, sans-serif);
+    font: 500 0.875rem/1.4 var(--font-ui, sans-serif);
     cursor: pointer;
 }
 .confirmacao-etapa button:hover { background: #d4ad6812; }
@@ -32,6 +32,6 @@
 .confirmacao-etapa button:focus-visible { outline: 2px solid #dfb977; outline-offset: 4px; }
 @media (max-width: 540px) {
     .confirmacao-etapa { padding: 24px; }
-    .confirmacao-etapa h2 { font-size: 27px; }
+    .confirmacao-etapa h2 { font-size: 1.6875rem; }
     .confirmacao-etapa-acoes { flex-direction: column; }
 }

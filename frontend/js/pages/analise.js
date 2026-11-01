@@ -527,7 +527,7 @@ async function salvarGut(chave) {
             bloqueado = true; el("recarregar").hidden = false; estado(ocupado);
             el("mensagem").textContent = erro.message + " Recarregue os dados antes de continuar.";
         } else {
-            retorno("gut", "Não foi possível salvar uma classificação. Suas notas continuam na tela: clique em “Salvar para depois” para tentar de novo.", "erro");
+            retorno("gut", "Não foi possível salvar uma classificação. Suas notas continuam na tela: use “Salvar para depois” para tentar de novo.", "erro");
         }
     }
 }
@@ -803,7 +803,7 @@ async function salvar(caminho, metodo, corpo, painel, sucesso) {
     else if (!confirmado && argumento) el("argumento-descricao").focus();
     else if (confirmado && proximo) {
         abrirArgumento(proximo.letra, proximo.tipo, null, cartao(proximo.letra, proximo.tipo).querySelector(".argumentos-adicionar"));
-        retorno("pros", sucesso + " Escreva o próximo ou clique em Cancelar.", "sucesso");
+        retorno("pros", sucesso + " Escreva o próximo ou escolha Cancelar.", "sucesso");
     }
     else if (confirmado) (painel === "gut" ? document.querySelector("#gut-grupos input") : card?.querySelector(".argumentos-adicionar"))?.focus();
 }
@@ -841,7 +841,7 @@ el("cancelar-argumento").addEventListener("click", () => { if (!ocupado) { fecha
  */
 function avisarRascunho(destino) {
     if (sujoArgumento()) {
-        aviso("Alterações não salvas", "Há um pró ou contra em edição que ainda não foi salvo. Clique em “Adicionar” ou “Salvar alterações” para gravá-lo, ou em “Cancelar” para descartar a edição antes de " + destino + ".");
+        aviso("Alterações não salvas", "Há um pró ou contra em edição que ainda não foi salvo. Use “Adicionar” ou “Salvar alterações” para gravá-lo, ou “Cancelar” para descartar a edição antes de " + destino + ".");
     } else {
         aviso("Classificação GUT não salva", "Há itens da Matriz GUT com notas incompletas ou que não foram salvas. Escolha Gravidade, Urgência e Tendência (ou volte as notas ao valor anterior) antes de " + destino + ".");
     }

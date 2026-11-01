@@ -3,20 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="../js/shared/acessibilidade.js?v=1"></script>
     <title>Meu perfil — Bússola</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style/landing-page.css?v=2">
-    <link rel="stylesheet" href="../style/home.css?v=2">
-    <link rel="stylesheet" href="../style/revisao-etapa.css?v=5">
-    <link rel="stylesheet" href="../style/perfil.css">
+    <link rel="stylesheet" href="../style/landing-page.css?v=3">
+    <link rel="stylesheet" href="../style/home.css?v=3">
+    <link rel="stylesheet" href="../style/revisao-etapa.css?v=6">
+    <link rel="stylesheet" href="../style/perfil.css?v=2">
     <script src="../js/shared/alteracoes-nao-salvas.js?v=3" defer></script>
     <script src="../js/pages/documentos-legais.js" defer></script>
     <script src="../js/pages/perfil.js?v=2" type="module"></script>
+    <link rel="stylesheet" href="../style/acessibilidade.css?v=1">
 </head>
 <body class="home-page perfil-page">
-    <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
+    <a class="home-skip" href="#conteudo">Pular para o conteúdo principal</a>
     <div class="home-scene" aria-hidden="true">
         <img src="../assets/images/fundo-cadastro.png" alt="" class="home-map">
         <div class="home-ring"></div>
@@ -42,14 +44,14 @@
         </div>
     </header>
 
-<main id="conteudo" class="perfil-conteudo" aria-busy="true">
+<main tabindex="-1" id="conteudo" class="perfil-conteudo" aria-busy="true">
     <a class="perfil-voltar" href="home.html">← Voltar ao início</a>
     <div class="perfil-intro"><p class="perfil-sobretitulo">Sua conta</p><h1>Meu perfil</h1><p>Mantenha seus dados atualizados e cuide do acesso à sua conta.</p></div>
     <p id="mensagem" role="status" aria-live="polite">Carregando seu perfil…</p>
     <button id="recarregar" class="home-secondary" type="button" hidden>Recarregar dados</button>
     <div id="perfil-conteudo" hidden>
         <section class="perfil-secao" aria-labelledby="dados-titulo">
-            <div class="perfil-secao-intro"><span class="perfil-numero">01</span><h2 id="dados-titulo">Dados pessoais</h2><p>São os dados usados para identificar você no Bússola.</p></div>
+            <div class="perfil-secao-intro"><span class="perfil-numero">01</span><h2 id="dados-titulo">Dados pessoais</h2><p>São os dados usados para identificar você no Bússola. Todos os campos são obrigatórios.</p></div>
             <form id="dados-form">
                 <fieldset id="dados-campos" disabled><legend class="perfil-sr-only">Editar dados pessoais</legend>
                     <div class="perfil-grade">
@@ -64,7 +66,7 @@
             </form>
         </section>
         <section class="perfil-secao" aria-labelledby="senha-titulo">
-            <div class="perfil-secao-intro"><span class="perfil-numero">02</span><h2 id="senha-titulo">Segurança</h2><p>Depois de alterar a senha, entre novamente em seus dispositivos.</p></div>
+            <div class="perfil-secao-intro"><span class="perfil-numero">02</span><h2 id="senha-titulo">Segurança</h2><p>Depois de alterar a senha, entre novamente em seus dispositivos. Todos os campos são obrigatórios.</p></div>
             <form id="senha-form">
                 <fieldset id="senha-campos" disabled><legend class="perfil-sr-only">Alterar senha</legend>
                     <div class="perfil-campo"><label for="senha-atual">Senha atual</label><input id="senha-atual" type="password" autocomplete="current-password" required></div>

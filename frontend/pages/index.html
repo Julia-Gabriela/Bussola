@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="../js/shared/acessibilidade.js?v=1"></script>
     <title>Bússola</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style/landing-page.css?v=2">
+    <link rel="stylesheet" href="../style/landing-page.css?v=3">
+    <link rel="stylesheet" href="../style/acessibilidade.css?v=1">
 </head>
 <body>
+    <a class="a11y-pular" href="#conteudo">Pular para o conteúdo principal</a>
     <div class="page" id="inicio">
         <header class="header">
             <div class="header-inner">
@@ -30,7 +33,7 @@
             </div>
         </header>
 
-        <main>
+        <main id="conteudo" tabindex="-1">
             <section class="hero" aria-labelledby="hero-title">
                 <div class="hero-frame">
                 <div class="ring" aria-hidden="true"></div>
