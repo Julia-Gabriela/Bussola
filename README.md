@@ -52,7 +52,7 @@ A proposta do Bússola é justamente **orientar, e não decidir**. O sistema nã
 
 Antes da implementação, o Bússola passou por uma etapa de **pesquisa, planejamento e prototipação de interfaces** no Figma. O protótipo definiu a identidade cartográfica do projeto, a jornada pelas etapas da decisão e a apresentação do resultado.
 
-🔗 [Visualizar o protótipo no Figma](https://www.figma.com/design/Sublbofh6HociQwrQSEKEA/B%C3%BAssola?node-id=155-188&m=dev)
+🔗 [Visualizar o protótipo no Figma](https://www.figma.com)
 
 > O Figma registra o processo de design. A aplicação implementada evoluiu a partir dele, com ajustes de usabilidade, acessibilidade e fluxo, por isso pode apresentar diferenças em relação ao protótipo.
 
