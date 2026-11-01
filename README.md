@@ -1,7 +1,6 @@
-<h1 align="center">
-  <img src="frontend/assets/images/icone-bussola.png" alt="Logo Bússola" width="140" align="middle"/>
-  Bússola
-</h1>
+<p align="center">
+  <img src="docs/readme/titulo-bussola.svg" alt="Logo Bússola" width="480"/>
+</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Java-25-E0B860?style=for-the-badge&logo=openjdk&logoColor=E0B860&labelColor=17120D" alt="Java 25"/>
