@@ -3,18 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="../js/shared/acessibilidade.js?v=1"></script>
     <title>Início — Bússola</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style/landing-page.css?v=2">
-    <link rel="stylesheet" href="../style/home.css?v=2">
+    <link rel="stylesheet" href="../style/landing-page.css?v=3">
+    <link rel="stylesheet" href="../style/home.css?v=3">
     <script src="../js/pages/home-integracoes.js?v=2" defer></script>
     <script src="../js/shared/progresso-etapas.js?v=2" defer></script>
-    <script src="../js/pages/home.js?v=4" defer></script>
+    <script src="../js/pages/home.js?v=5" defer></script>
+    <link rel="stylesheet" href="../style/acessibilidade.css?v=1">
 </head>
 <body class="home-page">
-    <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
+    <a class="home-skip" href="#conteudo">Pular para o conteúdo principal</a>
     <div class="home-scene" aria-hidden="true">
         <img src="../assets/images/fundo-cadastro.png" alt="" class="home-map">
         <div class="home-ring"></div>
@@ -41,7 +43,7 @@
             </div>
         </div>
     </header>
-    <main class="home-dashboard" id="conteudo" aria-busy="true" data-node-id="2:325">
+    <main tabindex="-1" class="home-dashboard" id="conteudo" aria-busy="true" data-node-id="2:325">
         <div class="home-intro">
             <div class="home-greeting">
                 <p class="home-welcome">Seu espaço de decisões</p>

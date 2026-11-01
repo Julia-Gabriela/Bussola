@@ -3,26 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="../js/shared/acessibilidade.js?v=1"></script>
     <title>Método 10–10–10 — Bússola</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style/landing-page.css?v=2">
-    <link rel="stylesheet" href="../style/home.css?v=2">
-    <link rel="stylesheet" href="../style/fluxo-decisao.css?v=2">
-    <link rel="stylesheet" href="../style/metodo-101010.css?v=2">
-    <link rel="stylesheet" href="../style/revisao-etapa.css?v=5">
-    <link rel="stylesheet" href="../style/confirmacao-etapa.css">
+    <link rel="stylesheet" href="../style/landing-page.css?v=3">
+    <link rel="stylesheet" href="../style/home.css?v=3">
+    <link rel="stylesheet" href="../style/fluxo-decisao.css?v=3">
+    <link rel="stylesheet" href="../style/metodo-101010.css?v=3">
+    <link rel="stylesheet" href="../style/revisao-etapa.css?v=6">
+    <link rel="stylesheet" href="../style/confirmacao-etapa.css?v=2">
     <script src="../js/shared/alteracoes-nao-salvas.js?v=3" defer></script>
     <script src="../js/shared/confirmacao-etapa.js" defer></script>
-    <script src="../js/shared/revisao-etapa.js?v=4" defer></script>
+    <script src="../js/shared/revisao-etapa.js?v=5" defer></script>
     <script src="../js/pages/metodo-101010-integracoes.js" defer></script>
     <script src="../js/pages/metodo-101010.js?v=3" type="module"></script>
-    <link rel="stylesheet" href="../style/fluxo-compacto.css?v=4">
-    <link rel="stylesheet" href="../style/tecnicas-nav.css?v=4">
+    <link rel="stylesheet" href="../style/fluxo-compacto.css?v=5">
+    <link rel="stylesheet" href="../style/tecnicas-nav.css?v=5">
+    <link rel="stylesheet" href="../style/acessibilidade.css?v=1">
 </head>
 <body class="home-page fluxo-page metodo-page">
-    <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
+    <a class="home-skip" href="#conteudo">Pular para o conteúdo principal</a>
     <div class="home-scene" aria-hidden="true">
         <img src="../assets/images/fundo-cadastro.png" alt="" class="home-map">
         <div class="home-ring"></div>
@@ -47,7 +49,7 @@
             </div>
         </div>
     </header>
-<main class="fluxo-conteudo metodo-conteudo" id="conteudo" aria-busy="true">
+<main tabindex="-1" class="fluxo-conteudo metodo-conteudo" id="conteudo" aria-busy="true">
     <ol class="fluxo-etapas" id="indicador-etapas" aria-label="Etapas da decisão"></ol>
     <div class="fluxo-intro">
         <span class="fluxo-badge"><img src="../assets/images/metodo-101010/etapa.svg" width="13" height="13" alt="">Etapa 6 de 6 · Análise · Método 10/10/10</span>

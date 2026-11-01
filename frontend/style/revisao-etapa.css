@@ -58,8 +58,8 @@
     border-radius: 8px;
     background: rgba(196, 147, 63, 0.06);
     color: #a08d72;
-    font-size: 14px;
-    line-height: 22px;
+    font-size: 0.875rem;
+    line-height: 1.375rem;
     letter-spacing: 0.16px;
 }
 
@@ -72,7 +72,7 @@
     border-radius: 8px;
     background: rgba(33, 27, 20, 0.94);
     color: #e4d5c0;
-    font-size: 14px;
+    font-size: 0.875rem;
     line-height: 1.6;
     letter-spacing: 0.16px;
     overflow-wrap: anywhere;
@@ -81,7 +81,7 @@
 .aviso-pendencia h2 {
     margin: 0;
     color: #f4e7d2;
-    font: 600 18px/1.45 var(--font-display, Georgia, serif);
+    font: 600 1.125rem/1.45 var(--font-display, Georgia, serif);
     letter-spacing: 0.16px;
 }
 
@@ -104,7 +104,7 @@
     border-radius: 8px;
     background: linear-gradient(166deg, #8a6828 0%, #c4933f 100%);
     color: #17120d;
-    font: 600 14px/21px var(--font-ui, Inter, sans-serif);
+    font: 600 0.875rem/1.3125rem var(--font-ui, Inter, sans-serif);
     letter-spacing: 0.16px;
     cursor: pointer;
 }
@@ -130,7 +130,7 @@
     border: 1px solid rgba(196, 147, 63, 0.3);
     border-radius: 8px;
     color: #e4d5c0;
-    font: 600 14px/21px var(--font-ui, Inter, sans-serif);
+    font: 600 0.875rem/1.3125rem var(--font-ui, Inter, sans-serif);
     letter-spacing: 0.16px;
     text-decoration: none;
 }
@@ -165,8 +165,8 @@
     border-radius: 8px;
     background: rgba(196, 147, 63, 0.06);
     color: #a08d72;
-    font-size: 13px;
-    line-height: 22.1px;
+    font-size: 0.8125rem;
+    line-height: 1.3813rem;
     letter-spacing: 0.16px;
 }
 
@@ -195,14 +195,14 @@
 
 .revisao-etapa h2 {
     margin: 0;
-    font: 600 18px/27px var(--font-display, Georgia, serif);
+    font: 600 1.125rem/1.6875rem var(--font-display, Georgia, serif);
     letter-spacing: 0.16px;
 }
 
 .revisao-etapa p {
     margin: 10px 0 0;
     color: #a08d72;
-    font: 400 14px/23.1px var(--font-ui, Inter, sans-serif);
+    font: 400 0.875rem/1.4438rem var(--font-ui, Inter, sans-serif);
     letter-spacing: 0.16px;
 }
 
@@ -221,7 +221,7 @@
     border-radius: 8px;
     background: transparent;
     color: #a08d72;
-    font: 500 14px/21px var(--font-ui, Inter, sans-serif);
+    font: 500 0.875rem/1.3125rem var(--font-ui, Inter, sans-serif);
     letter-spacing: 0.16px;
     cursor: pointer;
 }

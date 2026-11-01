@@ -208,7 +208,7 @@
             sessionStorage.removeItem(chaveSessao);
             window.location.replace("index.html");
         } catch (_) {
-            mostrarErro("Não foi possível encerrar sua sessão. Confira sua conexão e clique em Sair novamente.");
+            mostrarErro("Não foi possível encerrar sua sessão. Confira sua conexão e tente Sair novamente.");
         } finally {
             saindo = false;
             elemento("sair").disabled = false;

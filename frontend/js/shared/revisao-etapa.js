@@ -147,7 +147,7 @@
         botao.className = "etapa-acesso";
         botao.append(circulo, nome);
         if (podeVoltar) {
-            botao.setAttribute("aria-label", `Voltar para ${passo.nome}`);
+            botao.setAttribute("aria-label", `${passo.numero} ${passo.nome} — voltar para esta etapa`);
             botao.addEventListener("click", () => {
                 const url = new URL(passo.pagina, window.location.href);
                 url.searchParams.set("decisaoId", decisaoId);
@@ -156,7 +156,7 @@
                 else seguir();
             });
         } else {
-            botao.setAttribute("aria-label", `Revisar ${passo.nome}`);
+            botao.setAttribute("aria-label", `${passo.numero} ${passo.nome} — revisar esta etapa`);
             botao.addEventListener("click", () => {
                 const url = new URL(passo.pagina, window.location.href);
                 url.searchParams.set("decisaoId", decisaoId);

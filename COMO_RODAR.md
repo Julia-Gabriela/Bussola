@@ -957,3 +957,23 @@ No PowerShell, dentro da pasta **backend**, execute os testes automatizados do p
 ```
 
 Os testes automatizados não usam MySQL e não substituem a conferência funcional da persistência com o banco.
+
+## Acessibilidade
+
+Todas as páginas têm um botão **Abrir preferências de acessibilidade** no cabeçalho. Ele abre o painel **Acessibilidade**, com tamanho do texto (100% a 150%), alto contraste, redução de animações e **Restaurar padrão**. As escolhas ficam guardadas apenas neste navegador (no `localStorage`, com a chave `bussola.acessibilidade`). Não vão para o backend nem para o banco.
+
+### Teste visual (só o frontend)
+
+1. Na raiz do projeto, rode `.\rodar-frontend.ps1` e deixe o terminal aberto.
+2. Abra `http://127.0.0.1:8765/pages/index.html`.
+3. Pressione **Tab** uma vez: deve aparecer **Pular para o conteúdo principal**. Com **Enter**, o foco vai para o conteúdo da página.
+4. Continue com **Tab** até o botão de acessibilidade e pressione **Enter**. No painel, use **Tab** para passar pelos controles, **Espaço** para ligar ou desligar as opções e **Esc** para fechar. Ao fechar, o foco volta ao botão.
+5. Aumente o texto ou ative o alto contraste e recarregue a página com **F5**: a escolha deve continuar aplicada. **Restaurar padrão** volta tudo ao normal.
+
+Se o navegador bloquear o armazenamento (por exemplo, em alguns modos privados), o painel avisa que as preferências valem só até sair da página. Isso é esperado.
+
+### Teste funcional (navegação só com teclado)
+
+Para percorrer o fluxo completo sem mouse, mantenha **MySQL + backend + frontend** ligados e use uma conta e uma decisão de teste. Use **Tab** e **Shift+Tab** para mover o foco, **Enter** ou **Espaço** para acionar botões, as **setas** para escolher notas e mover os controles de peso, e **Esc** para fechar janelas de confirmação. Ao tentar avançar com um campo obrigatório vazio, o foco vai para o campo com erro e a mensagem aparece logo abaixo dele.
+
+O painel não acrescenta dependência, variável de ambiente, porta ou migration.

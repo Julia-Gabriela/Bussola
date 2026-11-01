@@ -3,25 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="../js/shared/acessibilidade.js?v=1"></script>
     <title>Nova decisão — Bússola</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style/landing-page.css?v=2">
-    <link rel="stylesheet" href="../style/home.css?v=2">
-    <link rel="stylesheet" href="../style/nova-decisao.css?v=2">
-    <link rel="stylesheet" href="../style/ajuda-contextual.css?v=1">
+    <link rel="stylesheet" href="../style/landing-page.css?v=3">
+    <link rel="stylesheet" href="../style/home.css?v=3">
+    <link rel="stylesheet" href="../style/nova-decisao.css?v=3">
+    <link rel="stylesheet" href="../style/ajuda-contextual.css?v=2">
     <script src="../js/shared/ajuda-contextual.js?v=1" defer></script>
-    <link rel="stylesheet" href="../style/confirmacao-etapa.css">
+    <link rel="stylesheet" href="../style/confirmacao-etapa.css?v=2">
     <script src="../js/shared/confirmacao-etapa.js?v=2" defer></script>
     <script src="../js/shared/alteracoes-nao-salvas.js?v=3" defer></script>
     <script src="../js/pages/decisao-api.js" defer></script>
-    <script src="../js/shared/cabecalho.js" defer></script>
+    <script src="../js/shared/cabecalho.js?v=2" defer></script>
     <script src="../js/pages/nova-decisao.js?v=5" defer></script>
-    <link rel="stylesheet" href="../style/fluxo-compacto.css?v=4">
+    <link rel="stylesheet" href="../style/fluxo-compacto.css?v=5">
+    <link rel="stylesheet" href="../style/acessibilidade.css?v=1">
 </head>
 <body class="home-page">
-    <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
+    <a class="home-skip" href="#conteudo">Pular para o conteúdo principal</a>
     <div class="home-scene" aria-hidden="true">
         <img src="../assets/images/fundo-cadastro.png" alt="" class="home-map">
         <div class="home-ring"></div>
@@ -48,7 +50,7 @@
             </div>
         </div>
     </header>
-    <main id="conteudo" class="nova-decisao">
+    <main tabindex="-1" id="conteudo" class="nova-decisao">
         <p class="campo-ajuda">Etapa 1 de 6 · Contextualização</p>
         <h1>Qual decisão você quer explorar?</h1>
         <p class="introducao">O Bússola compara <strong>duas alternativas por vez</strong>. Escreva com suas próprias palavras, de preferência citando os dois caminhos. Não precisa ser perfeito.</p>
@@ -67,7 +69,7 @@
             <a id="ver-decisao" class="home-primary" href="home.html" hidden>Ver na Home</a>
         </form>
         <section class="exemplos" id="exemplos" aria-label="Exemplos de decisões">
-            <p>Não sabe por onde começar?</p><p class="exemplos-ajuda">Clique em um exemplo para preencher o campo:</p>
+            <p>Não sabe por onde começar?</p><p class="exemplos-ajuda">Escolha um exemplo para preencher o campo:</p>
             <button type="button">Aceitar o estágio ou focar na faculdade?</button>
             <button type="button">Mudar de cidade ou ficar perto da família?</button>
             <button type="button">Trocar de emprego ou pedir promoção?</button>

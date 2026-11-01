@@ -96,9 +96,9 @@ a:focus-visible {
 
 .brand-name {
     font-family: var(--font-display);
-    font-size: 20px;
+    font-size: 1.25rem;
     font-weight: 700;
-    line-height: 30px;
+    line-height: 1.875rem;
     letter-spacing: 1.6px;
 }
 
@@ -116,14 +116,14 @@ a:focus-visible {
     border-radius: 8px;
     border: 1px solid transparent;
     background: transparent;
-    line-height: 21px;
+    line-height: 1.3125rem;
 }
 
 .nav-link {
     display: inline-block;
     padding: 7px 15px;
     color: var(--muted);
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 500;
     text-decoration: none;
 }
@@ -167,7 +167,7 @@ a:focus-visible {
     gap: 8px;
     padding: 7px 13px;
     color: var(--beige);
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 500;
     text-decoration: none;
     background: var(--auth-bg);
@@ -213,9 +213,9 @@ a:focus-visible {
     margin: 0;
     width: 100%;
     font-family: var(--font-display);
-    font-size: 50px;
+    font-size: 3.125rem;
     font-weight: 700;
-    line-height: 60px;
+    line-height: 3.75rem;
 }
 
 .title-muted {
@@ -232,9 +232,9 @@ a:focus-visible {
     margin-top: 36px;
     margin-left: 8px;
     color: #fff;
-    font-size: 20px;
+    font-size: 1.25rem;
     font-weight: 400;
-    line-height: 22px;
+    line-height: 1.375rem;
 }
 
 .hero-text p {
@@ -258,9 +258,9 @@ a:focus-visible {
     text-align: center;
     text-decoration: none;
     color: var(--ink);
-    font-size: 15px;
+    font-size: 0.9375rem;
     font-weight: 700;
-    line-height: 22.5px;
+    line-height: 1.4063rem;
     letter-spacing: 0.16px;
     background: linear-gradient(169deg, #8a6018 0%, #c9983d 50%, #e2bb62 100%);
 }
@@ -367,8 +367,8 @@ a:focus-visible {
     }
 
     .hero-copy h1 {
-        font-size: 50px;
-        line-height: 60px;
+        font-size: 3.125rem;
+        line-height: 3.75rem;
     }
 
     .hero-text,
@@ -380,16 +380,16 @@ a:focus-visible {
         width: auto;
         max-width: 417px;
         margin-top: 36px;
-        font-size: 20px;
-        line-height: 22px;
+        font-size: 1.25rem;
+        line-height: 1.375rem;
     }
 
     .cta {
         width: 252px;
         margin-top: 44px;
         padding: 13px;
-        font-size: 15px;
-        line-height: 22.5px;
+        font-size: 0.9375rem;
+        line-height: 1.4063rem;
     }
 
     .hero-visual {
@@ -445,7 +445,7 @@ a:focus-visible {
     }
 
     .hero-copy h1 {
-        font-size: clamp(40px, 5vw, 50px);
+        font-size: clamp(2.5rem, 5vw, 3.125rem);
         line-height: 1.15;
     }
 
@@ -457,16 +457,16 @@ a:focus-visible {
     .hero-text {
         width: auto;
         margin-top: 28px;
-        font-size: 20px;
-        line-height: 22px;
+        font-size: 1.25rem;
+        line-height: 1.375rem;
     }
 
     .cta {
         width: min(100%, 252px);
         margin-top: 32px;
         padding: 13px;
-        font-size: 15px;
-        line-height: 22.5px;
+        font-size: 0.9375rem;
+        line-height: 1.4063rem;
     }
 
     .hero-visual {
@@ -508,7 +508,7 @@ a:focus-visible {
     }
 
     .brand-name {
-        font-size: 18px;
+        font-size: 1.125rem;
         letter-spacing: 1px;
     }
 
@@ -545,14 +545,14 @@ a:focus-visible {
     }
 
     .hero-copy h1 {
-        font-size: clamp(34px, 9vw, 44px);
+        font-size: clamp(2.125rem, 9vw, 2.75rem);
         line-height: 1.15;
         overflow-wrap: break-word;
     }
 
     .hero-text {
-        font-size: 18px;
-        line-height: 26px;
+        font-size: 1.125rem;
+        line-height: 1.625rem;
         overflow-wrap: break-word;
     }
 }

@@ -110,7 +110,7 @@
             window.location.assign("login.html");
         } catch (_) {
             if (!api.encerrada) {
-                avisar("Não foi possível sair", "Não foi possível encerrar sua sessão. Confira sua conexão e clique em Sair novamente.");
+                avisar("Não foi possível sair", "Não foi possível encerrar sua sessão. Confira sua conexão e tente Sair novamente.");
             }
         } finally {
             saindo = false;

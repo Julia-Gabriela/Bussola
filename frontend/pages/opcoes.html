@@ -3,27 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="../js/shared/acessibilidade.js?v=1"></script>
     <title>Defina suas opções — Bússola</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../style/landing-page.css?v=2">
-    <link rel="stylesheet" href="../style/home.css?v=2">
-    <link rel="stylesheet" href="../style/fluxo-decisao.css?v=2">
-    <link rel="stylesheet" href="../style/opcoes.css?v=2">
-    <link rel="stylesheet" href="../style/ajuda-contextual.css?v=1">
+    <link rel="stylesheet" href="../style/landing-page.css?v=3">
+    <link rel="stylesheet" href="../style/home.css?v=3">
+    <link rel="stylesheet" href="../style/fluxo-decisao.css?v=3">
+    <link rel="stylesheet" href="../style/opcoes.css?v=3">
+    <link rel="stylesheet" href="../style/ajuda-contextual.css?v=2">
     <script src="../js/shared/ajuda-contextual.js?v=1" defer></script>
-    <link rel="stylesheet" href="../style/revisao-etapa.css?v=5">
-    <link rel="stylesheet" href="../style/confirmacao-etapa.css">
+    <link rel="stylesheet" href="../style/revisao-etapa.css?v=6">
+    <link rel="stylesheet" href="../style/confirmacao-etapa.css?v=2">
     <script src="../js/shared/alteracoes-nao-salvas.js?v=3" defer></script>
     <script src="../js/shared/confirmacao-etapa.js" defer></script>
-    <script src="../js/shared/revisao-etapa.js?v=4" defer></script>
+    <script src="../js/shared/revisao-etapa.js?v=5" defer></script>
     <script src="../js/pages/opcoes-integracoes.js" defer></script>
     <script src="../js/pages/opcoes.js?v=3" defer></script>
-    <link rel="stylesheet" href="../style/fluxo-compacto.css?v=4">
+    <link rel="stylesheet" href="../style/fluxo-compacto.css?v=5">
+    <link rel="stylesheet" href="../style/acessibilidade.css?v=1">
 </head>
 <body class="home-page fluxo-page opcoes-page">
-    <a class="home-skip" href="#conteudo">Ir para o conteúdo</a>
+    <a class="home-skip" href="#conteudo">Pular para o conteúdo principal</a>
     <div class="home-scene" aria-hidden="true">
         <img src="../assets/images/fundo-cadastro.png" alt="" class="home-map">
         <div class="home-ring"></div>
@@ -48,7 +50,7 @@
             </div>
         </div>
     </header>
-    <main class="fluxo-conteudo" id="conteudo" aria-busy="true">
+    <main tabindex="-1" class="fluxo-conteudo" id="conteudo" aria-busy="true">
         <ol class="fluxo-etapas" id="indicador-etapas" aria-label="Etapas da decisão"></ol>
         <div class="fluxo-intro">
             <span class="fluxo-badge" title="Terceira etapa da decisão, depois da Contextualização e do Brainstorming"><img src="../assets/images/opcoes/etapa.svg" alt="" width="13" height="13">Etapa 3 de 6 · Opções</span>
@@ -66,19 +68,19 @@
                 <div class="opcoes-grid">
                     <section class="opcao-card opcao-a" aria-labelledby="opcao-a-titulo">
                         <h2 id="opcao-a-titulo"><span class="opcao-letra" aria-hidden="true">A</span>Opção A</h2>
-                        <label for="opcao-a-nome">Nome da opção</label>
+                        <label for="opcao-a-nome">Nome da opção<span class="fluxo-sr-only"> A</span></label>
                         <input id="opcao-a-nome" name="opcaoA" required maxlength="200" placeholder="Ex.: aceitar o estágio" autocomplete="off" aria-describedby="opcao-a-erro">
                         <p class="fluxo-erro-campo" id="opcao-a-erro"></p>
-                        <div class="opcao-rotulo"><label for="opcao-a-descricao">O que essa opção envolve? <span class="opcao-opcional">(opcional)</span></label><button type="button" class="ajuda-botao" aria-expanded="false" aria-controls="ajuda-descricao-a"><span aria-hidden="true">?</span><span class="ajuda-sr">Como descrever a opção A</span></button></div><div class="ajuda-painel" id="ajuda-descricao-a" hidden><p>Conte o que muda na sua rotina, os compromissos e as possibilidades desse caminho. Isso ajuda a avaliar com mais clareza depois.</p><p>Ex.: Estágio de 6 horas por dia, com bolsa, a 40 minutos de casa.</p><button type="button" class="ajuda-fechar" aria-label="Fechar ajuda">×</button></div>
+                        <div class="opcao-rotulo"><label for="opcao-a-descricao">O que essa opção envolve? <span class="opcao-opcional">(opcional)</span><span class="fluxo-sr-only"> Opção A</span></label><button type="button" class="ajuda-botao" aria-expanded="false" aria-controls="ajuda-descricao-a"><span aria-hidden="true">?</span><span class="ajuda-sr">Como descrever a opção A</span></button></div><div class="ajuda-painel" id="ajuda-descricao-a" hidden><p>Conte o que muda na sua rotina, os compromissos e as possibilidades desse caminho. Isso ajuda a avaliar com mais clareza depois.</p><p>Ex.: Estágio de 6 horas por dia, com bolsa, a 40 minutos de casa.</p><button type="button" class="ajuda-fechar" aria-label="Fechar ajuda">×</button></div>
                         <textarea id="opcao-a-descricao" name="descricaoA" rows="5" maxlength="16000" placeholder="Ex.: Rotina mais puxada, mas com renda própria." aria-describedby="descricao-a-erro"></textarea>
                         <p class="fluxo-erro-campo" id="descricao-a-erro"></p>
                     </section>
                     <section class="opcao-card opcao-b" aria-labelledby="opcao-b-titulo">
                         <h2 id="opcao-b-titulo"><span class="opcao-letra" aria-hidden="true">B</span>Opção B</h2>
-                        <label for="opcao-b-nome">Nome da opção</label>
+                        <label for="opcao-b-nome">Nome da opção<span class="fluxo-sr-only"> B</span></label>
                         <input id="opcao-b-nome" name="opcaoB" required maxlength="200" placeholder="Ex.: focar na faculdade" autocomplete="off" aria-describedby="opcao-b-erro">
                         <p class="fluxo-erro-campo" id="opcao-b-erro"></p>
-                        <div class="opcao-rotulo"><label for="opcao-b-descricao">O que essa opção envolve? <span class="opcao-opcional">(opcional)</span></label><button type="button" class="ajuda-botao" aria-expanded="false" aria-controls="ajuda-descricao-b"><span aria-hidden="true">?</span><span class="ajuda-sr">Como descrever a opção B</span></button></div><div class="ajuda-painel" id="ajuda-descricao-b" hidden><p>Conte o que muda na sua rotina, os compromissos e as possibilidades desse caminho. Isso ajuda a avaliar com mais clareza depois.</p><p>Ex.: Estágio de 6 horas por dia, com bolsa, a 40 minutos de casa.</p><button type="button" class="ajuda-fechar" aria-label="Fechar ajuda">×</button></div>
+                        <div class="opcao-rotulo"><label for="opcao-b-descricao">O que essa opção envolve? <span class="opcao-opcional">(opcional)</span><span class="fluxo-sr-only"> Opção B</span></label><button type="button" class="ajuda-botao" aria-expanded="false" aria-controls="ajuda-descricao-b"><span aria-hidden="true">?</span><span class="ajuda-sr">Como descrever a opção B</span></button></div><div class="ajuda-painel" id="ajuda-descricao-b" hidden><p>Conte o que muda na sua rotina, os compromissos e as possibilidades desse caminho. Isso ajuda a avaliar com mais clareza depois.</p><p>Ex.: Estágio de 6 horas por dia, com bolsa, a 40 minutos de casa.</p><button type="button" class="ajuda-fechar" aria-label="Fechar ajuda">×</button></div>
                         <textarea id="opcao-b-descricao" name="descricaoB" rows="5" maxlength="16000" placeholder="Ex.: Rotina mais puxada, mas com renda própria." aria-describedby="descricao-b-erro"></textarea>
                         <p class="fluxo-erro-campo" id="descricao-b-erro"></p>
                     </section>

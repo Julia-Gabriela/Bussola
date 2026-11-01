@@ -224,6 +224,7 @@ async function enviarLogin(evento) {
     }
     const formulario = evento.currentTarget;
     if (!validarFormulario(formulario)) {
+        formulario.querySelector('[aria-invalid="true"]')?.focus();
         return;
     }
     const payload = montarPayload(formulario);

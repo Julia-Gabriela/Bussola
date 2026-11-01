@@ -263,6 +263,7 @@ async function enviarCadastro(evento) {
     }
     const formulario = evento.currentTarget;
     if (!validarFormulario(formulario)) {
+        formulario.querySelector('[aria-invalid="true"]')?.focus();
         return;
     }
     const payload = montarPayload(formulario);
@@ -289,6 +290,7 @@ async function enviarCadastro(evento) {
         enviando = false;
         if (!formulario.hidden) {
             definirEnviando(formulario, false);
+            formulario.querySelector('[aria-invalid="true"]')?.focus();
         }
     }
 }

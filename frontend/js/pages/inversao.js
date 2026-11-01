@@ -41,7 +41,7 @@ function marcarInversao() {
     const pronta = !!dados?.concluida && !sujo();
     marcarRequisito(el("requisitos-lista"), "inversao", pronta, pronta
         ? "concluída."
-        : "preencha as quatro reflexões e clique em “Ver resultado comparativo” para concluir.");
+        : "preencha as quatro reflexões e escolha “Ver resultado comparativo” para concluir.");
     marcarNavegacao(document.querySelector(".tecnicas-nav"), { inversao: pronta });
 }
 
