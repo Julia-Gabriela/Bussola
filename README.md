@@ -48,13 +48,21 @@ A proposta do Bússola é justamente **orientar, e não decidir**. O sistema nã
 
 ---
 
-![Protótipo](https://img.shields.io/badge/🎨%20Protótipo%20no%20Figma-E0B860?style=for-the-badge)
+![Demonstração](https://img.shields.io/badge/▶️%20Vídeo%20de%20demonstração-E0B860?style=for-the-badge)
 
-Antes da implementação, o Bússola passou por uma etapa de **pesquisa, planejamento e prototipação de interfaces** no Figma. O protótipo definiu a identidade cartográfica do projeto, a jornada pelas etapas da decisão e a apresentação do resultado.
+Assista a uma demonstração do Bússola no YouTube, com o fluxo da aplicação e a experiência de uso:
 
-🔗 [Visualizar o protótipo no Figma](https://www.figma.com)
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=gvp4C2cpddk">
+    <img src="https://img.youtube.com/vi/gvp4C2cpddk/maxresdefault.jpg" alt="Assistir à demonstração do Bússola no YouTube" width="720"/>
+  </a>
+</p>
 
-> O Figma registra o processo de design. A aplicação implementada evoluiu a partir dele, com ajustes de usabilidade, acessibilidade e fluxo, por isso pode apresentar diferenças em relação ao protótipo.
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=gvp4C2cpddk"><strong>▶ Assistir no YouTube</strong></a>
+  ·
+  <a href="https://www.youtube.com/embed/gvp4C2cpddk?si=AkK8MmD8xpjXjZ76">Abrir incorporação</a>
+</p>
 
 **Identidade visual:** tons escuros de couro e papel envelhecido, com detalhes dourados que remetem ao corpo e à agulha da bússola. As interfaces usam elementos de mapa, rotas tracejadas e rosa dos ventos.
 
